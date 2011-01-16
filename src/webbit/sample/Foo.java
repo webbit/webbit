@@ -4,6 +4,7 @@ import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
+import webbit.handler.DelayedHttpHandler;
 import webbit.handler.HttpToWebSocketHandler;
 import webbit.netty.NettyWebServer;
 import webbit.handler.RoutingHttpHandler;
@@ -23,6 +24,7 @@ public class Foo {
 
         RoutingHttpHandler handler = new RoutingHttpHandler();
         handler.map("/page", new StringHttpHandler("text/html", "Hello World"));
+        handler.map("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow")));
         handler.map("/ws", new HttpToWebSocketHandler(new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) {
@@ -42,7 +44,6 @@ public class Foo {
                 System.out.println("onClose   :  " + connection);
             }
         }));
-
 
         fiber.scheduleWithFixedDelay(new Runnable() {
             @Override
