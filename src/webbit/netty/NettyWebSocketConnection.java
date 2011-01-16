@@ -17,20 +17,24 @@ import webbit.WebSocketHandler;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler implements WebSocketConnection {
+    private final Executor executor;
     private final ChannelHandlerContext ctx;
     private final NettyHttpRequest nettyHttpRequest;
     private final WebSocketHandler handler;
 
-    public NettyWebSocketConnection(ChannelHandlerContext ctx,
+    public NettyWebSocketConnection(Executor executor,
+                                    ChannelHandlerContext ctx,
                                     NettyHttpRequest nettyHttpRequest,
                                     HttpRequest request,
                                     HttpResponse response,
-                                    WebSocketHandler handler) throws Exception {
+                                    WebSocketHandler handler){
+        this.executor = executor;
         this.ctx = ctx;
         this.nettyHttpRequest = nettyHttpRequest;
         this.handler = handler;
@@ -55,7 +59,12 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
 
         p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
 
-        handler.onOpen(this);
+        try {
+            handler.onOpen(this);
+        } catch (Exception e) {
+            // TODO
+            e.printStackTrace();
+        }
 
     }
 
@@ -132,13 +141,33 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        handler.onMessage(this, ((WebSocketFrame) e.getMessage()).getTextData());
+    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    handler.onMessage(NettyWebSocketConnection.this, ((WebSocketFrame) e.getMessage()).getTextData());
+                } catch (Exception e1) {
+                    // TODO
+                    e1.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        handler.onClose(this);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    handler.onClose(NettyWebSocketConnection.this);
+                } catch (Exception e1) {
+                    // TODO
+                    e1.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override

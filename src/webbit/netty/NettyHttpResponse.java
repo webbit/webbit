@@ -10,6 +10,7 @@ import org.jboss.netty.util.CharsetUtil;
 import webbit.WebSocketHandler;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.Executor;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
@@ -22,12 +23,15 @@ public class NettyHttpResponse implements webbit.HttpResponse {
     private final NettyHttpRequest nettyHttpRequest;
     private final HttpRequest request;
     private final HttpResponse response;
+    private final Executor executor;
     private Charset charset;
 
-    public NettyHttpResponse(ChannelHandlerContext ctx,
+    public NettyHttpResponse(Executor executor,
+                             ChannelHandlerContext ctx,
                              NettyHttpRequest nettyHttpRequest,
                              HttpRequest request,
                              HttpResponse response) {
+        this.executor = executor;
         this.ctx = ctx;
         this.nettyHttpRequest = nettyHttpRequest;
         this.request = request;
@@ -83,7 +87,7 @@ public class NettyHttpResponse implements webbit.HttpResponse {
 
     @Override
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-         return new NettyWebSocketConnection(ctx, nettyHttpRequest, request, response, handler);
+         return new NettyWebSocketConnection(executor, ctx, nettyHttpRequest, request, response, handler);
     }
 
     @Override
