@@ -22,7 +22,7 @@ public class Foo {
 
         RoutingHttpHandler handler = new RoutingHttpHandler();
         handler.map("/page", new StringHttpHandler("text/html", "Hello World"));
-        handler.map("/page2", new StaticDirectoryHttpHandler(fiber, new File("./web")));
+        handler.map("/page2", new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/webbit/sample/content")));
         handler.map("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow")));
         handler.map("/ws", new HttpToWebSocketHandler(new WebSocketHandler() {
             @Override
