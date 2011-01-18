@@ -49,8 +49,16 @@ public class Chatroom implements WebSocketHandler {
 
     @Override
     public void onClose(WebSocketConnection connection) throws Exception {
-        broadcast("* User '" + usernames.get(connection) + "' has left.");
-        usernames.remove(connection);
+        String username = usernames.get(connection);
+        if (username != null) { // i.e. they've logged in
+            broadcast("* User '" + username + "' has left.");
+            usernames.remove(connection);
+        }
+    }
+
+    @Override
+    public void onError(WebSocketConnection connection, Exception error) throws Exception {
+        error.printStackTrace();
     }
 
     public static void main(String[] args) throws Exception {

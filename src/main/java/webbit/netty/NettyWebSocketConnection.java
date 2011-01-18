@@ -15,6 +15,7 @@ import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
@@ -175,4 +176,21 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
         return nettyHttpRequest.toString();
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        if (e.getCause() instanceof ClosedChannelException) {
+            e.getChannel().close();
+        } else {
+            Throwable throwable = e.getCause();
+            if (throwable instanceof Exception) {
+                try {
+                    handler.onError(this, (Exception) throwable);
+                } finally {
+                    e.getChannel().close();
+                }
+            } else {
+                super.exceptionCaught(ctx, e);
+            }
+        }
+    }
 }

@@ -8,6 +8,7 @@ import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import webbit.HttpHandler;
 
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -45,9 +46,11 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
-        // TODO
-        e.getCause().printStackTrace();
-        e.getChannel().close();
+        if (e.getCause() instanceof ClosedChannelException) {
+            e.getChannel().close();
+        } else {
+            super.exceptionCaught(ctx, e);
+        }
     }
 
 }
