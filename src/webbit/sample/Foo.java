@@ -4,12 +4,10 @@ import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
-import webbit.handler.DelayedHttpHandler;
-import webbit.handler.HttpToWebSocketHandler;
+import webbit.handler.*;
 import webbit.netty.NettyWebServer;
-import webbit.handler.RoutingHttpHandler;
-import webbit.handler.StringHttpHandler;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -17,13 +15,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Foo {
 
-    public static void main(String... args) throws InterruptedException {
+    public static void main(String... args) throws Exception {
         ThreadFiber fiber = new ThreadFiber();
 
         final Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 
         RoutingHttpHandler handler = new RoutingHttpHandler();
         handler.map("/page", new StringHttpHandler("text/html", "Hello World"));
+        handler.map("/page2", new StaticDirectoryHttpHandler(fiber, new File("./web")));
         handler.map("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow")));
         handler.map("/ws", new HttpToWebSocketHandler(new WebSocketHandler() {
             @Override

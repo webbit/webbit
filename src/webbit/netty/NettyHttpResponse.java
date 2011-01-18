@@ -9,6 +9,9 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
 import webbit.WebSocketHandler;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.concurrent.Executor;
 
@@ -91,20 +94,42 @@ public class NettyHttpResponse implements webbit.HttpResponse {
     }
 
     @Override
+    public NettyHttpResponse error(Throwable error) {
+        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        String message = getStackTrace(error);
+        header("Content-Type", "text/plain");
+        header("Content-Length", message.length());
+        content(message);
+        flushResponse();
+        return this;
+    }
+
+    private String getStackTrace(Throwable error) {
+        StringWriter buffer = new StringWriter();
+        PrintWriter writer = new PrintWriter(buffer);
+        error.printStackTrace(writer);
+        writer.flush();
+        System.out.println("buffer = " + buffer);
+        return buffer.toString();
+    }
+
+    @Override
     public NettyHttpResponse end() {
         // Generate an error page if response status code is not OK (200).
         if (response.getStatus().getCode() != 200) {
             response.setContent(copiedBuffer(response.getStatus().toString(), CharsetUtil.UTF_8));
             header("Content-Length", response.getContent().readableBytes());
         }
+        flushResponse();
+        return this;
+    }
 
+    private void flushResponse() {
         // Send the response and close the connection if necessary.
         ChannelFuture f = ctx.getChannel().write(response);
         if (!isKeepAlive(request) || response.getStatus().getCode() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
-
-        return this;
     }
 
 }
