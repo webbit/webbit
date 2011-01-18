@@ -60,8 +60,9 @@ public class Foo {
 
         fiber.start();
 
-        WebServer web = new NettyWebServer(fiber, 8080, handler);
-        System.out.println("Listening on: " + web.getUri());
+        WebServer webServer = new NettyWebServer(fiber, 8080, handler);
+        webServer.start();
+        System.out.println("Listening on: " + webServer.getUri());
 
         fiber.join();
     }

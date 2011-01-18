@@ -9,14 +9,11 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import webbit.HttpHandler;
 import webbit.WebServer;
-import webbit.netty.NettyHttpChannelHandler;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.jboss.netty.channel.Channels.pipeline;
@@ -24,10 +21,8 @@ import static org.jboss.netty.channel.Channels.pipeline;
 public class NettyWebServer implements WebServer {
     private final ServerBootstrap bootstrap;
     private final InetSocketAddress socketAddress;
-    private final Executor executor;
-
+    
     public NettyWebServer(final Executor executor, int port, final HttpHandler httpHandler) {
-        this.executor = executor;
         this.socketAddress = new InetSocketAddress(port);
 
         // Configure the server.
@@ -45,26 +40,24 @@ public class NettyWebServer implements WebServer {
                 return pipeline;
             }
         });
-
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                bootstrap.setFactory(new NioServerSocketChannelFactory(
-                        Executors.newSingleThreadExecutor(),
-                        Executors.newSingleThreadExecutor(), 1));
-                bootstrap.bind(socketAddress);
-            }
-        });
-    }
-
-    @Override
-    public void close() throws IOException {
-        // TODO
     }
 
     @Override
     public URI getUri() {
         return URI.create("http://" + socketAddress.getHostName() +
                 (socketAddress.getPort() == 80 ? "" : (":" + socketAddress.getPort())) + "/");
+    }
+
+    @Override
+    public void start() {
+        bootstrap.setFactory(new NioServerSocketChannelFactory(
+                Executors.newSingleThreadExecutor(),
+                Executors.newSingleThreadExecutor(), 1));
+        bootstrap.bind(socketAddress);
+    }
+
+    @Override
+    public void stop() throws IOException {
+        // TODO
     }
 }

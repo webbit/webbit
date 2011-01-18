@@ -59,18 +59,10 @@ public class Chatroom implements WebSocketHandler {
                 directory(fiber, "./src/sample/java/chatroom/content"),
                 socket("/chatsocket", new Chatroom())));
 
+        webServer.start();
         fiber.start();
         System.out.println("Chat room running on: " + webServer.getUri());
         fiber.join();
     }
 
-    static class App {
-
-    }
-
-    static class MyApp extends App {
-        {
-
-        }
-    }
 }
