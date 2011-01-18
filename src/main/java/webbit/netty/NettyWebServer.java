@@ -26,7 +26,7 @@ public class NettyWebServer implements WebServer {
     private final InetSocketAddress socketAddress;
     private final Executor executor;
 
-    public NettyWebServer(int port, final HttpHandler httpHandler, final Executor executor) {
+    public NettyWebServer(final Executor executor, int port, final HttpHandler httpHandler) {
         this.executor = executor;
         this.socketAddress = new InetSocketAddress(port);
 

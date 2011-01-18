@@ -4,27 +4,26 @@ import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
-import webbit.handler.*;
+import webbit.handler.DelayedHttpHandler;
+import webbit.handler.RoutingHttpHandler;
+import webbit.handler.StringHttpHandler;
 import webbit.netty.NettyWebServer;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static webbit.route.Route.*;
+
 public class Foo {
+
 
     public static void main(String... args) throws Exception {
         ThreadFiber fiber = new ThreadFiber();
 
         final Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 
-        RoutingHttpHandler handler = new RoutingHttpHandler();
-        handler.map("/page", new StringHttpHandler("text/html", "Hello World"));
-        handler.map("/page2", new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/webbit/sample/content")));
-        handler.map("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow")));
-        handler.map("/ws", new HttpToWebSocketHandler(new WebSocketHandler() {
+        WebSocketHandler wsHandler = new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) {
                 connections.add(connection);
@@ -42,7 +41,13 @@ public class Foo {
                 connections.remove(connection);
                 System.out.println("onClose   :  " + connection);
             }
-        }));
+        };
+
+        RoutingHttpHandler handler = route(
+                directory(fiber, "./src/sample/java/webbit/sample/content"),
+                get("/page", new StringHttpHandler("text/html", "Hello World")),
+                get("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow"))),
+                socket("/ws", wsHandler));
 
         fiber.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -55,10 +60,10 @@ public class Foo {
 
         fiber.start();
 
-        WebServer web = new NettyWebServer(8080, handler, fiber);
+        WebServer web = new NettyWebServer(fiber, 8080, handler);
         System.out.println("Listening on: " + web.getUri());
 
-        new CountDownLatch(1).await();
+        fiber.join();
     }
 
 }

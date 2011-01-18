@@ -174,4 +174,5 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
     public String toString() {
         return nettyHttpRequest.toString();
     }
+
 }

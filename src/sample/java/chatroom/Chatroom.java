@@ -4,19 +4,17 @@ import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
-import webbit.handler.HttpToWebSocketHandler;
-import webbit.handler.RoutingHttpHandler;
-import webbit.handler.StaticDirectoryHttpHandler;
 import webbit.netty.NettyWebServer;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static webbit.route.Route.*;
+
 public class Chatroom implements WebSocketHandler {
 
-    private Map<WebSocketConnection,String> usernames = new HashMap<WebSocketConnection, String>();
+    private Map<WebSocketConnection, String> usernames = new HashMap<WebSocketConnection, String>();
 
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
@@ -57,15 +55,22 @@ public class Chatroom implements WebSocketHandler {
     public static void main(String[] args) throws Exception {
         ThreadFiber fiber = new ThreadFiber();
 
-        RoutingHttpHandler route = new RoutingHttpHandler(
-                new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/chatroom/content")));
-        route.map("/chatsocket", new HttpToWebSocketHandler(new Chatroom()));
+        WebServer webServer = new NettyWebServer(fiber, 9876, route(
+                directory(fiber, "./src/sample/java/chatroom/content"),
+                socket("/chatsocket", new Chatroom())));
 
-        WebServer webServer = new NettyWebServer(9876, route, fiber);
-
-        System.out.println("Chat room running on: " + webServer.getUri());
         fiber.start();
+        System.out.println("Chat room running on: " + webServer.getUri());
+        fiber.join();
+    }
 
-        new CountDownLatch(1).await();
+    static class App {
+
+    }
+
+    static class MyApp extends App {
+        {
+
+        }
     }
 }
