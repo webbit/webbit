@@ -5,6 +5,7 @@ import webbit.async.Result;
 import java.nio.charset.Charset;
 import java.util.concurrent.Executor;
 
+@SuppressWarnings({"ThrowableInstanceNeverThrown", "ThrowableResultOfMethodCallIgnored"})
 public class AsyncFileSystem implements FileSystem {
 
     private final Executor userThreadExecutor;
@@ -70,14 +71,68 @@ public class AsyncFileSystem implements FileSystem {
     }
 
     @Override
-    public void readString(final String path, final Charset charset, final Result<String> result) {
+    public void readText(final String path, final Charset charset, final Result<String> result) {
         final Throwable originalStack = new Throwable();
         onIoThread(new Runnable() {
             @Override
             public void run() {
-                fileSystem.readString(path, charset, onUserThread(originalStack, result));
+                fileSystem.readText(path, charset, onUserThread(originalStack, result));
             }
         });
     }
-    
+
+    @Override
+    public void writeText(final String path, final Charset charset, final String text, final Result<Void> result) {
+        final Throwable originalStack = new Throwable();
+        onIoThread(new Runnable() {
+            @Override
+            public void run() {
+                fileSystem.writeText(path, charset, text, onUserThread(originalStack, result));
+            }
+        });
+    }
+
+    @Override
+    public void appendText(final String path, final Charset charset, final String text, final Result<Void> result) {
+        final Throwable originalStack = new Throwable();
+        onIoThread(new Runnable() {
+            @Override
+            public void run() {
+                fileSystem.appendText(path, charset, text, onUserThread(originalStack, result));
+            }
+        });
+    }
+
+    @Override
+    public void move(final String oldPath, final String newPath, final Result<Boolean> result) {
+        final Throwable originalStack = new Throwable();
+        onIoThread(new Runnable() {
+            @Override
+            public void run() {
+                fileSystem.move(oldPath, newPath, onUserThread(originalStack, result));
+            }
+        });
+    }
+
+    @Override
+    public void mkdir(final String path, final boolean makeParents, final Result<Boolean> result) {
+        final Throwable originalStack = new Throwable();
+        onIoThread(new Runnable() {
+            @Override
+            public void run() {
+                fileSystem.mkdir(path, makeParents, onUserThread(originalStack, result));
+            }
+        });
+    }
+
+    @Override
+    public void delete(final String path, final boolean recursive, final Result<Boolean> result) {
+        final Throwable originalStack = new Throwable();
+        onIoThread(new Runnable() {
+            @Override
+            public void run() {
+                fileSystem.delete(path, recursive, onUserThread(originalStack, result));
+            }
+        });
+    }
 }

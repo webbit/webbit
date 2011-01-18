@@ -2,10 +2,8 @@ package webbit.async.filesystem;
 
 import webbit.async.Result;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -34,14 +32,14 @@ public class JavaFileSystem implements FileSystem {
     }
 
     @Override
-    public void readString(String path, Charset charset, Result<String> result) {
+    public void readText(String path, Charset charset, Result<String> result) {
         try {
             File file = resolve(path);
             if (!file.exists()) {
                 throw new FileNotFoundException(file.getAbsolutePath());
             }
             if (file.isDirectory()) {
-                throw new IOException("Cannot readString() on directory");
+                throw new IOException("Cannot readText() on directory: " + file.getAbsolutePath());
             }
             FileInputStream inputStream = new FileInputStream(file);
             try {
@@ -54,5 +52,79 @@ public class JavaFileSystem implements FileSystem {
         } catch (IOException e) {
             result.error(e);
         }
+    }
+
+    @Override
+    public void writeText(String path, Charset charset, String text, Result<Void> result) {
+        write(path, charset, text, result, false);
+    }
+
+    @Override
+    public void appendText(String path, Charset charset, String text, Result<Void> result) {
+        write(path, charset, text, result, true);
+    }
+
+    private void write(String path, Charset charset, String text, Result<Void> result, boolean append) {
+        try {
+            File file = resolve(path);
+            if (file.isDirectory()) {
+                throw new IOException("Cannot write to directory: " + file.getAbsolutePath());
+            }
+            if (!file.canWrite()) {
+                throw new IOException("Cannot write to file: " + file.getAbsolutePath());
+            }
+            FileOutputStream outputStream = new FileOutputStream(file, append);
+            try {
+                FileChannel channel = outputStream.getChannel();
+                ByteBuffer encoded = charset.encode(text);
+                MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, encoded.remaining());
+                buffer.put(encoded);
+                result.complete(null);
+            } finally {
+                outputStream.close();
+            }
+        } catch (IOException e) {
+            result.error(e);
+        }
+    }
+
+    @Override
+    public void move(String oldPath, String newPath, Result<Boolean> result) {
+        try {
+            File oldFile = resolve(oldPath);
+            File newFile = resolve(newPath);
+            result.complete(oldFile.renameTo(newFile));
+        } catch (IOException e) {
+            result.error(e);
+        }
+    }
+
+    @Override
+    public void mkdir(String path, boolean makeParents, Result<Boolean> result) {
+        try {
+            File file = resolve(path);
+            result.complete(makeParents ? file.mkdirs() : file.mkdir());
+        } catch (IOException e) {
+            result.error(e);
+        }
+    }
+
+    @Override
+    public void delete(String path, boolean recursive, Result<Boolean> result) {
+        try {
+            File file = resolve(path);
+            result.complete(recursive ? recursiveDelete(file) : file.delete());
+        } catch (IOException e) {
+            result.error(e);
+        }
+    }
+
+    public static boolean recursiveDelete(File file) throws IOException {
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                recursiveDelete(child);
+            }
+        }
+        return file.delete();
     }
 }
