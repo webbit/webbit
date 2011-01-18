@@ -3,7 +3,6 @@ package webbit.async.filesystem;
 import webbit.async.Result;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -70,15 +69,9 @@ public class JavaFileSystem implements FileSystem {
             if (file.isDirectory()) {
                 throw new IOException("Cannot write to directory: " + file.getAbsolutePath());
             }
-            if (!file.canWrite()) {
-                throw new IOException("Cannot write to file: " + file.getAbsolutePath());
-            }
             FileOutputStream outputStream = new FileOutputStream(file, append);
             try {
-                FileChannel channel = outputStream.getChannel();
-                ByteBuffer encoded = charset.encode(text);
-                MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, encoded.remaining());
-                buffer.put(encoded);
+                outputStream.write(text.getBytes(charset));
                 result.complete(null);
             } finally {
                 outputStream.close();

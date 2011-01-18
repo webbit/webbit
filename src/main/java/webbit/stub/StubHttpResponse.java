@@ -17,7 +17,7 @@ import java.util.Map;
 public class StubHttpResponse implements HttpResponse {
 
     private Charset charset = Charset.forName("UTF-8");
-    private int status;
+    private int status = 200;
     private Map<String, String> headers = new HashMap<String, String>();
     private Throwable error;
     private boolean ended;
@@ -47,7 +47,11 @@ public class StubHttpResponse implements HttpResponse {
 
     @Override
     public StubHttpResponse header(String name, String value) {
-        headers.put(name, value);
+        if (value == null) {
+            headers.remove(name);
+        } else {
+            headers.put(name, value);
+        }
         return this;
     }
 

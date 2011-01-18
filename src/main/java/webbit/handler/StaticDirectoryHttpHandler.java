@@ -5,6 +5,7 @@ import webbit.HttpRequest;
 import webbit.HttpResponse;
 import webbit.async.Result;
 import webbit.async.filesystem.AsyncFileSystem;
+import webbit.async.filesystem.FileStat;
 import webbit.async.filesystem.FileSystem;
 import webbit.async.filesystem.JavaFileSystem;
 
@@ -48,16 +49,25 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
         DEFAULT_MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
     }
 
+    private static final String DEFAULT_WELCOME_FILE = "index.html";
+
     private final FileSystem fileSystem;
     private final Map<String, String> mimeTypes;
+    private String welcomeFile;
 
     public StaticDirectoryHttpHandler(FileSystem fileSystem) {
         this.mimeTypes = new HashMap<String,String>(DEFAULT_MIME_TYPES);
+        this.welcomeFile = DEFAULT_WELCOME_FILE;
         this.fileSystem = fileSystem;
     }
 
     public StaticDirectoryHttpHandler addMimeType(String extension, String mimeType) {
         mimeTypes.put(extension, mimeType);
+        return this;
+    }
+
+    public StaticDirectoryHttpHandler welcomeFile(String welcomeFile) {
+        this.welcomeFile = welcomeFile;
         return this;
     }
 
@@ -71,28 +81,60 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
 
     @Override
     public void handleHttpRequest(HttpRequest request, final HttpResponse response) throws Exception {
-        // TODO: Read file from URL
+        serveFile(response, request.uri());
+    }
+
+    private void serveFile(final HttpResponse response, final String path) {
         // TODO: Handle binary files
-        // TODO: Server appropriate mime-type
         // TODO: Cache
-        // TODO: Ignore certain files
-        fileSystem.readString("index.html", response.charset(), new Result<String>() {
+        // TODO: Ignore query params
+        fileSystem.readText(path, response.charset(), new Result<String>() {
             @Override
             public void complete(String contents) {
-                response.header("Content-Type", "text/html; charset=" + response.charset().name())
+                response.header("Content-Type", guessMimeType(path, response))
                         .header("Content-Length", contents.length())
                         .content(contents)
                         .end();
             }
 
             @Override
-            public void error(Exception error) {
+            public void error(final Exception error) {
                 if (error instanceof FileNotFoundException) {
                     response.status(404).end();
                 } else {
-                    response.error(error);
+                    fileSystem.stat(path, new Result<FileStat>() {
+                        @Override
+                        public void complete(FileStat result) {
+                            if (result.isDirectory() && result.exists()) {
+                                serveFile(response, path + "/" + welcomeFile);   
+                            } else {
+                                response.error(error);
+                            }
+                        }
+
+                        @Override
+                        public void error(Exception ignored) {
+                            response.error(error);
+                        }
+                    });
                 }
             }
         });
+    }
+
+    private String guessMimeType(String path, HttpResponse response) {
+        int lastDot = path.lastIndexOf('.');
+        if (lastDot == -1) {
+            return null;
+        }
+        String extension = path.substring(lastDot + 1).toLowerCase();
+        String mimeType = mimeTypes.get(extension);
+        if (mimeType == null) {
+            return null;
+        }
+        if (mimeType.startsWith("text/") && response.charset() != null) {
+            mimeType += "; charset=" + response.charset().name();
+        }
+        return mimeType;
     }
 }

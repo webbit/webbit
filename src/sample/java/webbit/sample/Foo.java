@@ -6,9 +6,11 @@ import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
 import webbit.handler.DelayedHttpHandler;
 import webbit.handler.RoutingHttpHandler;
+import webbit.handler.StaticDirectoryHttpHandler;
 import webbit.handler.StringHttpHandler;
 import webbit.netty.NettyWebServer;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +46,7 @@ public class Foo {
         };
 
         RoutingHttpHandler handler = route(
-                directory(fiber, "./src/sample/java/webbit/sample/content"),
+                new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/webbit/sample/content")),
                 get("/page", new StringHttpHandler("text/html", "Hello World")),
                 get("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow"))),
                 socket("/ws", wsHandler));

@@ -4,8 +4,10 @@ import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
+import webbit.handler.StaticDirectoryHttpHandler;
 import webbit.netty.NettyWebServer;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +57,7 @@ public class Chatroom implements WebSocketHandler {
         ThreadFiber fiber = new ThreadFiber();
 
         WebServer webServer = new NettyWebServer(fiber, 9876, route(
-                directory(fiber, "./src/sample/java/chatroom/content"),
+                new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/chatroom/content")),
                 socket("/chatsocket", new Chatroom())));
 
         webServer.start();

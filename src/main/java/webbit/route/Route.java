@@ -14,6 +14,10 @@ import java.util.concurrent.Executor;
 
 public class Route {
 
+    public static RoutingHttpHandler route(HttpHandler defaultHandler, Map.Entry<String, HttpHandler>... routes) {
+        return new RoutingHttpHandler(defaultHandler, routes);
+    }
+
     public static RoutingHttpHandler route(Map.Entry<String, HttpHandler>... routes) {
         return new RoutingHttpHandler(routes);
     }
@@ -30,14 +34,5 @@ public class Route {
     public static Map.Entry<String, HttpHandler> socket(String path, WebSocketHandler webSocketHandler) {
         return new AbstractMap.SimpleEntry<String, HttpHandler>(path, new HttpToWebSocketHandler(webSocketHandler));
     }
-
-    public static Map.Entry<String, HttpHandler> directory(Executor executor, File dir) throws IOException {
-        return get("/", new StaticDirectoryHttpHandler(executor, dir));
-    }
-
-    public static Map.Entry<String, HttpHandler> directory(Executor executor, String dir) throws IOException {
-        return directory(executor, new File(dir));
-    }
-
 
 }

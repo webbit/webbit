@@ -60,4 +60,8 @@ public class NettyWebServer implements WebServer {
     public void stop() throws IOException {
         // TODO
     }
+
+    public void join() throws InterruptedException {
+        // TODO
+    }
 }

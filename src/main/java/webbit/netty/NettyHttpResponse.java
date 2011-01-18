@@ -66,7 +66,11 @@ public class NettyHttpResponse implements webbit.HttpResponse {
 
     @Override
     public NettyHttpResponse header(String name, String value) {
-        response.setHeader(name, value);
+        if (value == null) {
+            response.removeHeader(name);
+        } else {
+            response.setHeader(name, value);
+        }
         return this;
     }
 
