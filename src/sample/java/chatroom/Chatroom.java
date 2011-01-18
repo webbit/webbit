@@ -8,7 +8,6 @@ import webbit.netty.NettyWebServer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import static webbit.route.Route.*;
 

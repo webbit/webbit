@@ -11,16 +11,54 @@ import webbit.async.filesystem.JavaFileSystem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class StaticDirectoryHttpHandler implements HttpHandler {
 
+    public static final Map<String, String> DEFAULT_MIME_TYPES;
+
+    static {
+        // This is not an exhaustive list, just the most common types. Call registerMimeType() to add more.
+        Map<String, String> mimeTypes = new HashMap<String, String>();
+        mimeTypes.put("txt", "text/plain");
+        mimeTypes.put("css", "text/css");
+        mimeTypes.put("csv", "text/csv");
+        mimeTypes.put("htm", "text/html");
+        mimeTypes.put("html", "text/html");
+        mimeTypes.put("xml", "text/xml");
+        mimeTypes.put("js", "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
+        mimeTypes.put("xhtml", "application/xhtml+xml");
+        mimeTypes.put("json", "application/json");
+        mimeTypes.put("pdf", "application/pdf");
+        mimeTypes.put("zip", "application/zip");
+        mimeTypes.put("tar", "application/x-tar");
+        mimeTypes.put("gif", "image/gif");
+        mimeTypes.put("jpeg", "image/jpeg");
+        mimeTypes.put("jpg", "image/jpeg");
+        mimeTypes.put("tiff", "image/tiff");
+        mimeTypes.put("tif", "image/tiff");
+        mimeTypes.put("png", "image/png");
+        mimeTypes.put("svg", "image/svg+xml");
+        mimeTypes.put("ico", "image/vnd.microsoft.icon");
+        DEFAULT_MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
+    }
+
     private final FileSystem fileSystem;
+    private final Map<String, String> mimeTypes;
 
     public StaticDirectoryHttpHandler(FileSystem fileSystem) {
+        this.mimeTypes = new HashMap<String,String>(DEFAULT_MIME_TYPES);
         this.fileSystem = fileSystem;
+    }
+
+    public StaticDirectoryHttpHandler addMimeType(String extension, String mimeType) {
+        mimeTypes.put(extension, mimeType);
+        return this;
     }
 
     public StaticDirectoryHttpHandler(Executor userThreadExecutor, Executor ioThreadExecutor, File dir) throws IOException {
