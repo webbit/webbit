@@ -1,21 +1,29 @@
 package chatroom;
 
-import webbit.WebServer;
+import com.google.gson.Gson;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
-import webbit.handler.StaticDirectoryHttpHandler;
-import webbit.netty.NettyWebServer;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import static webbit.route.Route.route;
-import static webbit.route.Route.socket;
 
 public class Chatroom implements WebSocketHandler {
+
+    private final Gson json = new Gson();
+
+    static class Incoming {
+        enum Action { LOGIN, SAY };
+        Action action;
+        String loginUsername;
+        String message;
+    }
+
+    static class Outgoing {
+        enum Action { JOIN, LEAVE, SAY };
+        Action action;
+        String username;
+        String message;
+    }
 
     private Map<WebSocketConnection, String> usernames = new HashMap<WebSocketConnection, String>();
 
@@ -26,34 +34,52 @@ public class Chatroom implements WebSocketHandler {
 
     @Override
     public void onMessage(WebSocketConnection connection, String msg) throws Exception {
-        String[] tokens = msg.split("\\|");
-        if (tokens.length == 0) {
-            return;
-        } else if (tokens[0].equals("LOGIN") && tokens.length == 2) {
-            String username = tokens[1];
-            usernames.put(connection, username);
-            broadcast("* User '" + username + "' has entered.");
-        } else if (tokens[0].equals("SAY") && tokens.length == 2) {
-            String message = tokens[1];
-            String username = usernames.get(connection);
-            if (username != null) {
-                broadcast("[" + username + "] " + message);
-            }
+        Incoming incoming = json.fromJson(msg, Incoming.class);
+        switch (incoming.action) {
+            case LOGIN:
+                login(connection, incoming.loginUsername);
+                break;
+            case SAY:
+                say(connection, incoming.message);
+                break;
         }
     }
 
-    private void broadcast(String text) {
-        System.out.println(text);
+    private void login(WebSocketConnection connection, String username) {
+        usernames.put(connection, username);
+        Outgoing outgoing = new Outgoing();
+        outgoing.action = Outgoing.Action.JOIN;
+        outgoing.username = username;
+        broadcast(outgoing);
+    }
+
+    private void say(WebSocketConnection connection, String message) {
+        String username = usernames.get(connection);
+        if (username != null) {
+            Outgoing outgoing = new Outgoing();
+            outgoing.action = Outgoing.Action.SAY;
+            outgoing.username = username;
+            outgoing.message = message;
+            broadcast(outgoing);
+        }
+    }
+
+    private void broadcast(Outgoing outgoing) {
+        String json = this.json.toJson(outgoing);
+        System.out.println(json);
         for (WebSocketConnection connection : usernames.keySet()) {
-            connection.send(text);
+            connection.send(json);
         }
     }
 
     @Override
     public void onClose(WebSocketConnection connection) throws Exception {
         String username = usernames.get(connection);
-        if (username != null) { // i.e. they've logged in
-            broadcast("* User '" + username + "' has left.");
+        if (username != null) {
+            Outgoing outgoing = new Outgoing();
+            outgoing.action = Outgoing.Action.LEAVE;
+            outgoing.username = username;
+            broadcast(outgoing);
             usernames.remove(connection);
         }
     }
@@ -61,17 +87,6 @@ public class Chatroom implements WebSocketHandler {
     @Override
     public void onError(WebSocketConnection connection, Exception error) throws Exception {
         error.printStackTrace();
-    }
-
-    public static void main(String[] args) throws Exception {
-        Executor executor = Executors.newSingleThreadExecutor();
-
-        WebServer webServer = new NettyWebServer(executor, 9876, route(
-                new StaticDirectoryHttpHandler(new File("./src/sample/java/chatroom/content"), executor),
-                socket("/chatsocket", new Chatroom())));
-
-        webServer.start();
-        System.out.println("Chat room running on: " + webServer.getUri());
     }
 
 }
