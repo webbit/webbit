@@ -1,6 +1,5 @@
 package webbit.sample;
 
-import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
@@ -13,15 +12,17 @@ import webbit.netty.NettyWebServer;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static webbit.route.Route.*;
 
 public class Foo {
 
 
     public static void main(String... args) throws Exception {
-        ThreadFiber fiber = new ThreadFiber();
+        ScheduledExecutorService executor = newSingleThreadScheduledExecutor();
 
         final Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 
@@ -51,12 +52,12 @@ public class Foo {
         };
 
         RoutingHttpHandler handler = route(
-                new StaticDirectoryHttpHandler(new File("./src/sample/java/webbit/sample/content"), fiber),
+                new StaticDirectoryHttpHandler(new File("./src/sample/java/webbit/sample/content"), executor),
                 get("/page", new StringHttpHandler("text/html", "Hello World")),
-                get("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow"))),
+                get("/slow", new DelayedHttpHandler(executor, 3000, new StringHttpHandler("text/html", "Sloooow"))),
                 socket("/ws", wsHandler));
 
-        fiber.scheduleWithFixedDelay(new Runnable() {
+        executor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 for (WebSocketConnection connection : connections) {
@@ -65,13 +66,9 @@ public class Foo {
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
-        fiber.start();
-
-        WebServer webServer = new NettyWebServer(fiber, 8080, handler);
+        WebServer webServer = new NettyWebServer(executor, 8080, handler);
         webServer.start();
         System.out.println("Listening on: " + webServer.getUri());
-
-        fiber.join();
     }
 
 }
