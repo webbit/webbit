@@ -3,14 +3,9 @@ package webbit.handler;
 import webbit.HttpHandler;
 import webbit.HttpRequest;
 import webbit.HttpResponse;
-import webbit.async.Result;
-import webbit.async.filesystem.AsyncFileSystem;
-import webbit.async.filesystem.FileStat;
-import webbit.async.filesystem.FileSystem;
-import webbit.async.filesystem.JavaFileSystem;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,14 +46,22 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
 
     private static final String DEFAULT_WELCOME_FILE = "index.html";
 
-    private final FileSystem fileSystem;
+    private final File dir;
+    private final Executor webThread;
+    private final Executor ioThread;
     private final Map<String, String> mimeTypes;
     private String welcomeFile;
 
-    public StaticDirectoryHttpHandler(FileSystem fileSystem) {
-        this.mimeTypes = new HashMap<String,String>(DEFAULT_MIME_TYPES);
+    public StaticDirectoryHttpHandler(File dir, Executor webThread, Executor ioThread) {
+        this.dir = dir;
+        this.webThread = webThread;
+        this.ioThread = ioThread;
+        this.mimeTypes = new HashMap<String, String>(DEFAULT_MIME_TYPES);
         this.welcomeFile = DEFAULT_WELCOME_FILE;
-        this.fileSystem = fileSystem;
+    }
+
+    public StaticDirectoryHttpHandler(File dir, Executor webThread) {
+        this(dir, webThread, newFixedThreadPool(4));
     }
 
     public StaticDirectoryHttpHandler addMimeType(String extension, String mimeType) {
@@ -71,53 +74,46 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
         return this;
     }
 
-    public StaticDirectoryHttpHandler(Executor userThreadExecutor, Executor ioThreadExecutor, File dir) throws IOException {
-        this(new AsyncFileSystem(userThreadExecutor, ioThreadExecutor, new JavaFileSystem(dir)));
-    }
-
-    public StaticDirectoryHttpHandler(Executor userThreadExecutor, File dir) throws IOException {
-        this(new AsyncFileSystem(userThreadExecutor, newFixedThreadPool(4), new JavaFileSystem(dir)));
-    }
-
     @Override
     public void handleHttpRequest(HttpRequest request, final HttpResponse response) throws Exception {
-        serveFile(response, request.uri());
-    }
-
-    private void serveFile(final HttpResponse response, final String path) {
-        // TODO: Handle binary files
-        // TODO: Cache
-        // TODO: Ignore query params
-        fileSystem.readText(path, response.charset(), new Result<String>() {
+        // Switch from web thead to IO thread, so we don't block web server when we access the filesystem.
+        ioThread.execute(new IOWorker(dir, request.uri(), welcomeFile) {
             @Override
-            public void complete(String contents) {
-                response.header("Content-Type", guessMimeType(path, response))
-                        .header("Content-Length", contents.length())
-                        .content(contents)
-                        .end();
+            protected void notFound() {
+                // Switch back from IO thread to web thread.
+                webThread.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        response.status(404).end();
+                    }
+                });
             }
 
             @Override
-            public void error(final Exception error) {
-                if (error instanceof FileNotFoundException) {
-                    response.status(404).end();
-                } else {
-                    fileSystem.stat(path, new Result<FileStat>() {
-                        @Override
-                        public void complete(FileStat result) {
-                            if (result.isDirectory() && result.exists()) {
-                                serveFile(response, path + "/" + welcomeFile);   
-                            } else {
-                                response.error(error);
-                            }
-                        }
+            protected void serve(final String filename, final byte[] contents) {
+                // Switch back from IO thread to web thread.
+                webThread.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO: Don't read all into memory, instead use zero-copy.
+                        // TODO: Check bytes read match expected encoding of mime-type
+                        response.header("Content-Type", guessMimeType(filename, response))
+                                .header("Content-Length", contents.length)
+                                .content(contents)
+                                .end();
+                    }
+                });
+            }
 
-                        @Override
-                        public void error(Exception ignored) {
-                            response.error(error);
-                        }
-                    });
-                }
+            @Override
+            protected void error(final IOException exception) {
+                // Switch back from IO thread to web thread.
+                webThread.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        response.error(exception);
+                    }
+                });
             }
         });
     }
@@ -136,5 +132,66 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
             mimeType += "; charset=" + response.charset().name();
         }
         return mimeType;
+    }
+
+    /**
+     * All IO is performed by this worker on a separate thread, so we never block the HttpHandler.
+     */
+    private abstract static class IOWorker implements Runnable {
+
+        private final File root;
+        private final String path;
+        private final String welcomeFile;
+
+        private IOWorker(File root, String path, String welcomeFile) {
+            this.root = root;
+            this.path = path;
+            this.welcomeFile = welcomeFile;
+        }
+
+        @Override
+        public void run() {
+            // TODO: Cache
+            try {
+                File file = resolveFile(path);
+                if (!file.exists()) {
+                    notFound();
+                } else if (!file.isDirectory()) {
+                    serve(file.getName(), read(file));
+                } else {
+                    file = new File(file, welcomeFile);
+                    if (file.exists()) {
+                        serve(file.getName(), read(file));
+                    } else {
+                        notFound();
+                    }
+                }
+            } catch (IOException e) {
+                error(e);
+            }
+        }
+
+        private byte[] read(File file) throws IOException {
+            byte[] data = new byte[(int) file.length()];
+            FileInputStream in = new FileInputStream(file);
+            try {
+                in.read(data);
+            } finally {
+                in.close();
+            }
+            return data;
+        }
+
+        private File resolveFile(String path) throws IOException {
+            // MEGA TODO: Validate that file resides in dir (i.e. client cannot access ../../../etc/passwd)
+            // TODO: Ignore query params
+            return new File(root, path).getCanonicalFile();
+        }
+
+        protected abstract void notFound();
+
+        protected abstract void serve(String filename, byte[] contents);
+
+        protected abstract void error(IOException exception);
     }
 }

@@ -5,18 +5,16 @@ import org.junit.Before;
 import org.junit.Test;
 import webbit.HttpHandler;
 import webbit.WebServer;
-import webbit.async.RResult;
-import webbit.async.filesystem.FileSystem;
-import webbit.async.filesystem.JavaFileSystem;
 import webbit.netty.NettyWebServer;
 import webbit.stub.StubHttpRequest;
 import webbit.stub.StubHttpResponse;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
@@ -25,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 public class StaticDirectoryHttpHandlerTest {
 
-    private FileSystem fs;
+    private File dir;
     private HttpHandler handler;
 
     @Test
@@ -139,10 +137,15 @@ public class StaticDirectoryHttpHandlerTest {
      */
     @Before
     public void createWorkingDir() throws IOException {
-        File dir = new File(System.getProperty("java.io.tmpdir"), getClass().getName() + "-" + Math.random());
+        dir = new File(System.getProperty("java.io.tmpdir"), getClass().getName() + "-" + Math.random());
         assertTrue(dir.mkdirs());
-        fs = new JavaFileSystem(dir);
-        handler = new StaticDirectoryHttpHandler(fs);
+        Executor immediateExecutor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        handler = new StaticDirectoryHttpHandler(dir, immediateExecutor, immediateExecutor);
     }
 
     /**
@@ -150,21 +153,35 @@ public class StaticDirectoryHttpHandlerTest {
      */
     @After
     public void cleanUpWorkingDir() throws IOException {
-        fs.delete(".", true, new RResult<Boolean>());
+        delete(dir);
+    }
+
+    private void delete(File file) {
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                delete(child);
+            }
+        }
+        file.delete();
     }
 
     /**
      * Write text file to FileSystem.
      */
-    private void writeFile(String path, String contents) {
-        fs.writeText(path, Charset.forName("UTF-8"), contents, new RResult<Void>());
+    private void writeFile(String path, String contents) throws IOException {
+        FileWriter writer = new FileWriter(new File(dir, path));
+        try {
+            writer.write(contents);
+        } finally {
+            writer.close();
+        }
     }
 
     /**
      * Mkdir on disk
      */
     private void mkdir(String path) {
-        fs.mkdir(path, true, new RResult<Boolean>());
+        new File(dir, path).mkdirs();
     }
 
     private URLConnection httpGet(WebServer webServer, String path) throws IOException {

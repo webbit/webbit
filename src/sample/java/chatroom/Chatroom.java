@@ -65,7 +65,7 @@ public class Chatroom implements WebSocketHandler {
         ThreadFiber fiber = new ThreadFiber();
 
         WebServer webServer = new NettyWebServer(fiber, 9876, route(
-                new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/chatroom/content")),
+                new StaticDirectoryHttpHandler(new File("./src/sample/java/chatroom/content"), fiber),
                 socket("/chatsocket", new Chatroom())));
 
         webServer.start();

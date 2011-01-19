@@ -51,7 +51,7 @@ public class Foo {
         };
 
         RoutingHttpHandler handler = route(
-                new StaticDirectoryHttpHandler(fiber, new File("./src/sample/java/webbit/sample/content")),
+                new StaticDirectoryHttpHandler(new File("./src/sample/java/webbit/sample/content"), fiber),
                 get("/page", new StringHttpHandler("text/html", "Hello World")),
                 get("/slow", new DelayedHttpHandler(fiber, 3000, new StringHttpHandler("text/html", "Sloooow"))),
                 socket("/ws", wsHandler));
