@@ -183,8 +183,17 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
         }
 
         private File resolveFile(String path) throws IOException {
-            // TODO: Ignore query params
+
+            // Strip of query params
+            int queryStart = path.indexOf('?');
+            if (queryStart > -1) {
+                path = path.substring(0, queryStart);
+            }
+
+            // Find file, relative to roo
             File result = new File(root, path).getCanonicalFile();
+
+            // For security, check file really does exist under root.
             String fullPath = result.getPath();
             if (!fullPath.startsWith(root.getCanonicalPath() + File.separator) && !fullPath.equals(root.getCanonicalPath())) {
                 // Prevent paths like http://foo/../../etc/passwd

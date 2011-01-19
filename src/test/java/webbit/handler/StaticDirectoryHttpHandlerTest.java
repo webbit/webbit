@@ -47,6 +47,18 @@ public class StaticDirectoryHttpHandlerTest {
     }
 
     @Test
+    public void shouldIgnoreQueryParams() throws Exception {
+        writeFile("index.html", "Hello world");
+        writeFile("foo.js", "Blah");
+        mkdir("/a/b");
+        writeFile("a/b/good", "hi");
+        assertReturnedWithStatus(200, handle(request("/index.html?foo=x")));
+        assertReturnedWithStatus(200, handle(request("/?foo=x")));
+        assertReturnedWithStatus(200, handle(request("/foo.js?sdfsd")));
+        assertReturnedWithStatus(200, handle(request("/a/b/good?xx")));
+    }
+
+    @Test
     public void shouldServesWelcomePagesForDirectories() throws Exception {
         assertReturnedWithStatus(404, handle(request("/")));
         assertReturnedWithStatus(404, handle(request("/a")));
@@ -129,7 +141,7 @@ public class StaticDirectoryHttpHandlerTest {
         webServer.start();
         try {
             assertEquals("Hello world", contents(httpGet(webServer, "/index.html")));
-            assertEquals("some js", contents(httpGet(webServer, "/foo.js")));
+            assertEquals("some js", contents(httpGet(webServer, "/foo.js?xx=y")));
             assertEquals("some txt", contents(httpGet(webServer, "/some/dir/content1.txt")));
         } finally {
             webServer.stop();
