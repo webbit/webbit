@@ -1,6 +1,5 @@
 package chatroom;
 
-import org.jetlang.fibers.ThreadFiber;
 import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
@@ -10,8 +9,11 @@ import webbit.netty.NettyWebServer;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-import static webbit.route.Route.*;
+import static webbit.route.Route.route;
+import static webbit.route.Route.socket;
 
 public class Chatroom implements WebSocketHandler {
 
@@ -62,16 +64,14 @@ public class Chatroom implements WebSocketHandler {
     }
 
     public static void main(String[] args) throws Exception {
-        ThreadFiber fiber = new ThreadFiber();
+        Executor executor = Executors.newSingleThreadExecutor();
 
-        WebServer webServer = new NettyWebServer(fiber, 9876, route(
-                new StaticDirectoryHttpHandler(new File("./src/sample/java/chatroom/content"), fiber),
+        WebServer webServer = new NettyWebServer(executor, 9876, route(
+                new StaticDirectoryHttpHandler(new File("./src/sample/java/chatroom/content"), executor),
                 socket("/chatsocket", new Chatroom())));
 
         webServer.start();
-        fiber.start();
         System.out.println("Chat room running on: " + webServer.getUri());
-        fiber.join();
     }
 
 }
