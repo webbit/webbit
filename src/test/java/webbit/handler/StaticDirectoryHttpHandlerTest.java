@@ -87,6 +87,7 @@ public class StaticDirectoryHttpHandlerTest {
         writeFile("file2.hTM", "Blah");
         writeFile("foo.txt", "Blah");
         writeFile("foo.png", "Blah");
+        writeFile("a/b/index.html", "Blah"); // <-- welcome file
         writeFile("a/b/foo.js", "Blah");
         writeFile("a/b/foo.css.js", "Blah");
         writeFile("nosuffix", "Blah");
@@ -99,6 +100,7 @@ public class StaticDirectoryHttpHandlerTest {
         assertEquals("text/html; charset=UTF-8", handle(request("/file2.hTM")).header("Content-Type"));
         assertEquals("text/plain; charset=UTF-8", handle(request("/foo.txt")).header("Content-Type"));
         assertEquals("image/png", handle(request("/foo.png")).header("Content-Type"));
+        assertEquals("text/html; charset=UTF-8", handle(request("/a/b/")).header("Content-Type")); // <-- welcome file
         assertEquals("text/javascript; charset=UTF-8", handle(request("/a/b/foo.js")).header("Content-Type"));
         assertEquals("text/javascript; charset=UTF-8", handle(request("/a/b/foo.css.js")).header("Content-Type"));
         assertEquals(null, handle(request("nosuffix")).header("Content-Type"));
