@@ -154,7 +154,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
             // TODO: Cache
             try {
                 File file = resolveFile(path);
-                if (!file.exists()) {
+                if (file == null || !file.exists()) {
                     notFound();
                 } else if (!file.isDirectory()) {
                     serve(file.getName(), read(file));
@@ -183,9 +183,14 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
         }
 
         private File resolveFile(String path) throws IOException {
-            // MEGA TODO: Validate that file resides in dir (i.e. client cannot access ../../../etc/passwd)
             // TODO: Ignore query params
-            return new File(root, path).getCanonicalFile();
+            File result = new File(root, path).getCanonicalFile();
+            String fullPath = result.getPath();
+            if (!fullPath.startsWith(root.getCanonicalPath() + File.separator) && !fullPath.equals(root.getCanonicalPath())) {
+                // Prevent paths like http://foo/../../etc/passwd
+                return null;
+            }
+            return result;
         }
 
         protected abstract void notFound();

@@ -1,5 +1,6 @@
 package webbit.stub;
 
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import webbit.HttpResponse;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
@@ -99,6 +100,12 @@ public class StubHttpResponse implements HttpResponse {
     @Override
     public StubHttpResponse error(Throwable error) {
         this.error = error;
+        status = 500;
+        String message = error.toString();
+        this.content(message);
+        header("Content-Type", "text/plain");
+        header("Content-Length", message.length());
+        ended = true;
         return this;
     }
 

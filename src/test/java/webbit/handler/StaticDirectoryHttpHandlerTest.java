@@ -107,6 +107,11 @@ public class StaticDirectoryHttpHandlerTest {
         assertEquals(null, handle(request("x.")).header("Content-Type"));
     }
 
+    @Test
+    public void shouldNotAllowAccessToFilesOutsideTheRoot() throws Exception {
+        assertReturnedWithStatus(404, handle(request("../../etc/passwd")));
+    }
+    
     /**
      * End to end integration test, that fires up a real web server and uses HTTP to check
      * the responses.
