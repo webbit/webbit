@@ -152,6 +152,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
         @Override
         public void run() {
             // TODO: Cache
+            // TODO: If serving directory and trailing slash omitted, perform redirect
             try {
                 File file = resolveFile(path);
                 if (file == null || !file.exists()) {
