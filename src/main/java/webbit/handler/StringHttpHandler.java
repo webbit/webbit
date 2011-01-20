@@ -1,5 +1,6 @@
 package webbit.handler;
 
+import webbit.HttpControl;
 import webbit.HttpHandler;
 import webbit.HttpRequest;
 import webbit.HttpResponse;
@@ -23,7 +24,7 @@ public class StringHttpHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(HttpRequest request, HttpResponse response) {
+    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) {
         response.charset(charset)
                 .header("Content-Type", contentType + "; charset=" + charset.name())
                 .header("Content-Length", body.length())

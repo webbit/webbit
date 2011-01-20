@@ -1,9 +1,6 @@
 package webbit.handler;
 
-import webbit.HttpHandler;
-import webbit.HttpRequest;
-import webbit.HttpResponse;
-import webbit.WebSocketHandler;
+import webbit.*;
 
 public class HttpToWebSocketHandler implements HttpHandler {
 
@@ -14,7 +11,7 @@ public class HttpToWebSocketHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(HttpRequest request, HttpResponse response) {
+    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) {
         response.upgradeToWebSocketConnection(webSocketHandler);
     }
 }

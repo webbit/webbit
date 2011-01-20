@@ -6,6 +6,7 @@ import org.junit.Test;
 import webbit.HttpHandler;
 import webbit.WebServer;
 import webbit.netty.NettyWebServer;
+import webbit.stub.StubHttpControl;
 import webbit.stub.StubHttpRequest;
 import webbit.stub.StubHttpResponse;
 
@@ -137,15 +138,15 @@ public class StaticDirectoryHttpHandlerTest {
         mkdir("some/dir");
         writeFile("some/dir/content1.txt", "some txt");
 
-        WebServer webServer = new NettyWebServer(Executors.newSingleThreadExecutor(), 55554, handler);
-        webServer.start();
+        WebServer webServer = new NettyWebServer(Executors.newSingleThreadExecutor(), 55554)
+                .add(handler)
+                .start();
         try {
             assertEquals("Hello world", contents(httpGet(webServer, "/index.html")));
             assertEquals("some js", contents(httpGet(webServer, "/foo.js?xx=y")));
             assertEquals("some txt", contents(httpGet(webServer, "/some/dir/content1.txt")));
         } finally {
-            webServer.stop();
-            webServer.join();
+            webServer.stop().join();
         }
     }
 
@@ -220,7 +221,7 @@ public class StaticDirectoryHttpHandlerTest {
      */
     private StubHttpResponse handle(StubHttpRequest httpRequest) throws Exception {
         StubHttpResponse response = new StubHttpResponse();
-        handler.handleHttpRequest(httpRequest, response);
+        handler.handleHttpRequest(httpRequest, response, new StubHttpControl());
         return response;
     }
 

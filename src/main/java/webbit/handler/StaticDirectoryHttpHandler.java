@@ -3,6 +3,7 @@ package webbit.handler;
 import webbit.HttpHandler;
 import webbit.HttpRequest;
 import webbit.HttpResponse;
+import webbit.HttpControl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +76,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(HttpRequest request, final HttpResponse response) throws Exception {
+    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control) throws Exception {
         // Switch from web thead to IO thread, so we don't block web server when we access the filesystem.
         ioThread.execute(new IOWorker(dir, request.uri(), welcomeFile) {
             @Override
@@ -84,7 +85,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
                 webThread.execute(new Runnable() {
                     @Override
                     public void run() {
-                        response.status(404).end();
+                        control.nextHandler(request, response);
                     }
                 });
             }

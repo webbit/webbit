@@ -1,5 +1,6 @@
 package webbit.handler;
 
+import webbit.HttpControl;
 import webbit.HttpHandler;
 import webbit.HttpRequest;
 import webbit.HttpResponse;
@@ -27,7 +28,7 @@ public class DelayedHttpHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(final HttpRequest request, final HttpResponse response) throws Exception {
+    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control) throws Exception {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -35,7 +36,7 @@ public class DelayedHttpHandler implements HttpHandler {
                     @Override
                     public void run() {
                         try {
-                            handler.handleHttpRequest(request, response);
+                            handler.handleHttpRequest(request, response, control);
                         } catch (Exception e) {
                             // TODO
                             e.printStackTrace();

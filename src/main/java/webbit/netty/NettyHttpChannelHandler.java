@@ -7,8 +7,10 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import webbit.HttpHandler;
+import webbit.HttpControl;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -17,11 +19,11 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     private final Executor executor;
-    private final HttpHandler httpHandler;
+    private final List<HttpHandler> httpHandlers;
 
-    public NettyHttpChannelHandler(Executor executor, HttpHandler httpHandler) {
+    public NettyHttpChannelHandler(Executor executor, List<HttpHandler> httpHandlers) {
         this.executor = executor;
-        this.httpHandler = httpHandler;
+        this.httpHandlers = httpHandlers;
     }
 
     @Override
@@ -32,9 +34,9 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    httpHandler.handleHttpRequest(
-                            nettyHttpRequest,
-                            new NettyHttpResponse(executor, ctx, nettyHttpRequest, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK)));
+                    HttpControl control = new NettyHttpControl(httpHandlers.iterator());
+                    NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(executor, ctx, nettyHttpRequest, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK));
+                    control.nextHandler(nettyHttpRequest, nettyHttpResponse);
                 } catch (Exception exception) {
                     // TODO
                     exception.printStackTrace();
