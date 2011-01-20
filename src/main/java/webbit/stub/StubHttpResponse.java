@@ -1,9 +1,6 @@
 package webbit.stub;
 
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import webbit.HttpResponse;
-import webbit.WebSocketConnection;
-import webbit.WebSocketHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -90,11 +87,6 @@ public class StubHttpResponse implements HttpResponse {
 
     public String contentsString() {
         return new String(contents(), charset);
-    }
-
-    @Override
-    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-        throw new UnsupportedOperationException(); // TODO
     }
 
     @Override

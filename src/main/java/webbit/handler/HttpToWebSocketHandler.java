@@ -12,6 +12,6 @@ public class HttpToWebSocketHandler implements HttpHandler {
 
     @Override
     public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) {
-        response.upgradeToWebSocketConnection(webSocketHandler);
+        control.upgradeToWebSocketConnection(webSocketHandler);
     }
 }

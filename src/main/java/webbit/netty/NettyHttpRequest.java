@@ -29,6 +29,11 @@ public class NettyHttpRequest implements webbit.HttpRequest {
     }
 
     @Override
+    public String method() {
+        return httpRequest.getMethod().getName();
+    }
+
+    @Override
     public String toString() {
         return messageEvent.getRemoteAddress() + " " + httpRequest.getMethod() + " " + httpRequest.getUri();
     }

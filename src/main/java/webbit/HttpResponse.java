@@ -19,8 +19,6 @@ public interface HttpResponse {
 
     HttpResponse content(byte[] content);
 
-    WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler);
-
     HttpResponse error(Throwable error);
 
     HttpResponse end();

@@ -6,4 +6,6 @@ public interface HttpRequest {
     String header(String name);
 
     boolean hasHeader(String name);
+
+    String method();
 }

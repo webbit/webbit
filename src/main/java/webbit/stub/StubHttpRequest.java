@@ -12,6 +12,7 @@ import java.util.Map;
 public class StubHttpRequest implements HttpRequest {
 
     private String uri = "/";
+    private String method = "GET";
     private Map<String, String> headers = new HashMap<String, String>();
 
     public StubHttpRequest() {
@@ -39,6 +40,16 @@ public class StubHttpRequest implements HttpRequest {
     @Override
     public boolean hasHeader(String name) {
         return headers.containsKey(name);
+    }
+
+    @Override
+    public String method() {
+        return method;
+    }
+
+    public StubHttpRequest method(String method) {
+        this.method = method;
+        return this;
     }
 
     public StubHttpRequest header(String name, String value) {

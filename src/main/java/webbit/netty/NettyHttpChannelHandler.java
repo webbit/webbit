@@ -34,8 +34,8 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    HttpControl control = new NettyHttpControl(httpHandlers.iterator());
-                    NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(executor, ctx, nettyHttpRequest, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK));
+                    HttpControl control = new NettyHttpControl(httpHandlers.iterator(), executor, ctx, nettyHttpRequest, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK));
+                    NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK));
                     control.nextHandler(nettyHttpRequest, nettyHttpResponse);
                 } catch (Exception exception) {
                     // TODO
