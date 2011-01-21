@@ -10,7 +10,7 @@ CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
 
 # Default target: Compile, run tests and build tarball
 all: jar test
-jar: build/$(LIBRARY).jar
+jar: build/$(LIBRARY).jar build/$(LIBRARY)-src.jar
 test: build/.tests-pass
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
@@ -24,6 +24,11 @@ build/$(LIBRARY).jar: $(call find,src/main/java,java)
 	@mkdir -p build/main/classes
 	javac -g -cp $(CLASSPATH) -d build/main/classes $(call find,src/main/java,java)
 	jar cf $@ -C build/main/classes .
+
+# Assemble source jar
+build/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
+	@mkdir -p build
+	jar cf $@ -C src/main/java .
 
 # Compile tests
 build/$(LIBRARY)-tests.jar: build/$(LIBRARY).jar $(call find,src/test/java,java)
@@ -39,5 +44,5 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 
 # Clean up
 clean:
-	rm -rf build
+	rm -rf build out
 
