@@ -33,7 +33,7 @@ Now let's build a WebSocketHandler.
     
       public static void main(String args) {
         WebServer webServer = new Webbit(8080) // port
-          .add("/hellowebsocket", new HelloWebSockets();
+          .add("/hellowebsocket", new HelloWebSockets())
           .staticResources("/path/to/files")
           .start();
       }
