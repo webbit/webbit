@@ -14,6 +14,7 @@ public class StubHttpRequest implements HttpRequest {
     private String uri = "/";
     private String method = "GET";
     private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, Object> data = new HashMap<String, Object>();
 
     public StubHttpRequest() {
     }
@@ -55,5 +56,10 @@ public class StubHttpRequest implements HttpRequest {
     public StubHttpRequest header(String name, String value) {
         headers.put(name, value);
         return this;
+    }
+
+    @Override
+    public Map<String, Object> data() {
+        return data;
     }
 }

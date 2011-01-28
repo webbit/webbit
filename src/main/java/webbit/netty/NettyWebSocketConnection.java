@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -139,6 +140,11 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
     public WebSocketConnection close() {
         ctx.getChannel().close();
         return this;
+    }
+
+    @Override
+    public Map<String, Object> data() {
+        return nettyHttpRequest.data();
     }
 
     @Override
