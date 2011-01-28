@@ -17,8 +17,10 @@ import webbit.handler.StaticDirectoryHttpHandler;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -38,7 +40,11 @@ public class NettyWebServer implements WebServer {
 
     public NettyWebServer(final Executor executor, int port) {
         this.executor = executor;
-        this.socketAddress = new InetSocketAddress(port);
+        try {
+            this.socketAddress = new InetSocketAddress(InetAddress.getLocalHost(), port);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Cannot determine localhost");
+        }
 
         // Configure the server.
         bootstrap = new ServerBootstrap();
