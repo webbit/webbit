@@ -2,12 +2,13 @@ package chatroom;
 
 import webbit.WebServer;
 import webbit.handler.LoggingHandler;
-import webbit.netty.NettyWebServer;
+
+import static webbit.WebServers.createWebServer;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        WebServer webServer = new NettyWebServer(9876)
+        WebServer webServer = createWebServer(9876)
                 .add(new LoggingHandler())
                 .add("/chatsocket", new Chatroom())
                 .staticResources("./src/sample/java/chatroom/content")

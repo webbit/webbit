@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import webbit.HttpHandler;
 import webbit.WebServer;
-import webbit.netty.NettyWebServer;
 import webbit.stub.StubHttpControl;
 import webbit.stub.StubHttpRequest;
 import webbit.stub.StubHttpResponse;
@@ -16,11 +15,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static webbit.WebServers.createWebServer;
 
 public class StaticDirectoryHttpHandlerTest {
 
@@ -138,7 +137,7 @@ public class StaticDirectoryHttpHandlerTest {
         mkdir("some/dir");
         writeFile("some/dir/content1.txt", "some txt");
 
-        WebServer webServer = new NettyWebServer(Executors.newSingleThreadExecutor(), 55554)
+        WebServer webServer = createWebServer(55554)
                 .add(handler)
                 .start();
         try {
