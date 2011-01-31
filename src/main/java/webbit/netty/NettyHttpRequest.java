@@ -3,6 +3,7 @@ package webbit.netty;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +58,11 @@ public class NettyHttpRequest implements webbit.HttpRequest {
     @Override
     public Set<String> dataKeys() {
         return data.keySet();
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+        return messageEvent.getRemoteAddress();
     }
 
     @Override

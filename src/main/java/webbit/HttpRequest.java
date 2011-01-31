@@ -1,5 +1,6 @@
 package webbit;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,4 +42,5 @@ public interface HttpRequest {
      */
     Set<String> dataKeys();
 
+    SocketAddress remoteAddress();
 }

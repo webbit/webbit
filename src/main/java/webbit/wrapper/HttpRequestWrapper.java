@@ -2,6 +2,7 @@ package webbit.wrapper;
 
 import webbit.HttpRequest;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,5 +71,10 @@ public class HttpRequestWrapper implements HttpRequest {
     @Override
     public Set<String> dataKeys() {
         return request.dataKeys();
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+        return request.remoteAddress();
     }
 }
