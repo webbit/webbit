@@ -1,6 +1,7 @@
 package webbit;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface WebSocketConnection {
     HttpRequest httpRequest();
@@ -12,4 +13,24 @@ public interface WebSocketConnection {
      */
     Map<String, Object> data();
 
+    /**
+     * Retrieve data value by key.
+     *
+     * @see #data()
+     */
+    Object data(String key);
+
+    /**
+     * Store data value by key.
+     *
+     * @see #data()
+     */
+    WebSocketConnection data(String key, Object value);
+
+    /**
+     * List data keys.
+     *
+     * @see #data()
+     */
+    Set<String> dataKeys();
 }

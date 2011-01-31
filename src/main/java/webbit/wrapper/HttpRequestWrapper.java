@@ -3,6 +3,7 @@ package webbit.wrapper;
 import webbit.HttpRequest;
 
 import java.util.Map;
+import java.util.Set;
 
 public class HttpRequestWrapper implements HttpRequest {
 
@@ -53,5 +54,21 @@ public class HttpRequestWrapper implements HttpRequest {
     @Override
     public Map<String, Object> data() {
         return request.data();
+    }
+
+    @Override
+    public Object data(String key) {
+        return request.data(key);
+    }
+
+    @Override
+    public HttpRequestWrapper data(String key, Object value) {
+        request.data(key, value);
+        return this;
+    }
+
+    @Override
+    public Set<String> dataKeys() {
+        return request.dataKeys();
     }
 }
