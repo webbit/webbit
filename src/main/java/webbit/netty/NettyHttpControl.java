@@ -37,15 +37,20 @@ public class NettyHttpControl implements HttpControl {
 
     @Override
     public void nextHandler() {
-        nextHandler(nettyHttpRequest, nettyHttpResponse);
+        nextHandler(nettyHttpRequest, nettyHttpResponse, this);
     }
 
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response) {
+        nextHandler(request, response, this);
+    }
+
+    @Override
+    public void nextHandler(HttpRequest request, HttpResponse response, HttpControl control) {
         if (handlerIterator.hasNext()) {
             HttpHandler handler = handlerIterator.next();
             try {
-                handler.handleHttpRequest(request, response, this);
+                handler.handleHttpRequest(request, response, control);
             } catch (Exception e) {
                 response.error(e);
             }

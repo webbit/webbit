@@ -38,11 +38,16 @@ public class StubHttpControl implements HttpControl {
 
     @Override
     public void nextHandler() {
-        nextHandler(request, response);
+        nextHandler(request, response, this);
     }
 
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response) {
+        nextHandler(request, response, this);
+    }
+
+    @Override
+    public void nextHandler(HttpRequest request, HttpResponse response, HttpControl control) {
         response.status(404).end();
     }
 
