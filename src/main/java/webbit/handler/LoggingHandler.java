@@ -9,7 +9,7 @@ public class LoggingHandler implements HttpHandler, WebSocketHandler {
     @Override
     public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
         log(new Date(), "HTTP", request.method(), request.uri());
-        control.nextHandler(request, response);
+        control.nextHandler();
     }
 
     @Override

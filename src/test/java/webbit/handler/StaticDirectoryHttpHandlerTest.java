@@ -219,9 +219,9 @@ public class StaticDirectoryHttpHandlerTest {
     /**
      * Send stub request to handler, and return a stubbed response for inspection.
      */
-    private StubHttpResponse handle(StubHttpRequest httpRequest) throws Exception {
+    private StubHttpResponse handle(StubHttpRequest request) throws Exception {
         StubHttpResponse response = new StubHttpResponse();
-        handler.handleHttpRequest(httpRequest, response, new StubHttpControl());
+        handler.handleHttpRequest(request, response, new StubHttpControl(request, response));
         return response;
     }
 

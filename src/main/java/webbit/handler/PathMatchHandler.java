@@ -28,7 +28,7 @@ public class PathMatchHandler implements HttpHandler {
         if (matcher.matches()) {
             httpHandler.handleHttpRequest(request, response, control);
         } else {
-            control.nextHandler(request, response);
+            control.nextHandler();
         }
     }
 }

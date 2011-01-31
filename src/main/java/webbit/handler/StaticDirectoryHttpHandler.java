@@ -85,7 +85,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
                 webThread.execute(new Runnable() {
                     @Override
                     public void run() {
-                        control.nextHandler(request, response);
+                        control.nextHandler();
                     }
                 });
             }
