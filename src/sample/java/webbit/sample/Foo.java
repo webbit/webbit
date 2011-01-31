@@ -4,6 +4,7 @@ import webbit.WebServer;
 import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
 import webbit.handler.DelayedHttpHandler;
+import webbit.handler.StaticFileHandler;
 import webbit.handler.StringHttpHandler;
 
 import java.util.HashSet;
@@ -60,7 +61,7 @@ public class Foo {
                 .add("/page", new StringHttpHandler("text/html", "Hello World"))
                 .add("/slow", new DelayedHttpHandler(executor, 3000, new StringHttpHandler("text/html", "Sloooow")))
                 .add("/ws", wsHandler)
-                .staticResources("./src/sample/java/webbit/sample/content")
+                .add(new StaticFileHandler("./src/sample/java/webbit/sample/content"))
                 .start();
         System.out.println("Listening on: " + webServer.getUri());
     }
