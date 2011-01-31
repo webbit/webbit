@@ -64,4 +64,13 @@ public class NettyHttpControl implements HttpControl {
          new NettyWebSocketConnection(executor, ctx, nettyHttpRequest, httpRequest, defaultHttpResponse, handler);
     }
 
+    @Override
+    public Executor handlerExecutor() {
+        return executor;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        handlerExecutor().execute(command);
+    }
 }

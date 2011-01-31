@@ -48,21 +48,19 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
     private static final String DEFAULT_WELCOME_FILE = "index.html";
 
     private final File dir;
-    private final Executor webThread;
     private final Executor ioThread;
     private final Map<String, String> mimeTypes;
     private String welcomeFile;
 
-    public StaticDirectoryHttpHandler(File dir, Executor webThread, Executor ioThread) {
+    public StaticDirectoryHttpHandler(File dir, Executor ioThread) {
         this.dir = dir;
-        this.webThread = webThread;
         this.ioThread = ioThread;
         this.mimeTypes = new HashMap<String, String>(DEFAULT_MIME_TYPES);
         this.welcomeFile = DEFAULT_WELCOME_FILE;
     }
 
-    public StaticDirectoryHttpHandler(File dir, Executor webThread) {
-        this(dir, webThread, newFixedThreadPool(4));
+    public StaticDirectoryHttpHandler(File dir) {
+        this(dir, newFixedThreadPool(4));
     }
 
     public StaticDirectoryHttpHandler addMimeType(String extension, String mimeType) {
@@ -82,7 +80,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
             @Override
             protected void notFound() {
                 // Switch back from IO thread to web thread.
-                webThread.execute(new Runnable() {
+                control.execute(new Runnable() {
                     @Override
                     public void run() {
                         control.nextHandler();
@@ -93,7 +91,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
             @Override
             protected void serve(final String filename, final byte[] contents) {
                 // Switch back from IO thread to web thread.
-                webThread.execute(new Runnable() {
+                control.execute(new Runnable() {
                     @Override
                     public void run() {
                         // TODO: Don't read all into memory, instead use zero-copy.
@@ -109,7 +107,7 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
             @Override
             protected void error(final IOException exception) {
                 // Switch back from IO thread to web thread.
-                webThread.execute(new Runnable() {
+                control.execute(new Runnable() {
                     @Override
                     public void run() {
                         response.error(exception);

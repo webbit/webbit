@@ -2,8 +2,9 @@ package webbit;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
-public interface WebSocketConnection {
+public interface WebSocketConnection extends Executor {
     HttpRequest httpRequest();
     WebSocketConnection send(String message);
     WebSocketConnection close();
@@ -33,4 +34,7 @@ public interface WebSocketConnection {
      * @see #data()
      */
     Set<String> dataKeys();
+
+    Executor handlerExecutor();
+
 }

@@ -164,7 +164,7 @@ public class StaticDirectoryHttpHandlerTest {
                 command.run();
             }
         };
-        handler = new StaticDirectoryHttpHandler(dir, immediateExecutor, immediateExecutor);
+        handler = new StaticDirectoryHttpHandler(dir, immediateExecutor);
     }
 
     /**

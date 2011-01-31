@@ -5,6 +5,8 @@ import webbit.HttpRequest;
 import webbit.HttpResponse;
 import webbit.WebSocketHandler;
 
+import java.util.concurrent.Executor;
+
 public class StubHttpControl implements HttpControl {
 
     private HttpRequest request;
@@ -54,5 +56,15 @@ public class StubHttpControl implements HttpControl {
     @Override
     public void upgradeToWebSocketConnection(WebSocketHandler handler) {
         throw new UnsupportedOperationException(); // TODO
+    }
+
+    @Override
+    public Executor handlerExecutor() {
+        return this;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        command.run();
     }
 }

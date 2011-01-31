@@ -165,6 +165,16 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
     }
 
     @Override
+    public Executor handlerExecutor() {
+        return executor;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        handlerExecutor().execute(command);
+    }
+
+    @Override
     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
         executor.execute(new Runnable() {
             @Override

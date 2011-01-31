@@ -1,6 +1,8 @@
 package webbit;
 
-public interface HttpControl {
+import java.util.concurrent.Executor;
+
+public interface HttpControl extends Executor {
 
     void nextHandler();
 
@@ -10,4 +12,5 @@ public interface HttpControl {
 
     void upgradeToWebSocketConnection(WebSocketHandler handler);
 
+    Executor handlerExecutor();
 }
