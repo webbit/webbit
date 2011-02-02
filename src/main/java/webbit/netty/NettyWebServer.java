@@ -1,6 +1,7 @@
 package webbit.netty;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -28,6 +29,7 @@ public class NettyWebServer implements WebServer {
     private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final Executor executor;
+    private Channel channel;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
@@ -86,22 +88,26 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public NettyWebServer start() {
+    public synchronized NettyWebServer start() {
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newSingleThreadExecutor(),
                 Executors.newSingleThreadExecutor(), 1));
-        bootstrap.bind(socketAddress);
+        channel = bootstrap.bind(socketAddress);
         return this;
     }
 
     @Override
-    public NettyWebServer stop() throws IOException {
-        // TODO
+    public synchronized NettyWebServer stop() throws IOException {
+        if (channel != null) {
+            channel.close();
+        }
         return this;
     }
 
-    public NettyWebServer join() throws InterruptedException {
-        // TODO
+    public synchronized NettyWebServer join() throws InterruptedException {
+        if (channel != null) {
+            channel.getCloseFuture().await();
+        }
         return this;
     }
 
