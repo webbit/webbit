@@ -12,10 +12,7 @@ import webbit.WebServer;
 import webbit.WebSocketHandler;
 import webbit.handler.HttpToWebSocketHandler;
 import webbit.handler.PathMatchHandler;
-import webbit.handler.StaticDirectoryHttpHandler;
 
-import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -88,16 +85,6 @@ public class NettyWebServer implements WebServer {
     @Override
     public NettyWebServer add(String path, WebSocketHandler handler) {
         return add(path, new HttpToWebSocketHandler(handler));
-    }
-
-    @Override
-    public NettyWebServer staticResources(String dir) {
-        return staticResources(new File(dir));
-    }
-
-    @Override
-    public NettyWebServer staticResources(File dir) {
-        return add(new StaticDirectoryHttpHandler(dir, executor));
     }
 
     @Override

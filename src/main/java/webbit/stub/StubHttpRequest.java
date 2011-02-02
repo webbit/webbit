@@ -2,8 +2,11 @@ package webbit.stub;
 
 import webbit.HttpRequest;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
@@ -15,6 +18,7 @@ public class StubHttpRequest implements HttpRequest {
     private String method = "GET";
     private Map<String, String> headers = new HashMap<String, String>();
     private Map<String, Object> data = new HashMap<String, Object>();
+    private SocketAddress remoteAddress = new InetSocketAddress("localhost", 0);
 
     public StubHttpRequest() {
     }
@@ -61,5 +65,31 @@ public class StubHttpRequest implements HttpRequest {
     @Override
     public Map<String, Object> data() {
         return data;
+    }
+
+    @Override
+    public Object data(String key) {
+        return data().get(key);
+    }
+
+    @Override
+    public StubHttpRequest data(String key, Object value) {
+        data().put(key, value);
+        return this;
+    }
+
+    @Override
+    public Set<String> dataKeys() {
+        return data().keySet();
+    }
+
+    @Override
+    public SocketAddress remoteAddress() {
+        return remoteAddress;
+    }
+
+    public StubHttpRequest remoteAddress(SocketAddress remoteAddress) {
+        this.remoteAddress = remoteAddress;
+        return this;
     }
 }

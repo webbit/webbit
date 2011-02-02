@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
-public class StaticDirectoryHttpHandler implements HttpHandler {
+public class StaticFileHandler implements HttpHandler {
 
     public static final Map<String, String> DEFAULT_MIME_TYPES;
 
@@ -52,31 +52,31 @@ public class StaticDirectoryHttpHandler implements HttpHandler {
     private final Map<String, String> mimeTypes;
     private String welcomeFile;
 
-    public StaticDirectoryHttpHandler(File dir, Executor ioThread) {
+    public StaticFileHandler(File dir, Executor ioThread) {
         this.dir = dir;
         this.ioThread = ioThread;
         this.mimeTypes = new HashMap<String, String>(DEFAULT_MIME_TYPES);
         this.welcomeFile = DEFAULT_WELCOME_FILE;
     }
 
-    public StaticDirectoryHttpHandler(String dir, Executor ioThread) {
+    public StaticFileHandler(String dir, Executor ioThread) {
         this(new File(dir), ioThread);
     }
 
-    public StaticDirectoryHttpHandler(File dir) {
+    public StaticFileHandler(File dir) {
         this(dir, newFixedThreadPool(4));
     }
 
-    public StaticDirectoryHttpHandler(String dir) {
+    public StaticFileHandler(String dir) {
         this(new File(dir));
     }
 
-    public StaticDirectoryHttpHandler addMimeType(String extension, String mimeType) {
+    public StaticFileHandler addMimeType(String extension, String mimeType) {
         mimeTypes.put(extension, mimeType);
         return this;
     }
 
-    public StaticDirectoryHttpHandler welcomeFile(String welcomeFile) {
+    public StaticFileHandler welcomeFile(String welcomeFile) {
         this.welcomeFile = welcomeFile;
         return this;
     }

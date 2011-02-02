@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static webbit.WebServers.createWebServer;
 
-public class StaticDirectoryHttpHandlerTest {
+public class StaticFileHandlerTest {
 
     private File dir;
     private HttpHandler handler;
@@ -164,7 +164,7 @@ public class StaticDirectoryHttpHandlerTest {
                 command.run();
             }
         };
-        handler = new StaticDirectoryHttpHandler(dir, immediateExecutor);
+        handler = new StaticFileHandler(dir, immediateExecutor);
     }
 
     /**

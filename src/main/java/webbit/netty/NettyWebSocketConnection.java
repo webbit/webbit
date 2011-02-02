@@ -19,6 +19,7 @@ import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -145,6 +146,32 @@ public class NettyWebSocketConnection extends SimpleChannelUpstreamHandler imple
     @Override
     public Map<String, Object> data() {
         return nettyHttpRequest.data();
+    }
+
+    @Override
+    public Object data(String key) {
+        return data().get(key);
+    }
+
+    @Override
+    public NettyWebSocketConnection data(String key, Object value) {
+        data().put(key, value);
+        return this;
+    }
+
+    @Override
+    public Set<String> dataKeys() {
+        return data().keySet();
+    }
+
+    @Override
+    public Executor handlerExecutor() {
+        return executor;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        handlerExecutor().execute(command);
     }
 
     @Override

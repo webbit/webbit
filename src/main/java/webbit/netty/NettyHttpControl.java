@@ -15,6 +15,7 @@ public class NettyHttpControl implements HttpControl {
     private final Executor executor;
     private final ChannelHandlerContext ctx;
     private final NettyHttpRequest nettyHttpRequest;
+    private final NettyHttpResponse nettyHttpResponse;
     private final org.jboss.netty.handler.codec.http.HttpRequest httpRequest;
     private final DefaultHttpResponse defaultHttpResponse;
 
@@ -22,22 +23,34 @@ public class NettyHttpControl implements HttpControl {
                             Executor executor,
                             ChannelHandlerContext ctx,
                             NettyHttpRequest nettyHttpRequest,
+                            NettyHttpResponse nettyHttpResponse,
                             org.jboss.netty.handler.codec.http.HttpRequest httpRequest,
                             DefaultHttpResponse defaultHttpResponse) {
         this.handlerIterator = handlerIterator;
         this.executor = executor;
         this.ctx = ctx;
         this.nettyHttpRequest = nettyHttpRequest;
+        this.nettyHttpResponse = nettyHttpResponse;
         this.httpRequest = httpRequest;
         this.defaultHttpResponse = defaultHttpResponse;
     }
 
     @Override
+    public void nextHandler() {
+        nextHandler(nettyHttpRequest, nettyHttpResponse, this);
+    }
+
+    @Override
     public void nextHandler(HttpRequest request, HttpResponse response) {
+        nextHandler(request, response, this);
+    }
+
+    @Override
+    public void nextHandler(HttpRequest request, HttpResponse response, HttpControl control) {
         if (handlerIterator.hasNext()) {
             HttpHandler handler = handlerIterator.next();
             try {
-                handler.handleHttpRequest(request, response, this);
+                handler.handleHttpRequest(request, response, control);
             } catch (Exception e) {
                 response.error(e);
             }
@@ -51,4 +64,13 @@ public class NettyHttpControl implements HttpControl {
          new NettyWebSocketConnection(executor, ctx, nettyHttpRequest, httpRequest, defaultHttpResponse, handler);
     }
 
+    @Override
+    public Executor handlerExecutor() {
+        return executor;
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        handlerExecutor().execute(command);
+    }
 }
