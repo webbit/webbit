@@ -13,6 +13,8 @@ public interface LogSink {
     void webSocketInboundData(WebSocketConnection connection, String data);
     void webSocketOutboundData(WebSocketConnection connection, String data);
 
-    void error(HttpRequest httpRequest, Throwable error);
+    void error(HttpRequest request, Throwable error);
+
+    void custom(HttpRequest request, String action, String data);
 
 }

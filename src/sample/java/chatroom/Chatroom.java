@@ -5,11 +5,15 @@ import webbit.WebSocketConnection;
 import webbit.WebSocketHandler;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Chatroom implements WebSocketHandler {
 
     private final Gson json = new Gson();
+
+    public static final String USERNAME_KEY = "username";
 
     static class Incoming {
         enum Action { LOGIN, SAY }
@@ -25,11 +29,11 @@ public class Chatroom implements WebSocketHandler {
         String message;
     }
 
-    private Map<WebSocketConnection, String> usernames = new HashMap<WebSocketConnection, String>();
+    private Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 
     @Override
     public void onOpen(WebSocketConnection connection) throws Exception {
-        // Don't do anything until we receive a LOGIN message.
+        connections.add(connection);
     }
 
     @Override
@@ -46,7 +50,8 @@ public class Chatroom implements WebSocketHandler {
     }
 
     private void login(WebSocketConnection connection, String username) {
-        usernames.put(connection, username);
+        connection.data(USERNAME_KEY, username); // associate username with connection
+
         Outgoing outgoing = new Outgoing();
         outgoing.action = Outgoing.Action.JOIN;
         outgoing.username = username;
@@ -54,7 +59,7 @@ public class Chatroom implements WebSocketHandler {
     }
 
     private void say(WebSocketConnection connection, String message) {
-        String username = usernames.get(connection);
+        String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             Outgoing outgoing = new Outgoing();
             outgoing.action = Outgoing.Action.SAY;
@@ -66,21 +71,23 @@ public class Chatroom implements WebSocketHandler {
 
     private void broadcast(Outgoing outgoing) {
         String json = this.json.toJson(outgoing);
-        for (WebSocketConnection connection : usernames.keySet()) {
-            connection.send(json);
+        for (WebSocketConnection connection : connections) {
+            if (connection.data(USERNAME_KEY) != null) { // only broadcast to those who have completed login
+                connection.send(json);
+            }
         }
     }
 
     @Override
     public void onClose(WebSocketConnection connection) throws Exception {
-        String username = usernames.get(connection);
+        String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             Outgoing outgoing = new Outgoing();
             outgoing.action = Outgoing.Action.LEAVE;
             outgoing.username = username;
             broadcast(outgoing);
-            usernames.remove(connection);
         }
+        connections.remove(connection);
     }
 
     @Override

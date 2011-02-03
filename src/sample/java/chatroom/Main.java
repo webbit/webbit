@@ -11,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         WebServer webServer = createWebServer(9876)
-                .add(new LoggingHandler(new SimpleLogSink()))
+                .add(new LoggingHandler(new SimpleLogSink(Chatroom.USERNAME_KEY)))
                 .add("/chatsocket", new Chatroom())
                 .add(new StaticFileHandler("./src/sample/java/chatroom/content"))
                 .start();
