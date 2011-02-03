@@ -14,6 +14,8 @@ public interface WebServer {
     WebServer stop() throws IOException;
     WebServer join() throws InterruptedException;
 
+    WebServer handleExceptions(Thread.UncaughtExceptionHandler handler);
+
     URI getUri();
     Executor getExecutor();
 }

@@ -41,11 +41,6 @@ public class Foo {
                 connections.remove(connection);
                 System.out.println("onClose   :  " + connection);
             }
-
-            @Override
-            public void onError(WebSocketConnection connection, Exception error) throws Exception {
-                error.printStackTrace();
-            }
         };
 
         executor.scheduleAtFixedRate(new Runnable() {

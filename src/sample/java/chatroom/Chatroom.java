@@ -90,9 +90,4 @@ public class Chatroom implements WebSocketHandler {
         connections.remove(connection);
     }
 
-    @Override
-    public void onError(WebSocketConnection connection, Exception error) throws Exception {
-        error.printStackTrace();
-    }
-
 }

@@ -26,6 +26,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     private final NettyHttpRequest nettyHttpRequest;
     private final WebSocketHandler handler;
     private final WebSocketConnection webSocketConnection;
+    private final Thread.UncaughtExceptionHandler exceptionHandler;
 
     public NettyWebSocketChannelHandler(Executor executor,
                                         ChannelHandlerContext ctx,
@@ -33,11 +34,13 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                                         HttpRequest request,
                                         HttpResponse response,
                                         WebSocketHandler handler,
-                                        WebSocketConnection webSocketConnection){
+                                        WebSocketConnection webSocketConnection,
+                                        Thread.UncaughtExceptionHandler exceptionHandler){
         this.executor = executor;
         this.nettyHttpRequest = nettyHttpRequest;
         this.handler = handler;
         this.webSocketConnection = webSocketConnection;
+        this.exceptionHandler = exceptionHandler;
 
         if (!requestingWebsocketUpgrade(request)) {
             throw new RuntimeException("Expecting WebSocket upgrade. Looks like a standard HTTP request.");
@@ -146,8 +149,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                 try {
                     handler.onClose(webSocketConnection);
                 } catch (Exception e1) {
-                    // TODO
-                    e1.printStackTrace();
+                    exceptionHandler.uncaughtException(Thread.currentThread(), e1);
                 }
             }
         });
@@ -159,20 +161,17 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
         if (e.getCause() instanceof ClosedChannelException) {
             e.getChannel().close();
         } else {
-            Throwable throwable = e.getCause();
-            if (throwable instanceof Exception) {
-                try {
-                    handler.onError(webSocketConnection, (Exception) throwable);
-                } finally {
-                    e.getChannel().close();
+            final Thread thread = Thread.currentThread();
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    exceptionHandler.uncaughtException(thread, e.getCause());
                 }
-            } else {
-                super.exceptionCaught(ctx, e);
-            }
+            });
         }
     }
 }

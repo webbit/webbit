@@ -33,6 +33,8 @@ public class NettyWebServer implements WebServer {
 
     protected long nextId = 1;
 
+    private Thread.UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
     }
@@ -59,7 +61,7 @@ public class NettyWebServer implements WebServer {
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
                 pipeline.addLast("encoder", new HttpResponseEncoder());
-                pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers, id, timestamp));
+                pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers, id, timestamp, exceptionHandler));
                 return pipeline;
             }
         });
@@ -112,6 +114,12 @@ public class NettyWebServer implements WebServer {
         if (channel != null) {
             channel.getCloseFuture().await();
         }
+        return this;
+    }
+
+    @Override
+    public WebServer handleExceptions(Thread.UncaughtExceptionHandler exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
         return this;
     }
 

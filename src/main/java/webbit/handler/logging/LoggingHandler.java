@@ -99,11 +99,6 @@ public class LoggingHandler implements HttpHandler {
             handler.onClose(loggingConnection);
         }
 
-        @Override
-        public void onError(WebSocketConnection connection, Exception error) throws Exception {
-            logSink.error(connection.httpRequest(), error);
-            handler.onError(loggingConnection, error);
-        }
     }
 
 }

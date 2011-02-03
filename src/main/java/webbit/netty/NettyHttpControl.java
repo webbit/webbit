@@ -1,10 +1,8 @@
 package webbit.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.http.*;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import webbit.*;
-import webbit.HttpRequest;
-import webbit.HttpResponse;
 
 import java.util.Iterator;
 import java.util.concurrent.Executor;
@@ -15,12 +13,12 @@ public class NettyHttpControl implements HttpControl {
     private final Executor executor;
     private final ChannelHandlerContext ctx;
     private final NettyHttpRequest nettyHttpRequest;
-    private final NettyHttpResponse nettyHttpResponse;
     private final org.jboss.netty.handler.codec.http.HttpRequest httpRequest;
     private final DefaultHttpResponse defaultHttpResponse;
 
     private HttpRequest defaultRequest;
     private HttpResponse defaultResponse;
+    private final Thread.UncaughtExceptionHandler exceptionHandler;
 
     public NettyHttpControl(Iterator<HttpHandler> handlerIterator,
                             Executor executor,
@@ -28,16 +26,17 @@ public class NettyHttpControl implements HttpControl {
                             NettyHttpRequest nettyHttpRequest,
                             NettyHttpResponse nettyHttpResponse,
                             org.jboss.netty.handler.codec.http.HttpRequest httpRequest,
-                            DefaultHttpResponse defaultHttpResponse) {
+                            DefaultHttpResponse defaultHttpResponse,
+                            Thread.UncaughtExceptionHandler exceptionHandler) {
         this.handlerIterator = handlerIterator;
         this.executor = executor;
         this.ctx = ctx;
         this.nettyHttpRequest = nettyHttpRequest;
-        this.nettyHttpResponse = nettyHttpResponse;
         this.httpRequest = httpRequest;
         this.defaultHttpResponse = defaultHttpResponse;
         defaultRequest = nettyHttpRequest;
         defaultResponse = nettyHttpResponse;
+        this.exceptionHandler = exceptionHandler;
     }
 
     @Override
@@ -69,7 +68,8 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         NettyWebSocketConnection webSocketConnection = createWebSocketConnection();
-        new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest, defaultHttpResponse, handler, webSocketConnection);
+        new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest,
+                defaultHttpResponse, handler, webSocketConnection, exceptionHandler);
         return webSocketConnection;
     }
 
