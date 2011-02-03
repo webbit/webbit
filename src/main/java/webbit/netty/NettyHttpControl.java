@@ -19,6 +19,9 @@ public class NettyHttpControl implements HttpControl {
     private final org.jboss.netty.handler.codec.http.HttpRequest httpRequest;
     private final DefaultHttpResponse defaultHttpResponse;
 
+    private HttpRequest defaultRequest;
+    private HttpResponse defaultResponse;
+
     public NettyHttpControl(Iterator<HttpHandler> handlerIterator,
                             Executor executor,
                             ChannelHandlerContext ctx,
@@ -33,11 +36,13 @@ public class NettyHttpControl implements HttpControl {
         this.nettyHttpResponse = nettyHttpResponse;
         this.httpRequest = httpRequest;
         this.defaultHttpResponse = defaultHttpResponse;
+        defaultRequest = nettyHttpRequest;
+        defaultResponse = nettyHttpResponse;
     }
 
     @Override
     public void nextHandler() {
-        nextHandler(nettyHttpRequest, nettyHttpResponse, this);
+        nextHandler(defaultRequest, defaultResponse, this);
     }
 
     @Override
@@ -47,6 +52,8 @@ public class NettyHttpControl implements HttpControl {
 
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response, HttpControl control) {
+        this.defaultRequest = request;
+        this.defaultResponse = response;
         if (handlerIterator.hasNext()) {
             HttpHandler handler = handlerIterator.next();
             try {
@@ -60,8 +67,15 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public void upgradeToWebSocketConnection(WebSocketHandler handler) {
-         new NettyWebSocketConnection(executor, ctx, nettyHttpRequest, httpRequest, defaultHttpResponse, handler);
+    public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+        NettyWebSocketConnection webSocketConnection = createWebSocketConnection();
+        new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest, defaultHttpResponse, handler, webSocketConnection);
+        return webSocketConnection;
+    }
+
+    @Override
+    public NettyWebSocketConnection createWebSocketConnection() {
+        return new NettyWebSocketConnection(executor, nettyHttpRequest, ctx);
     }
 
     @Override

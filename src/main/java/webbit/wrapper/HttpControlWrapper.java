@@ -1,9 +1,6 @@
 package webbit.wrapper;
 
-import webbit.HttpControl;
-import webbit.HttpRequest;
-import webbit.HttpResponse;
-import webbit.WebSocketHandler;
+import webbit.*;
 
 import java.util.concurrent.Executor;
 
@@ -32,7 +29,6 @@ public class HttpControlWrapper implements HttpControl {
             return control;
         }
     }
-
     
     @Override
     public void nextHandler() {
@@ -50,8 +46,13 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public void upgradeToWebSocketConnection(WebSocketHandler handler) {
-        control.upgradeToWebSocketConnection(handler);
+    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+        return control.upgradeToWebSocketConnection(handler);
+    }
+
+    @Override
+    public WebSocketConnection createWebSocketConnection() {
+        return control.createWebSocketConnection();
     }
 
     @Override

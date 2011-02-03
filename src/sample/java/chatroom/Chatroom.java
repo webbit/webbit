@@ -66,7 +66,6 @@ public class Chatroom implements WebSocketHandler {
 
     private void broadcast(Outgoing outgoing) {
         String json = this.json.toJson(outgoing);
-        System.out.println(json);
         for (WebSocketConnection connection : usernames.keySet()) {
             connection.send(json);
         }
