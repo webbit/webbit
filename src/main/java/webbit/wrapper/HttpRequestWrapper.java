@@ -77,4 +77,14 @@ public class HttpRequestWrapper implements HttpRequest {
     public SocketAddress remoteAddress() {
         return request.remoteAddress();
     }
+
+    @Override
+    public Object id() {
+        return request.id();
+    }
+
+    @Override
+    public long timestamp() {
+        return request.timestamp();
+    }
 }

@@ -43,4 +43,15 @@ public interface HttpRequest {
     Set<String> dataKeys();
 
     SocketAddress remoteAddress();
+
+    /**
+     * A unique identifier for this request. This should be treated as an opaque object,
+     * that can be used to track the lifecycle of a request.
+     */
+    Object id();
+
+    /**
+     * Timestamp (millis since epoch) of when this request was first received by the server.
+     */
+    long timestamp();
 }

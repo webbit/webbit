@@ -20,16 +20,20 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     private final Executor executor;
     private final List<HttpHandler> httpHandlers;
+    private final Object id;
+    private final long timestamp;
 
-    public NettyHttpChannelHandler(Executor executor, List<HttpHandler> httpHandlers) {
+    public NettyHttpChannelHandler(Executor executor, List<HttpHandler> httpHandlers, Object id, long timestamp) {
         this.executor = executor;
         this.httpHandlers = httpHandlers;
+        this.id = id;
+        this.timestamp = timestamp;
     }
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent messageEvent) throws Exception {
         final HttpRequest httpRequest = (HttpRequest) messageEvent.getMessage();
-        final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest);
+        final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
         executor.execute(new Runnable() {
             @Override
             public void run() {

@@ -13,10 +13,14 @@ public class NettyHttpRequest implements webbit.HttpRequest {
     private final HttpRequest httpRequest;
     private final MessageEvent messageEvent;
     private final Map<String, Object> data = new HashMap<String, Object>();
+    private final Object id;
+    private final long timestamp;
 
-    public NettyHttpRequest(MessageEvent messageEvent, HttpRequest httpRequest) {
+    public NettyHttpRequest(MessageEvent messageEvent, HttpRequest httpRequest, Object id, long timestamp) {
         this.messageEvent = messageEvent;
         this.httpRequest = httpRequest;
+        this.id = id;
+        this.timestamp = timestamp;
     }
 
     @Override
@@ -63,6 +67,16 @@ public class NettyHttpRequest implements webbit.HttpRequest {
     @Override
     public SocketAddress remoteAddress() {
         return messageEvent.getRemoteAddress();
+    }
+
+    @Override
+    public Object id() {
+        return id;
+    }
+
+    @Override
+    public long timestamp() {
+        return timestamp;
     }
 
     @Override

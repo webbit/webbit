@@ -31,6 +31,8 @@ public class NettyWebServer implements WebServer {
     private final Executor executor;
     private Channel channel;
 
+    protected long nextId = 1;
+
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
     }
@@ -51,11 +53,13 @@ public class NettyWebServer implements WebServer {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
+                long timestamp = timestamp();
+                Object id = nextId();
                 ChannelPipeline pipeline = pipeline();
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
                 pipeline.addLast("encoder", new HttpResponseEncoder());
-                pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers));
+                pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers, id, timestamp));
                 return pipeline;
             }
         });
@@ -117,6 +121,14 @@ public class NettyWebServer implements WebServer {
         } catch (UnknownHostException e) {
             return null;
         }
+    }
+
+    protected long timestamp() {
+        return System.currentTimeMillis();
+    }
+
+    protected Object nextId() {
+        return nextId++;
     }
 
 }

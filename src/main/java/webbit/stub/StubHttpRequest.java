@@ -19,6 +19,8 @@ public class StubHttpRequest implements HttpRequest {
     private Map<String, String> headers = new HashMap<String, String>();
     private Map<String, Object> data = new HashMap<String, Object>();
     private SocketAddress remoteAddress = new InetSocketAddress("localhost", 0);
+    private Object id = "StubID";
+    private long timestamp = 0;
 
     public StubHttpRequest() {
     }
@@ -86,6 +88,26 @@ public class StubHttpRequest implements HttpRequest {
     @Override
     public SocketAddress remoteAddress() {
         return remoteAddress;
+    }
+
+    @Override
+    public Object id() {
+        return id;
+    }
+
+    public StubHttpRequest id(Object id) {
+        this.id = id;
+        return this;
+    }
+
+    @Override
+    public long timestamp() {
+        return timestamp;
+    }
+
+    public StubHttpRequest timestamp(long timestamp) {
+        this.timestamp = timestamp;
+        return this;
     }
 
     public StubHttpRequest remoteAddress(SocketAddress remoteAddress) {

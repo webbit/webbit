@@ -11,7 +11,6 @@ import java.util.Date;
 
 public class SimpleLogSink implements LogSink {
 
-    // TODO: WebSocket connection id
     // TODO: Offload filesystem IO to another thread
 
     protected final Appendable out;
@@ -24,6 +23,13 @@ public class SimpleLogSink implements LogSink {
     public SimpleLogSink(Appendable out, String... dataValuesToLog) {
         this.out = out;
         this.dataValuesToLog = dataValuesToLog;
+        try {
+            formatHeader(out);
+            flush();
+        } catch (IOException e) {
+            trouble = true;
+            panic(e);
+        }
     }
 
     public SimpleLogSink(String... dataValuesToLog) {
@@ -71,15 +77,18 @@ public class SimpleLogSink implements LogSink {
             return;
         }
         try {
-            formatLogLine(out, request, action, data);
-            out.append(lineSeparator);
-            if (out instanceof Flushable) {
-                Flushable flushable = (Flushable) out;
-                flushable.flush();
-            }
+            formatLogEntry(out, request, action, data);
+            flush();
         } catch (IOException e) {
             trouble = true;
             panic(e);
+        }
+    }
+
+    protected void flush() throws IOException {
+        if (out instanceof Flushable) {
+            Flushable flushable = (Flushable) out;
+            flushable.flush();
         }
     }
 
@@ -88,10 +97,12 @@ public class SimpleLogSink implements LogSink {
         exception.printStackTrace();
     }
 
-    protected Appendable formatLogLine(Appendable out, HttpRequest request, String action, String data) throws IOException {
-        long now = System.currentTimeMillis();
-        formatValue(out, new Date(now));
-        formatValue(out, now);
+    protected Appendable formatLogEntry(Appendable out, HttpRequest request, String action, String data) throws IOException {
+        long cumulativeTimeOfRequest = cumulativeTimeOfRequest(request);
+        formatValue(out, new Date(request.timestamp()));
+        formatValue(out, request.timestamp());
+        formatValue(out, cumulativeTimeOfRequest);
+        formatValue(out, request.id());
         formatValue(out, address(request.remoteAddress()));
         formatValue(out, action);
         formatValue(out, request.uri());
@@ -99,7 +110,32 @@ public class SimpleLogSink implements LogSink {
         for (String key : dataValuesToLog) {
             formatValue(out, request.data(key));
         }
-        return out;
+        return out.append(lineSeparator);
+    }
+
+    protected Appendable formatHeader(Appendable out) throws IOException {
+        out.append("#Log started at ")
+                .append(new Date().toString())
+                .append(" (").append(String.valueOf(System.currentTimeMillis())).append(")")
+                .append(lineSeparator)
+                .append('#');
+        formatValue(out, "Date");
+        formatValue(out, "Timestamp");
+        formatValue(out, "MillsSinceRequestStart");
+        formatValue(out, "RequestID");
+        formatValue(out, "RemoteHost");
+        formatValue(out, "Action");
+        formatValue(out, "Path");
+        formatValue(out, "Payload");
+        for (String key : dataValuesToLog) {
+            formatValue(out, "Data:" + key);
+        }
+        return out.append(lineSeparator);
+    }
+
+
+    private long cumulativeTimeOfRequest(HttpRequest request) {
+        return System.currentTimeMillis() - request.timestamp();
     }
 
     protected Appendable formatValue(Appendable out, Object value) throws IOException {
