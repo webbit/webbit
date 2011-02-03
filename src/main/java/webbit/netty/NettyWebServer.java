@@ -1,6 +1,7 @@
 package webbit.netty;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -14,10 +15,7 @@ import webbit.handler.HttpToWebSocketHandler;
 import webbit.handler.PathMatchHandler;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -27,21 +25,24 @@ import static org.jboss.netty.channel.Channels.pipeline;
 
 public class NettyWebServer implements WebServer {
     private final ServerBootstrap bootstrap;
-    private final InetSocketAddress socketAddress;
+    private final SocketAddress socketAddress;
+    private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final Executor executor;
+    private Channel channel;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
     }
 
     public NettyWebServer(final Executor executor, int port) {
+        this(executor, new InetSocketAddress(port), localUri(port));
+    }
+
+    public NettyWebServer(final Executor executor, SocketAddress socketAddress, URI publicUri) {
         this.executor = executor;
-        try {
-            this.socketAddress = new InetSocketAddress(InetAddress.getLocalHost(), port);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Cannot determine localhost");
-        }
+        this.socketAddress = socketAddress;
+        this.publicUri = publicUri;
 
         // Configure the server.
         bootstrap = new ServerBootstrap();
@@ -62,8 +63,7 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public URI getUri() {
-        return URI.create("http://" + socketAddress.getHostName() +
-                (socketAddress.getPort() == 80 ? "" : (":" + socketAddress.getPort())) + "/");
+        return publicUri;
     }
 
     @Override
@@ -88,23 +88,35 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public NettyWebServer start() {
+    public synchronized NettyWebServer start() {
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newSingleThreadExecutor(),
                 Executors.newSingleThreadExecutor(), 1));
-        bootstrap.bind(socketAddress);
+        channel = bootstrap.bind(socketAddress);
         return this;
     }
 
     @Override
-    public NettyWebServer stop() throws IOException {
-        // TODO
+    public synchronized NettyWebServer stop() throws IOException {
+        if (channel != null) {
+            channel.close();
+        }
         return this;
     }
 
-    public NettyWebServer join() throws InterruptedException {
-        // TODO
+    public synchronized NettyWebServer join() throws InterruptedException {
+        if (channel != null) {
+            channel.getCloseFuture().await();
+        }
         return this;
+    }
+
+    private static URI localUri(int port) {
+        try {
+            return URI.create("http://" + InetAddress.getLocalHost().getHostName() + (port == 80 ? "" : (":" + port)) + "/");
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
 
 }

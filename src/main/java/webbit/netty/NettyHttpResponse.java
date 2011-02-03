@@ -1,6 +1,5 @@
 package webbit.netty;
 
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -13,7 +12,6 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 
 public class NettyHttpResponse implements webbit.HttpResponse {
 
@@ -113,11 +111,9 @@ public class NettyHttpResponse implements webbit.HttpResponse {
     }
 
     private void flushResponse() {
-        // Send the response and close the connection if necessary.
-        ChannelFuture f = ctx.getChannel().write(response);
-        if (!isKeepAlive(request) || response.getStatus().getCode() != 200) {
-            f.addListener(ChannelFutureListener.CLOSE);
-        }
+        // Send the response and close the connection.
+        ctx.getChannel().write(response)
+                .addListener(ChannelFutureListener.CLOSE);
     }
 
 }
