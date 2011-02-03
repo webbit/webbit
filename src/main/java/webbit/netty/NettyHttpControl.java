@@ -18,6 +18,7 @@ public class NettyHttpControl implements HttpControl {
 
     private HttpRequest defaultRequest;
     private HttpResponse defaultResponse;
+    private HttpControl defaultControl;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
 
     public NettyHttpControl(Iterator<HttpHandler> handlerIterator,
@@ -36,23 +37,25 @@ public class NettyHttpControl implements HttpControl {
         this.defaultHttpResponse = defaultHttpResponse;
         defaultRequest = nettyHttpRequest;
         defaultResponse = nettyHttpResponse;
+        defaultControl = this;
         this.exceptionHandler = exceptionHandler;
     }
 
     @Override
     public void nextHandler() {
-        nextHandler(defaultRequest, defaultResponse, this);
+        nextHandler(defaultRequest, defaultResponse, defaultControl);
     }
 
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response) {
-        nextHandler(request, response, this);
+        nextHandler(request, response, defaultControl);
     }
 
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response, HttpControl control) {
         this.defaultRequest = request;
         this.defaultResponse = response;
+        this.defaultControl = control;
         if (handlerIterator.hasNext()) {
             HttpHandler handler = handlerIterator.next();
             try {
