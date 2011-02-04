@@ -7,7 +7,7 @@ Quick start
 Start a web server on port 8080 and serve some static files:
 
     WebServer webServer = WebServers.createWebServer(8080)
-      .staticResources("/path/to/files")
+      .add(new StaticFileHandler("/path/to/files"))
       .start();
 
 That was easy.
@@ -34,7 +34,7 @@ Now let's build a WebSocketHandler.
       public static void main(String args) {
         WebServer webServer = WebServers.createWebServer(8080)
           .add("/hellowebsocket", new HelloWebSockets())
-          .staticResources("/path/to/files")
+          .add(new StaticFileHandler("/path/to/files"))
           .start();
       }
     }
