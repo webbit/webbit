@@ -33,7 +33,7 @@ build/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
 # Compile tests
 build/$(LIBRARY)-tests.jar: build/$(LIBRARY).jar $(call find,src/test/java,java)
 	@mkdir -p build/test/classes
-	cp -R src/test/resources/ build/test/classes
+	cp -R src/test/resources/* build/test/classes
 	javac -g -cp $(CLASSPATH):build/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
 	jar cf $@ -C build/test/classes .
 
