@@ -55,4 +55,4 @@ Look in the examples directory for a full chat application.
 More
 -----------
 
-+   Jay Fields has written a WebSockets with Clojure introduction that uses Webbit: http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html
++   Jay Fields has written a WebSockets with Clojure introduction that uses Webbit: [http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html]
