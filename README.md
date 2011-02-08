@@ -1,6 +1,17 @@
 Webbit - A Java event based WebSocket and HTTP server
 =====================================================
 
+Getting it
+-----------
+
+Warning: Webbit has not had a stable release yet - the API changes regularly.
+
+    git clone git://github.com/joewalnes/webbit.git
+    cd webbit
+    make
+
+You will need to add build/webbit.jar and lib/netty-3.2.3.Final.jar (it's only dependency) to your classpath.
+
 Quick start
 -----------
 
