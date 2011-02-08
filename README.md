@@ -19,7 +19,7 @@ Now let's build a WebSocketHandler.
       int connectionCount;
       
       public void onOpen(WebSocketConnection connection) {
-        connection.send("Hello! There are ' + connectionCount + "other connections active");
+        connection.send("Hello! There are " + connectionCount + " other connections active");
         connectionCount++;
       }
       
@@ -39,3 +39,4 @@ Now let's build a WebSocketHandler.
       }
     }
     
+Look in the examples directory for a full chat application.
