@@ -1,6 +1,5 @@
 package webbit.wrapper;
 
-import webbit.HttpRequest;
 import webbit.HttpResponse;
 
 import java.nio.charset.Charset;
