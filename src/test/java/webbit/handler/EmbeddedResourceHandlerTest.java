@@ -46,7 +46,7 @@ public class EmbeddedResourceHandlerTest {
 
     @Test
     public void shouldWorkInRealServer() throws IOException, InterruptedException {
-        WebServer webServer = createWebServer(55554)
+        WebServer webServer = createWebServer(59504)
                 .add(handler)
                 .start();
         try {
@@ -59,7 +59,7 @@ public class EmbeddedResourceHandlerTest {
 
     @Test
     public void shouldFindWelcomeFileInRealServer() throws IOException, InterruptedException {
-        WebServer webServer = createWebServer(55554)
+        WebServer webServer = createWebServer(59504)
                 .add(handler)
                 .start();
         try {
