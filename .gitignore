@@ -1,6 +1,10 @@
+target/
+
 out
 build
+
 *.iws
 *.swp
 *.iml
+
 webbit.ipr
