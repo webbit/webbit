@@ -44,7 +44,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>1.6</version>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
     <build>
