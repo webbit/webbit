@@ -58,7 +58,7 @@ And a page that uses the WebSocket (web/index.html)
 
         <!-- Send text to websocket -->
         <input id="userInput" type="text">
-        <button onclick="ws.send(document.getElementById('userInput').value">Send</button>
+        <button onclick="ws.send(document.getElementById('userInput').value)">Send</button>
 
         <!-- Results -->
         <div id="message"></div>
