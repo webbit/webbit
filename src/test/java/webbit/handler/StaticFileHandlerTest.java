@@ -137,7 +137,7 @@ public class StaticFileHandlerTest {
         mkdir("some/dir");
         writeFile("some/dir/content1.txt", "some txt");
 
-        WebServer webServer = createWebServer(55554)
+        WebServer webServer = createWebServer(59504)
                 .add(handler)
                 .start();
         try {
