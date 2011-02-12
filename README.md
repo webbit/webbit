@@ -81,5 +81,5 @@ And a page that uses the WebSocket (web/index.html)
 More
 -----------
 
-+   A [web based chat room](https://github.com/joewalnes/webbit/tree/master/src/sample/java/chatroom) is available in the samples directory.
++   A [web based chat room](https://github.com/joewalnes/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
 +   Jay Fields has written a [WebSockets with Clojure introduction](http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html) that uses Webbit
