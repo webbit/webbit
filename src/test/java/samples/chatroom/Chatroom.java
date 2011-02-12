@@ -1,12 +1,10 @@
-package chatroom;
+package samples.chatroom;
 
 import com.google.gson.Gson;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class Chatroom implements WebSocketHandler {

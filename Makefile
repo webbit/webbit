@@ -6,12 +6,16 @@ LIBRARY=webbit
 CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
 
 # Non file targets
-.PHONY: all jar test clean
+.PHONY: all jar test clean chatroom
 
 # Default target: Compile, run tests and build tarball
 all: jar test
 jar: build/$(LIBRARY).jar build/$(LIBRARY)-src.jar
 test: build/.tests-pass
+
+# Run sample chatroom
+chatroom: test
+	java -cp $(CLASSPATH):build/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
 find = $(shell find $(1) -name '*.$(2)')

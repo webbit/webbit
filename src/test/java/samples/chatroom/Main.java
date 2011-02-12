@@ -1,4 +1,4 @@
-package chatroom;
+package samples.chatroom;
 
 import org.webbitserver.WebServer;
 import org.webbitserver.handler.logging.LoggingHandler;
@@ -13,7 +13,7 @@ public class Main {
         WebServer webServer = createWebServer(9876)
                 .add(new LoggingHandler(new SimpleLogSink(Chatroom.USERNAME_KEY)))
                 .add("/chatsocket", new Chatroom())
-                .add(new StaticFileHandler("./src/sample/java/chatroom/content"))
+                .add(new StaticFileHandler("./src/test/java/samples/chatroom/content"))
                 .start();
 
         System.out.println("Chat room running on: " + webServer.getUri());
