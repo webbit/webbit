@@ -1,11 +1,11 @@
 package chatroom;
 
-import webbit.WebServer;
-import webbit.handler.logging.LoggingHandler;
-import webbit.handler.StaticFileHandler;
-import webbit.handler.logging.SimpleLogSink;
+import org.webbitserver.WebServer;
+import org.webbitserver.handler.logging.LoggingHandler;
+import org.webbitserver.handler.StaticFileHandler;
+import org.webbitserver.handler.logging.SimpleLogSink;
 
-import static webbit.WebServers.createWebServer;
+import static org.webbitserver.WebServers.createWebServer;
 
 public class Main {
 

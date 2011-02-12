@@ -1,11 +1,11 @@
-package webbit.sample;
+package org.webbitserver.sample;
 
-import webbit.WebServer;
-import webbit.WebSocketConnection;
-import webbit.WebSocketHandler;
-import webbit.handler.DelayedHttpHandler;
-import webbit.handler.StaticFileHandler;
-import webbit.handler.StringHttpHandler;
+import org.webbitserver.WebServer;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
+import org.webbitserver.handler.DelayedHttpHandler;
+import org.webbitserver.handler.StaticFileHandler;
+import org.webbitserver.handler.StringHttpHandler;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,7 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
-import static webbit.WebServers.createWebServer;
+import static webbitserver.WebServers.createWebServer;
 
 public class Foo {
 
