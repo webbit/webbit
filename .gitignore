@@ -3,4 +3,4 @@ build
 *.iws
 *.swp
 *.iml
-webbit.ipr
+*.ipr
