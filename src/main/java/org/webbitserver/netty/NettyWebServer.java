@@ -110,6 +110,7 @@ public class NettyWebServer implements WebServer {
         return this;
     }
 
+    @Override
     public synchronized NettyWebServer join() throws InterruptedException {
         if (channel != null) {
             channel.getCloseFuture().await();

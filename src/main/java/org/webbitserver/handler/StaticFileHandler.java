@@ -32,6 +32,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
         this(new File(dir));
     }
 
+    @Override
     protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
         return new StaticFileHandler.FileWorker(request.uri(), response, control);
     }
