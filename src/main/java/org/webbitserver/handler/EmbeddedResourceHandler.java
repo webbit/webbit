@@ -55,8 +55,8 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         @Override
         protected byte[] welcomeBytes() throws IOException {
-            URL resource = getResource(new File(file, welcomeFileName));
-            return resource == null ? null : read(resource.openStream());
+            URL resourceURL = getResource(new File(file, welcomeFileName));
+            return resourceURL == null ? null : read(resourceURL.openStream());
         }
 
         private byte[] read(InputStream content) throws IOException {
