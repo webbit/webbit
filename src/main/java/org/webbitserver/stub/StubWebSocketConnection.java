@@ -10,8 +10,7 @@ import java.util.concurrent.Executor;
  * Implementation of WebSocketConnection that is easy to construct, and inspect results.
  * Useful for testing.
  */
-public class StubWebSocketConnection implements WebSocketConnection {
-    private final Map<String, Object> data = new HashMap<String, Object>();
+public class StubWebSocketConnection extends StubDataHolder implements WebSocketConnection {
     private final List<String> sentMessages = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;
@@ -51,24 +50,9 @@ public class StubWebSocketConnection implements WebSocketConnection {
     }
 
     @Override
-    public Map<String, Object> data() {
-        return data;
-    }
-
-    @Override
-    public Object data(String key) {
-        return data().get(key);
-    }
-
-    @Override
     public StubWebSocketConnection data(String key, Object value) {
-        data().put(key, value);
+        super.data(key, value);
         return this;
-    }
-
-    @Override
-    public Set<String> dataKeys() {
-        return data().keySet();
     }
 
     @Override
