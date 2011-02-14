@@ -1,10 +1,8 @@
 package org.webbitserver;
 
 import java.net.SocketAddress;
-import java.util.Map;
-import java.util.Set;
 
-public interface HttpRequest {
+public interface HttpRequest extends DataHolder {
     String uri();
 
     String header(String name);
@@ -16,31 +14,7 @@ public interface HttpRequest {
      */
     String method();
 
-    /**
-     * Arbitrary data that can be stored for the lifetime of the request.
-     */
-    Map<String, Object> data();
-
-    /**
-     * Retrieve data value by key.
-     *
-     * @see #data()
-     */
-    Object data(String key);
-
-    /**
-     * Store data value by key.
-     *
-     * @see #data()
-     */
-    HttpRequest data(String key, Object value);
-
-    /**
-     * List data keys.
-     *
-     * @see #data()
-     */
-    Set<String> dataKeys();
+    HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
     SocketAddress remoteAddress();
 

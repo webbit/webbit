@@ -12,12 +12,11 @@ import java.util.Set;
  * Implementation of HttpRequest that is easy to construct manually and populate.
  * Useful for testing.
  */
-public class StubHttpRequest implements HttpRequest {
+public class StubHttpRequest extends StubDataHolder implements HttpRequest {
 
     private String uri = "/";
     private String method = "GET";
     private Map<String, String> headers = new HashMap<String, String>();
-    private Map<String, Object> data = new HashMap<String, Object>();
     private SocketAddress remoteAddress = new InetSocketAddress("localhost", 0);
     private Object id = "StubID";
     private long timestamp = 0;
@@ -65,24 +64,9 @@ public class StubHttpRequest implements HttpRequest {
     }
 
     @Override
-    public Map<String, Object> data() {
-        return data;
-    }
-
-    @Override
-    public Object data(String key) {
-        return data().get(key);
-    }
-
-    @Override
     public StubHttpRequest data(String key, Object value) {
-        data().put(key, value);
+        super.data(key, value);
         return this;
-    }
-
-    @Override
-    public Set<String> dataKeys() {
-        return data().keySet();
     }
 
     @Override
