@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
