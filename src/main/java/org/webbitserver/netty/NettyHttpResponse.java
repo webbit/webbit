@@ -2,7 +2,6 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
@@ -18,14 +17,14 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
     private final ChannelHandlerContext ctx;
-    private final HttpRequest request;
     private final HttpResponse response;
+    private final Thread.UncaughtExceptionHandler exceptionHandler;
     private Charset charset;
 
-    public NettyHttpResponse(ChannelHandlerContext ctx, HttpRequest request, HttpResponse response) {
+    public NettyHttpResponse(ChannelHandlerContext ctx, HttpResponse response, Thread.UncaughtExceptionHandler exceptionHandler) {
         this.ctx = ctx;
-        this.request = request;
         this.response = response;
+        this.exceptionHandler = exceptionHandler;
         this.charset = DEFAULT_CHARSET;
     }
 
@@ -87,6 +86,9 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         header("Content-Length", message.length());
         content(message);
         flushResponse();
+
+        exceptionHandler.uncaughtException(Thread.currentThread(), error);
+
         return this;
     }
 
@@ -95,7 +97,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         PrintWriter writer = new PrintWriter(buffer);
         error.printStackTrace(writer);
         writer.flush();
-        System.out.println("buffer = " + buffer);
         return buffer.toString();
     }
 

@@ -33,10 +33,20 @@ public class NettyWebServer implements WebServer {
 
     protected long nextId = 1;
 
-    private Thread.UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    private Thread.UncaughtExceptionHandler exceptionHandler;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
+
+        // Default exception handling strategy... users can override with handleExceptions().
+        exceptionHandler = new EDotPrintStackTraceHandler();
+    }
+
+    private static class EDotPrintStackTraceHandler implements Thread.UncaughtExceptionHandler {
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     public NettyWebServer(final Executor executor, int port) {

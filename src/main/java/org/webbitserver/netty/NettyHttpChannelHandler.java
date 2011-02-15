@@ -40,7 +40,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent messageEvent) throws Exception {
         final HttpRequest httpRequest = (HttpRequest) messageEvent.getMessage();
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
-        final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK));
+        final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler);
         final HttpControl control = new NettyHttpControl(httpHandlers.iterator(), executor, ctx,
                 nettyHttpRequest, nettyHttpResponse, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler);
 
