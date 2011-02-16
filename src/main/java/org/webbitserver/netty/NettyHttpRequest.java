@@ -5,6 +5,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import java.net.SocketAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,8 +35,18 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public List<String> headers(String name) {
+        return httpRequest.getHeaders(name);
+    }
+
+    @Override
     public boolean hasHeader(String name) {
         return httpRequest.containsHeader(name);
+    }
+
+    @Override
+    public List<Map.Entry<String, String>> allHeaders() {
+        return httpRequest.getHeaders();
     }
 
     @Override
