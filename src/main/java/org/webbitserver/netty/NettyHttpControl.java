@@ -15,11 +15,12 @@ public class NettyHttpControl implements HttpControl {
     private final NettyHttpRequest nettyHttpRequest;
     private final org.jboss.netty.handler.codec.http.HttpRequest httpRequest;
     private final DefaultHttpResponse defaultHttpResponse;
+    private final Thread.UncaughtExceptionHandler exceptionHandler;
+    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
     private HttpRequest defaultRequest;
     private HttpResponse defaultResponse;
     private HttpControl defaultControl;
-    private final Thread.UncaughtExceptionHandler exceptionHandler;
 
     public NettyHttpControl(Iterator<HttpHandler> handlerIterator,
                             Executor executor,
@@ -28,7 +29,8 @@ public class NettyHttpControl implements HttpControl {
                             NettyHttpResponse nettyHttpResponse,
                             org.jboss.netty.handler.codec.http.HttpRequest httpRequest,
                             DefaultHttpResponse defaultHttpResponse,
-                            Thread.UncaughtExceptionHandler exceptionHandler) {
+                            Thread.UncaughtExceptionHandler exceptionHandler,
+                            Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.handlerIterator = handlerIterator;
         this.executor = executor;
         this.ctx = ctx;
@@ -37,6 +39,7 @@ public class NettyHttpControl implements HttpControl {
         this.defaultHttpResponse = defaultHttpResponse;
         defaultRequest = nettyHttpRequest;
         defaultResponse = nettyHttpResponse;
+        this.ioExceptionHandler = ioExceptionHandler;
         defaultControl = this;
         this.exceptionHandler = exceptionHandler;
     }
@@ -60,7 +63,7 @@ public class NettyHttpControl implements HttpControl {
             HttpHandler handler = handlerIterator.next();
             try {
                 handler.handleHttpRequest(request, response, control);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 response.error(e);
             }
         } else {
@@ -72,7 +75,7 @@ public class NettyHttpControl implements HttpControl {
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         NettyWebSocketConnection webSocketConnection = createWebSocketConnection();
         new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest,
-                defaultHttpResponse, handler, webSocketConnection, exceptionHandler);
+                defaultHttpResponse, handler, webSocketConnection, exceptionHandler, ioExceptionHandler);
         return webSocketConnection;
     }
 

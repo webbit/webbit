@@ -23,17 +23,20 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     private final Object id;
     private final long timestamp;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
+    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
     public NettyHttpChannelHandler(Executor executor,
                                    List<HttpHandler> httpHandlers,
                                    Object id,
                                    long timestamp,
-                                   Thread.UncaughtExceptionHandler exceptionHandler) {
+                                   Thread.UncaughtExceptionHandler exceptionHandler,
+                                   Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.executor = executor;
         this.httpHandlers = httpHandlers;
         this.id = id;
         this.timestamp = timestamp;
         this.exceptionHandler = exceptionHandler;
+        this.ioExceptionHandler = ioExceptionHandler;
     }
 
     @Override
@@ -42,7 +45,8 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
         final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler);
         final HttpControl control = new NettyHttpControl(httpHandlers.iterator(), executor, ctx,
-                nettyHttpRequest, nettyHttpResponse, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler);
+                nettyHttpRequest, nettyHttpResponse, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK),
+                exceptionHandler, ioExceptionHandler);
 
         executor.execute(new Runnable() {
             @Override
@@ -66,7 +70,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    exceptionHandler.uncaughtException(thread, e.getCause());
+                    ioExceptionHandler.uncaughtException(thread, e.getCause());
                 }
             });
         }

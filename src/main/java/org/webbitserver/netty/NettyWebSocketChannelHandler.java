@@ -27,6 +27,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     private final WebSocketHandler handler;
     private final WebSocketConnection webSocketConnection;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
+    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
     public NettyWebSocketChannelHandler(Executor executor,
                                         ChannelHandlerContext ctx,
@@ -35,12 +36,14 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                                         HttpResponse response,
                                         WebSocketHandler handler,
                                         WebSocketConnection webSocketConnection,
-                                        Thread.UncaughtExceptionHandler exceptionHandler){
+                                        Thread.UncaughtExceptionHandler exceptionHandler,
+                                        Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.executor = executor;
         this.nettyHttpRequest = nettyHttpRequest;
         this.handler = handler;
         this.webSocketConnection = webSocketConnection;
         this.exceptionHandler = exceptionHandler;
+        this.ioExceptionHandler = ioExceptionHandler;
 
         if (!requestingWebsocketUpgrade(request)) {
             throw new RuntimeException("Expecting WebSocket upgrade. Looks like a standard HTTP request.");
@@ -169,7 +172,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    exceptionHandler.uncaughtException(thread, e.getCause());
+                    ioExceptionHandler.uncaughtException(thread, e.getCause());
                 }
             });
         }
