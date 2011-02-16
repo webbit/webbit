@@ -1,6 +1,7 @@
 # Common tasks:
 # make                 -- Full build
 # make clean           -- Clean up built files
+SHELL := /bin/bash
 
 LIBRARY=webbit
 CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
@@ -35,8 +36,7 @@ dist/$(LIBRARY).jar: build/$(LIBRARY)-core.jar
 	@mkdir -p dist
 	@echo Packaging everything together into one jar...
 	java -jar lib/autojar.jar -o build/$(LIBRARY)-merged.jar -c $(CLASSPATH) build/$(LIBRARY)-core.jar
-	echo $(JARJARRULES) > build/$(LIBRARY).jarjarlinks
-	java -jar lib/jarjar-1.1.jar process build/$(LIBRARY).jarjarlinks build/$(LIBRARY)-merged.jar dist/$(LIBRARY).jar
+	java -jar lib/jarjar-1.1.jar process <(echo $(JARJARRULES)) build/$(LIBRARY)-merged.jar dist/$(LIBRARY).jar
 
 # Assemble source jar
 dist/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
