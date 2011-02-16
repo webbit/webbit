@@ -4,6 +4,14 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Retrieves information about inbound HTTP request.
+ *
+ * @see HttpHandler
+ * @see HttpResponse
+ *
+ * @author Joe Walnes
+ */
 public interface HttpRequest extends DataHolder {
 
     String uri();
@@ -40,6 +48,9 @@ public interface HttpRequest extends DataHolder {
 
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
+    /**
+     * Remote address of connection (i.e. the host of the client). 
+     */
     SocketAddress remoteAddress();
 
     /**

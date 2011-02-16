@@ -55,14 +55,14 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         if (value == null) {
             response.removeHeader(name);
         } else {
-            response.setHeader(name, value);
+            response.addHeader(name, value);
         }
         return this;
     }
 
     @Override
-    public NettyHttpResponse header(String name, int value) {
-        response.setHeader(name, value);
+    public NettyHttpResponse header(String name, long value) {
+        response.addHeader(name, value);
         return this;
     }
 
