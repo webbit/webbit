@@ -3,6 +3,12 @@ package org.webbitserver;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Objects implementing this interface can have arbitrary named values associated with
+ * them, making it easy to pass data around an application.
+ *
+ * @author Joe Walnes
+ */
 public interface DataHolder {
 
     /**

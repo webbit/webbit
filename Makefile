@@ -4,18 +4,19 @@
 
 LIBRARY=webbit
 CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
+JARJARRULES='rule org.jboss.netty.** org.webbitserver.dependencies.org.jboss.netty.@1'
 
 # Non file targets
 .PHONY: all jar test clean chatroom
 
 # Default target: Compile, run tests and build tarball
 all: jar test
-jar: build/$(LIBRARY).jar build/$(LIBRARY)-src.jar
+jar: dist/$(LIBRARY).jar dist/$(LIBRARY)-src.jar
 test: build/.tests-pass
 
 # Run sample chatroom
 chatroom: test
-	java -cp $(CLASSPATH):build/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
+	java -cp $(CLASSPATH):dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
 find = $(shell find $(1) -name '*.$(2)')
@@ -23,31 +24,39 @@ find = $(shell find $(1) -name '*.$(2)')
 # Function to extract Test class names from a jar. $(call extracttests,foo.jar)
 extracttests = $(shell jar tf $(1) | grep 'Test.class$$' | sed -e 's|/|.|g;s|.class$$||')
 
-# Compile Jar
-build/$(LIBRARY).jar: $(call find,src/main/java,java)
+# Compile core Jar (just classes, no dependencies)
+build/$(LIBRARY)-core.jar: $(call find,src/main/java,java)
 	@mkdir -p build/main/classes
 	javac -g -cp $(CLASSPATH) -d build/main/classes $(call find,src/main/java,java)
 	jar cf $@ -C build/main/classes .
 
+# Merge dependencies with core jar into an all-in-one jar.
+dist/$(LIBRARY).jar: build/$(LIBRARY)-core.jar
+	@mkdir -p dist
+	@echo Packaging everything together into one jar...
+	java -jar lib/autojar.jar -o build/$(LIBRARY)-merged.jar -c $(CLASSPATH) build/$(LIBRARY)-core.jar
+	echo $(JARJARRULES) > build/$(LIBRARY).jarjarlinks
+	java -jar lib/jarjar-1.1.jar process build/$(LIBRARY).jarjarlinks build/$(LIBRARY)-merged.jar dist/$(LIBRARY).jar
+
 # Assemble source jar
-build/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
-	@mkdir -p build
+dist/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
+	@mkdir -p dist
 	jar cf $@ -C src/main/java .
 
 # Compile tests
-build/$(LIBRARY)-tests.jar: build/$(LIBRARY).jar $(call find,src/test/java,java)
+build/$(LIBRARY)-tests.jar: dist/$(LIBRARY).jar $(call find,src/test/java,java)
 	@mkdir -p build/test/classes
 	cp -R src/test/resources/* build/test/classes
-	javac -g -cp $(CLASSPATH):build/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
+	javac -g -cp $(CLASSPATH):dist/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
 	jar cf $@ -C build/test/classes .
 
 # Run tests, and create .tests-pass if they succeed
 build/.tests-pass: build/$(LIBRARY)-tests.jar
 	@rm -f $@
-	java -cp $(CLASSPATH):build/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
+	java -cp $(CLASSPATH):dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
 	@touch $@
 
 # Clean up
 clean:
-	rm -rf build out
+	rm -rf build dist out
 

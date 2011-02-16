@@ -10,7 +10,7 @@ Warning: Webbit has not had a stable release yet - the API changes regularly.
     cd webbit
     make
 
-You will need to add build/webbit.jar and lib/netty-3.2.3.Final.jar (its only dependency) to your classpath.
+You will need to add dist/webbit.jar to your classpath - it has no external dependencies.
 
 Quick start
 -----------

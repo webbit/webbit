@@ -4,8 +4,12 @@ import org.webbitserver.HttpRequest;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
+=======
+import java.util.*;
+>>>>>>> 94a178a0402451a97a1b3ed10698e2a1f5d1687e
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
@@ -15,7 +19,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
 
     private String uri = "/";
     private String method = "GET";
-    private Map<String, String> headers = new HashMap<String, String>();
+    private List<Map.Entry<String, String>> headers = new ArrayList<Map.Entry<String, String>>();
     private SocketAddress remoteAddress = new InetSocketAddress("localhost", 0);
     private Object id = "StubID";
     private long timestamp = 0;
@@ -39,12 +43,38 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
 
     @Override
     public String header(String name) {
-        return headers.get(name);
+        for (Map.Entry<String, String> header : headers) {
+            if (header.getKey().equals(name)) {
+                return header.getValue();
+            }
+        }
+        return null;
     }
 
     @Override
     public boolean hasHeader(String name) {
-        return headers.containsKey(name);
+        for (Map.Entry<String, String> header : headers) {
+            if (header.getKey().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<String> headers(String name) {
+        List<String> result = new ArrayList<String>();
+        for (Map.Entry<String, String> header : headers) {
+            if (header.getKey().equals(name)) {
+                result.add(header.getValue());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<Map.Entry<String, String>> allHeaders() {
+        return headers;
     }
 
     @Override
@@ -58,7 +88,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     }
 
     public StubHttpRequest header(String name, String value) {
-        headers.put(name, value);
+        headers.add(new AbstractMap.SimpleEntry<String, String>(name, value));
         return this;
     }
 

@@ -1,13 +1,45 @@
 package org.webbitserver;
 
 import java.net.SocketAddress;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Retrieves information about inbound HTTP request.
+ *
+ * @see HttpHandler
+ * @see HttpResponse
+ *
+ * @author Joe Walnes
+ */
 public interface HttpRequest extends DataHolder {
+
     String uri();
 
+    /**
+     * Retrieve the value single HTTP header.
+     *
+     * If the header is not found, null is returned.
+     *
+     * If there are multiple headers with the same name, it will return one of them, but it is not
+     * defined which one. Instead, use {@link #headers(String)}.
+     */
     String header(String name);
 
+    /**
+     * Retrieve all values for an HTTP header. If no values are found, an empty List is returned.
+     */
+    List<String> headers(String name);
+
+    /**
+     * Whether a specific HTTP header was present in the request.
+     */
     boolean hasHeader(String name);
+
+    /**
+     * Returns all headers sent from client.
+     */
+    List<Map.Entry<String, String>> allHeaders();
 
     /**
      * HTTP method (e.g. "GET" or "POST")
@@ -16,6 +48,9 @@ public interface HttpRequest extends DataHolder {
 
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
+    /**
+     * Remote address of connection (i.e. the host of the client). 
+     */
     SocketAddress remoteAddress();
 
     /**

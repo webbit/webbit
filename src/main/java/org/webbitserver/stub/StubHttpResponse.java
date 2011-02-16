@@ -54,7 +54,7 @@ public class StubHttpResponse implements HttpResponse {
     }
 
     @Override
-    public StubHttpResponse header(String name, int value) {
+    public StubHttpResponse header(String name, long value) {
         return header(name, String.valueOf(value));
     }
 

@@ -3,6 +3,7 @@ package org.webbitserver.wrapper;
 import org.webbitserver.HttpRequest;
 
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,6 +46,16 @@ public class HttpRequestWrapper implements HttpRequest {
     @Override
     public boolean hasHeader(String name) {
         return request.hasHeader(name);
+    }
+
+    @Override
+    public List<String> headers(String name) {
+        return request.headers(name);
+    }
+
+    @Override
+    public List<Map.Entry<String, String>> allHeaders() {
+        return request.allHeaders();
     }
 
     @Override

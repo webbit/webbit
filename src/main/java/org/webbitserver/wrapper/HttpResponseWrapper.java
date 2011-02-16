@@ -59,7 +59,7 @@ public class HttpResponseWrapper implements HttpResponse {
     }
 
     @Override
-    public HttpResponseWrapper header(String name, int value) {
+    public HttpResponseWrapper header(String name, long value) {
         response.header(name, value);
         return this;
     }

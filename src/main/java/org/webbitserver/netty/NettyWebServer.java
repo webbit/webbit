@@ -13,6 +13,8 @@ import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.PathMatchHandler;
+import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
+import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 
 import java.io.IOException;
 import java.net.*;
@@ -33,10 +35,19 @@ public class NettyWebServer implements WebServer {
 
     protected long nextId = 1;
 
-    private Thread.UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    private Thread.UncaughtExceptionHandler exceptionHandler;
+    private Thread.UncaughtExceptionHandler ioExceptionHandler;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
+
+        // Uncaught exceptions from handlers get dumped to console by default.
+        // To change, call uncaughtExceptionHandler()
+        uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
+
+        // Default behavior is to silently discard any exceptions caused
+        // when reading/writing to the client. The Internet is flaky - it happens.
+        connectionExceptionHandler(new SilentExceptionHandler());
     }
 
     public NettyWebServer(final Executor executor, int port) {
@@ -61,7 +72,8 @@ public class NettyWebServer implements WebServer {
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
                 pipeline.addLast("encoder", new HttpResponseEncoder());
-                pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers, id, timestamp, exceptionHandler));
+                pipeline.addLast("handler", new NettyHttpChannelHandler(
+                        executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
                 return pipeline;
             }
         });
@@ -119,8 +131,14 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public WebServer handleExceptions(Thread.UncaughtExceptionHandler exceptionHandler) {
+    public WebServer uncaughtExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
+        return this;
+    }
+
+    @Override
+    public WebServer connectionExceptionHandler(Thread.UncaughtExceptionHandler ioExceptionHandler) {
+        this.ioExceptionHandler = ioExceptionHandler;
         return this;
     }
 
