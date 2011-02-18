@@ -40,14 +40,6 @@ public class NettyWebServer implements WebServer {
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
-
-        // Uncaught exceptions from handlers get dumped to console by default.
-        // To change, call uncaughtExceptionHandler()
-        uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
-
-        // Default behavior is to silently discard any exceptions caused
-        // when reading/writing to the client. The Internet is flaky - it happens.
-        connectionExceptionHandler(new SilentExceptionHandler());
     }
 
     public NettyWebServer(final Executor executor, int port) {
@@ -58,6 +50,14 @@ public class NettyWebServer implements WebServer {
         this.executor = executor;
         this.socketAddress = socketAddress;
         this.publicUri = publicUri;
+
+        // Uncaught exceptions from handlers get dumped to console by default.
+        // To change, call uncaughtExceptionHandler()
+        uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
+
+        // Default behavior is to silently discard any exceptions caused
+        // when reading/writing to the client. The Internet is flaky - it happens.
+        connectionExceptionHandler(new SilentExceptionHandler());
 
         // Configure the server.
         bootstrap = new ServerBootstrap();
