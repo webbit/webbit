@@ -1,6 +1,7 @@
 # Common tasks:
 # make                 -- Full build
 # make clean           -- Clean up built files
+# make again           -- Clean and rebuild
 SHELL := /bin/bash
 
 LIBRARY=webbit
@@ -8,7 +9,7 @@ CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
 JARJARRULES='rule org.jboss.netty.** org.webbitserver.dependencies.org.jboss.netty.@1'
 
 # Non file targets
-.PHONY: all jar test clean chatroom
+.PHONY: all jar test clean again chatroom
 
 # Default target: Compile, run tests and build tarball
 all: jar test
@@ -60,3 +61,4 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 clean:
 	rm -rf build dist out
 
+again: clean all
