@@ -8,3 +8,4 @@ dist
 *.swp
 *.iml
 *.ipr
+.idea/
