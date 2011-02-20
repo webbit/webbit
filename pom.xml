@@ -17,8 +17,8 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     </parent>
     <licenses>
       <license>
-        <name>The Apache Software License, Version 2.0</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        <name>BSD License</name>
+        <url>http://www.opensource.org/licenses/bsd-license</url>
         <distribution>repo</distribution>
       </license>
     </licenses>
