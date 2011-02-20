@@ -9,3 +9,5 @@ dist
 *.iml
 *.ipr
 .idea/
+release.properties
+pom.xml.releaseBackup
