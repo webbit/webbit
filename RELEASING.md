@@ -1,7 +1,7 @@
 How to do a Release
 ================
 
-PREREQUISITES
+Prerequisites
 --------
 
 Releases are made with Maven. You need the following software installed:
@@ -11,14 +11,14 @@ Releases are made with Maven. You need the following software installed:
 
 You also need a sonatype account and a `~/.m2/settings.xml` file with your credentials. See [Sonatype OSS Maven Repositories](https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-4.MavenRepositories).
 
-SNAPSHOT RELEASES
+Snapshot Releases
 --------
 
 Make sure the POM file has a SNAPSHOT version.
 
     mvn clean deploy
 
-RELEASES
+Releases
 --------
 
 Make sure the POM file has a SNAPSHOT version. The release plugin will bump it during the release process.
