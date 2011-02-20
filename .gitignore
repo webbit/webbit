@@ -1,9 +1,7 @@
 target/
-
 out
 build
 dist
-
 *.iws
 *.swp
 *.iml
@@ -11,3 +9,4 @@ dist
 .idea/
 release.properties
 pom.xml.releaseBackup
+.DS_Store
