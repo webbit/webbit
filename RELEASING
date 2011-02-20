@@ -1,9 +1,7 @@
 Releases a re made with Maven. You need the following software installed:
 
 * Maven 3
-* GPG
-
-See http://www.apacheserver.net/Using-a-GPG-agent-for-signing-Maven-releases-on-Mac-OS-X-i30783.htm if you're on a Mac.
+* GPG (If you're on a Mac, install http://www.gpgtools.org/installer.html)
 
 You also need a sonatype account and a ~/.m2/settings.xml file with your credentials. See
 https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-4.MavenRepositories
