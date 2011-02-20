@@ -20,6 +20,7 @@ Make sure the POM file has a SNAPSHOT version. The release plugin will bump it d
 
   mvn release:clean
   mvn release:prepare
+  mvn release:perform
 
 When prompted for an SCM tag, do not accept the default, enter instead v0.1.0, or whatever number you're releasing. We use the v prefix according to semver - http://semver.org
 When the Maven release completes, build and deploy the full jar (with jarjar embedded netty)
