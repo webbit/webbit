@@ -12,7 +12,6 @@ Once you have this, run:
   mvn release:prepare
 
 When prompted for an SCM tag, do not accept the default, enter instead v0.1.0 (We use the v prefix according to semver - http://semver.org)
-When prompted for gpg passphrase, use the secret passphrase we have exchanged between developers.
 When the Maven release completes, build and deploy the full jar (with jarjar embedded netty)
 
   git co v0.1.0 && mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -DpomFile=pom.xml -Dfile=dist/webbit.jar -Dclassifier=full && git co master
