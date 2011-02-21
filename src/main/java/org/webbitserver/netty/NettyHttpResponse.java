@@ -1,5 +1,7 @@
 package org.webbitserver.netty;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -20,6 +22,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private final HttpResponse response;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
     private final Thread.UncaughtExceptionHandler ioExceptionHandler;
+    private final ChannelBuffer responseBuffer;
     private Charset charset;
 
     public NettyHttpResponse(ChannelHandlerContext ctx,
@@ -31,6 +34,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         this.exceptionHandler = exceptionHandler;
         this.ioExceptionHandler = ioExceptionHandler;
         this.charset = DEFAULT_CHARSET;
+        responseBuffer = ChannelBuffers.dynamicBuffer();
     }
 
     @Override
@@ -73,13 +77,13 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse content(String content) {
-        response.setContent(copiedBuffer(content, charset()));
+        responseBuffer.writeBytes(copiedBuffer(content, charset()));
         return this;
     }
 
     @Override
     public NettyHttpResponse content(byte[] content) {
-        response.setContent(copiedBuffer(content));
+        responseBuffer.writeBytes(copiedBuffer(content));
         return this;
     }
 
@@ -119,6 +123,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private void flushResponse() {
         // Send the response and close the connection.
         try {
+            response.setContent(responseBuffer);
             ctx.getChannel().write(response)
                     .addListener(ChannelFutureListener.CLOSE);
         } catch (Exception e) {
