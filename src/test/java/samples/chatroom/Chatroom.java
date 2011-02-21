@@ -68,10 +68,10 @@ public class Chatroom implements WebSocketHandler {
     }
 
     private void broadcast(Outgoing outgoing) {
-        String json = this.json.toJson(outgoing);
+        String jsonStr = this.json.toJson(outgoing);
         for (WebSocketConnection connection : connections) {
             if (connection.data(USERNAME_KEY) != null) { // only broadcast to those who have completed login
-                connection.send(json);
+                connection.send(jsonStr);
             }
         }
     }
