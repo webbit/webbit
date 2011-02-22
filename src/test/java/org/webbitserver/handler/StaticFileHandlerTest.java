@@ -12,14 +12,14 @@ import org.webbitserver.stub.StubHttpResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.webbitserver.WebServers.createWebServer;
+import static org.webbitserver.testutil.HttpClient.contents;
+import static org.webbitserver.testutil.HttpClient.httpGet;
 
 public class StaticFileHandlerTest {
 
@@ -203,11 +203,6 @@ public class StaticFileHandlerTest {
         new File(dir, path).mkdirs();
     }
 
-    private URLConnection httpGet(WebServer webServer, String path) throws IOException {
-        URL url = new URL(webServer.getUri().toURL(), path);
-        return url.openConnection();
-    }
-
     /**
      * Create stubbed request.
      */
@@ -230,9 +225,4 @@ public class StaticFileHandlerTest {
         assertNull(response.error());
     }
 
-    private String contents(URLConnection urlConnection) throws IOException {
-        byte[] buffer = new byte[urlConnection.getContentLength()];
-        urlConnection.getInputStream().read(buffer);
-        return new String(buffer);
-    }
 }

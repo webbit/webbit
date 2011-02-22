@@ -9,12 +9,12 @@ import org.webbitserver.stub.StubHttpRequest;
 import org.webbitserver.stub.StubHttpResponse;
 
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.*;
 import static org.webbitserver.WebServers.createWebServer;
+import static org.webbitserver.testutil.HttpClient.contents;
+import static org.webbitserver.testutil.HttpClient.httpGet;
 
 public class EmbeddedResourceHandlerTest {
 
@@ -71,11 +71,6 @@ public class EmbeddedResourceHandlerTest {
 
     // --- Test helpers
 
-    private URLConnection httpGet(WebServer webServer, String path) throws IOException {
-        URL url = new URL(webServer.getUri().toURL(), path);
-        return url.openConnection();
-    }
-
     /**
      * Create stubbed request.
      */
@@ -98,9 +93,4 @@ public class EmbeddedResourceHandlerTest {
         assertNull(response.error());
     }
 
-    private String contents(URLConnection urlConnection) throws IOException {
-        byte[] buffer = new byte[urlConnection.getContentLength()];
-        urlConnection.getInputStream().read(buffer);
-        return new String(buffer);
-    }
 }
