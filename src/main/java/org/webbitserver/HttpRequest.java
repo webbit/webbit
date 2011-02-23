@@ -46,6 +46,7 @@ public interface HttpRequest extends DataHolder {
      */
     String method();
 
+    @Override
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
     /**

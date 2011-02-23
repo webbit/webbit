@@ -13,6 +13,7 @@ import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.PathMatchHandler;
+import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 
@@ -77,6 +78,12 @@ public class NettyWebServer implements WebServer {
                 return pipeline;
             }
         });
+
+        setupDefaultHandlers();
+    }
+
+    protected void setupDefaultHandlers() {
+        add(new ServerHeaderHandler("Webbit"));
     }
 
     @Override
