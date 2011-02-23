@@ -5,10 +5,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 
 import java.net.HttpCookie;
 import java.net.SocketAddress;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
@@ -47,7 +44,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public List<HttpCookie> cookies() {
-        return HttpCookie.parse(header(COOKIE_HEADER));
+        List<HttpCookie> result = new ArrayList<HttpCookie>();
+        for (String header : headers(COOKIE_HEADER)) {
+            result.addAll(HttpCookie.parse(header));
+        }
+        return result;
     }
 
     @Override
