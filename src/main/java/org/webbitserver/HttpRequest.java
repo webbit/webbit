@@ -1,5 +1,6 @@
 package org.webbitserver;
 
+import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,8 @@ import java.util.Map;
  * @author Joe Walnes
  */
 public interface HttpRequest extends DataHolder {
+
+    String COOKIE_HEADER = "Cookie";
 
     String uri();
 
@@ -35,6 +38,11 @@ public interface HttpRequest extends DataHolder {
      * Whether a specific HTTP header was present in the request.
      */
     boolean hasHeader(String name);
+
+    /**
+     * @return all inbound cookies
+     */
+    List<HttpCookie> cookies();
 
     /**
      * Returns all headers sent from client.

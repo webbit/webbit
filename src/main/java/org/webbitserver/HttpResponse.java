@@ -1,5 +1,6 @@
 package org.webbitserver;
 
+import java.net.HttpCookie;
 import java.nio.charset.Charset;
 
 /**
@@ -11,6 +12,7 @@ import java.nio.charset.Charset;
  * @author Joe Walnes
  */
 public interface HttpResponse {
+    String SET_COOKIE_HEADER = "Set-Cookie";
 
     /**
      * For text based responses, sets the Charset to encode the response as.
@@ -51,6 +53,13 @@ public interface HttpResponse {
     HttpResponse header(String name, long value);
 
     /**
+     * Adds a cookie
+     * 
+     * @param httpCookie the cookie
+     */
+    HttpResponse cookie(HttpCookie httpCookie);
+
+    /**
      * Write text based content back to the client.
      *
      * @see #charset(Charset)
@@ -82,5 +91,4 @@ public interface HttpResponse {
      * operations should be performed on a response after these.
      */
     HttpResponse end();
-
 }

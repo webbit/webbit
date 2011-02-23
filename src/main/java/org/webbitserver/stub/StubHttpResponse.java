@@ -4,8 +4,11 @@ import org.webbitserver.HttpResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +23,7 @@ public class StubHttpResponse implements HttpResponse {
     private Throwable error;
     private boolean ended;
     private ByteArrayOutputStream contents = new ByteArrayOutputStream();
+    private List<HttpCookie> cookies = new ArrayList<HttpCookie>();
 
     @Override
     public StubHttpResponse charset(Charset charset) {
@@ -56,6 +60,12 @@ public class StubHttpResponse implements HttpResponse {
     @Override
     public StubHttpResponse header(String name, long value) {
         return header(name, String.valueOf(value));
+    }
+
+    @Override
+    public HttpResponse cookie(HttpCookie httpCookie) {
+        cookies.add(httpCookie);
+        return this;
     }
 
     public String header(String name) {

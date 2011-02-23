@@ -2,6 +2,7 @@ package org.webbitserver.wrapper;
 
 import org.webbitserver.HttpRequest;
 
+import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,11 @@ public class HttpRequestWrapper implements HttpRequest {
     @Override
     public boolean hasHeader(String name) {
         return request.hasHeader(name);
+    }
+
+    @Override
+    public List<HttpCookie> cookies() {
+        return request.cookies();
     }
 
     @Override

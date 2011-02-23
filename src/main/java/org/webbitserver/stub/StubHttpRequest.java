@@ -2,6 +2,7 @@ package org.webbitserver.stub;
 
 import org.webbitserver.HttpRequest;
 
+import java.net.HttpCookie;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.AbstractMap;
@@ -57,6 +58,11 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
             }
         }
         return false;
+    }
+
+    @Override
+    public List<HttpCookie> cookies() {
+        return HttpCookie.parse(COOKIE_HEADER);
     }
 
     @Override

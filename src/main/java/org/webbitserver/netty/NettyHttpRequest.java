@@ -3,6 +3,7 @@ package org.webbitserver.netty;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
+import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public boolean hasHeader(String name) {
         return httpRequest.containsHeader(name);
+    }
+
+    @Override
+    public List<HttpCookie> cookies() {
+        return HttpCookie.parse(header(COOKIE_HEADER));
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.webbitserver.wrapper;
 
 import org.webbitserver.HttpResponse;
 
+import java.net.HttpCookie;
 import java.nio.charset.Charset;
 
 public class HttpResponseWrapper implements HttpResponse {
@@ -61,6 +62,12 @@ public class HttpResponseWrapper implements HttpResponse {
     @Override
     public HttpResponseWrapper header(String name, long value) {
         response.header(name, value);
+        return this;
+    }
+
+    @Override
+    public HttpResponse cookie(HttpCookie httpCookie) {
+        response.cookie(httpCookie);
         return this;
     }
 

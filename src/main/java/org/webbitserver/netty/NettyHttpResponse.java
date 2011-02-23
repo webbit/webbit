@@ -10,6 +10,7 @@ import org.jboss.netty.util.CharsetUtil;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.HttpCookie;
 import java.nio.charset.Charset;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
@@ -73,6 +74,11 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     public NettyHttpResponse header(String name, long value) {
         response.addHeader(name, value);
         return this;
+    }
+
+    @Override
+    public org.webbitserver.HttpResponse cookie(HttpCookie httpCookie) {
+        return header(SET_COOKIE_HEADER, httpCookie.toString());
     }
 
     @Override
