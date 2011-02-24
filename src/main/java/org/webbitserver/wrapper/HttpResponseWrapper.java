@@ -66,7 +66,7 @@ public class HttpResponseWrapper implements HttpResponse {
     }
 
     @Override
-    public HttpResponse cookie(HttpCookie httpCookie) {
+    public HttpResponseWrapper cookie(HttpCookie httpCookie) {
         response.cookie(httpCookie);
         return this;
     }

@@ -63,7 +63,7 @@ public class StubHttpResponse implements HttpResponse {
     }
 
     @Override
-    public HttpResponse cookie(HttpCookie httpCookie) {
+    public StubHttpResponse cookie(HttpCookie httpCookie) {
         cookies.add(httpCookie);
         return this;
     }

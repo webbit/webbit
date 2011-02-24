@@ -77,7 +77,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
-    public org.webbitserver.HttpResponse cookie(HttpCookie httpCookie) {
+    public NettyHttpResponse cookie(HttpCookie httpCookie) {
         return header(SET_COOKIE_HEADER, httpCookie.toString());
     }
 
