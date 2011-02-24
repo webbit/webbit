@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.webbitserver.InboundCookieParser;
 
 import java.net.HttpCookie;
 import java.net.SocketAddress;
@@ -44,11 +45,7 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public List<HttpCookie> cookies() {
-        List<HttpCookie> result = new ArrayList<HttpCookie>();
-        for (String header : headers(COOKIE_HEADER)) {
-            result.addAll(HttpCookie.parse(header));
-        }
-        return result;
+        return InboundCookieParser.parse(headers(COOKIE_HEADER));
     }
 
     @Override

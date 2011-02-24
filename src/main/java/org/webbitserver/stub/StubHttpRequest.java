@@ -1,6 +1,7 @@
 package org.webbitserver.stub;
 
 import org.webbitserver.HttpRequest;
+import org.webbitserver.InboundCookieParser;
 
 import java.net.HttpCookie;
 import java.net.InetSocketAddress;
@@ -63,7 +64,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
 
     @Override
     public List<HttpCookie> cookies() {
-        return HttpCookie.parse(COOKIE_HEADER);
+        return InboundCookieParser.parse(headers(COOKIE_HEADER));
     }
 
     @Override

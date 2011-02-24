@@ -71,14 +71,14 @@ public class CookieTest {
     }
 
     @Test
-    public void parsesTwoInboundCookies() throws IOException, InterruptedException {
+    public void parsesThreeInboundCookiesInTwoHeaders() throws IOException, InterruptedException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
                 String body = "Your cookies:";
                 List<HttpCookie> cookies = sort(request.cookies());
                 for (HttpCookie cookie : cookies) {
-                    body += " " + cookie.getName();
+                    body += " " + cookie.getName() + "=" + cookie.getValue();
                 }
                 response.header("Content-Length", body.length())
                         .content(body)
@@ -86,9 +86,24 @@ public class CookieTest {
             }
         }).start();
         URLConnection urlConnection = httpGet(webServer, "/");
-        urlConnection.addRequestProperty("Cookie", new HttpCookie("someName", "someValue").toString());
-        urlConnection.addRequestProperty("Cookie", new HttpCookie("me", "too").toString());
-        assertEquals("Your cookies: me someName", contents(urlConnection));
+        urlConnection.addRequestProperty("Cookie", new HttpCookie("a", "b").toString());
+        urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "\"d").toString() + "; " + new HttpCookie("e", "f").toString());
+        assertEquals("Your cookies: a=b c=\"d e=f", contents(urlConnection));
+    }
+
+    @Test
+    public void behavesWellWhenThereAreNoInboundCookies() throws IOException {
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                String body = "Cookie count:" + request.cookies().size();
+                response.header("Content-Length", body.length())
+                        .content(body)
+                        .end();
+            }
+        }).start();
+        URLConnection urlConnection = httpGet(webServer, "/");
+        assertEquals("Cookie count:0", contents(urlConnection));
     }
 
     // You wouldn't have thought it was that convoluted, but it is.
