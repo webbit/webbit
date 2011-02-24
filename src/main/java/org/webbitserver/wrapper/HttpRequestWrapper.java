@@ -60,6 +60,11 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public String cookieValue(String name) {
+        return request.cookieValue(name);
+    }
+
+    @Override
     public List<String> headers(String name) {
         return request.headers(name);
     }
