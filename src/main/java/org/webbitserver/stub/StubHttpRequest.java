@@ -10,7 +10,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
