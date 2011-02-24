@@ -59,7 +59,7 @@ public class CookieTest {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                String body = "Your cookie name: " + request.cookies().get(0).getName();
+                String body = "Your cookie value: " + request.cookie("someName").getValue();
                 response.header("Content-Length", body.length())
                         .content(body)
                         .end();
@@ -67,7 +67,7 @@ public class CookieTest {
         }).start();
         URLConnection urlConnection = httpGet(webServer, "/");
         urlConnection.addRequestProperty("Cookie", new HttpCookie("someName", "someValue").toString());
-        assertEquals("Your cookie name: someName", contents(urlConnection));
+        assertEquals("Your cookie value: someValue", contents(urlConnection));
     }
 
     @Test

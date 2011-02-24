@@ -45,6 +45,14 @@ public interface HttpRequest extends DataHolder {
     List<HttpCookie> cookies();
 
     /**
+     * Get a cookie with a specific name
+     *
+     * @param name cookie name
+     * @return cookie with that name
+     */
+    HttpCookie cookie(String name);
+
+    /**
      * Returns all headers sent from client.
      */
     List<Map.Entry<String, String>> allHeaders();

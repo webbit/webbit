@@ -9,6 +9,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
@@ -63,6 +64,16 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     @Override
     public List<HttpCookie> cookies() {
         return HttpCookie.parse(COOKIE_HEADER);
+    }
+
+    @Override
+    public HttpCookie cookie(String name) {
+        for (HttpCookie cookie : cookies()) {
+            if(cookie.getName().equals(name)) {
+                return cookie;
+            }
+        }
+        return null;
     }
 
     @Override

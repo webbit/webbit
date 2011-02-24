@@ -68,6 +68,10 @@ public class StubHttpResponse implements HttpResponse {
         return this;
     }
 
+    public StubHttpResponse cookie(String name, String value) {
+        return cookie(new HttpCookie(name, value));
+    }
+
     public String header(String name) {
         return headers.get(name);
     }
@@ -123,6 +127,10 @@ public class StubHttpResponse implements HttpResponse {
 
     public boolean ended() {
         return ended;
+    }
+
+    public List<HttpCookie> cookies() {
+        return cookies;
     }
 
     @Override
