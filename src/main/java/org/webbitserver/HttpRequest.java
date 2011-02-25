@@ -53,6 +53,14 @@ public interface HttpRequest extends DataHolder {
     HttpCookie cookie(String name);
 
     /**
+     * Get the value of named cookie
+     *
+     * @param name cookie name
+     * @return cookie value, or null if the cookie does not exist.
+     */
+    String cookieValue(String name);
+
+    /**
      * Returns all headers sent from client.
      */
     List<Map.Entry<String, String>> allHeaders();

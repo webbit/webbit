@@ -59,6 +59,12 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public String cookieValue(String name) {
+        HttpCookie cookie = cookie(name);
+        return cookie == null ? null : cookie.getValue();
+    }
+
+    @Override
     public List<Map.Entry<String, String>> allHeaders() {
         return httpRequest.getHeaders();
     }

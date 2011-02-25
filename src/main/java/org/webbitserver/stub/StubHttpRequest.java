@@ -78,6 +78,12 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     }
 
     @Override
+    public String cookieValue(String name) {
+        HttpCookie cookie = cookie(name);
+        return cookie == null ? null : cookie.getValue();
+    }
+
+    @Override
     public List<String> headers(String name) {
         List<String> result = new ArrayList<String>();
         for (Map.Entry<String, String> header : headers) {

@@ -59,7 +59,7 @@ public class CookieTest {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                String body = "Your cookie value: " + request.cookie("someName").getValue();
+                String body = "Your cookie value: " + request.cookieValue("someName");
                 response.header("Content-Length", body.length())
                         .content(body)
                         .end();
