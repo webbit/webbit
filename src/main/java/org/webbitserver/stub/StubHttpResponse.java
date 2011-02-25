@@ -86,6 +86,11 @@ public class StubHttpResponse implements HttpResponse {
     }
 
     @Override
+    public StubHttpResponse write(String content) {
+        return content(content);
+    }
+
+    @Override
     public StubHttpResponse content(byte[] content) {
         try {
             contents.write(content);

@@ -68,6 +68,16 @@ public interface HttpResponse {
     HttpResponse content(String content);
 
     /**
+     * Writes immediately to the client without closing the connection. 
+     * (The {@link #content(String)} method caches content until {@link #end()} is called()
+     * 
+     * TODO: Make content write immediately instead and remove this method?
+     * 
+     * @param content what to write
+     */
+    HttpResponse write(String content);
+
+    /**
      * Write binary based content back to the client.
      *
      * @see #content(String)
