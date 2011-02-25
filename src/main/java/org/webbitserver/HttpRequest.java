@@ -70,6 +70,11 @@ public interface HttpRequest extends DataHolder {
      */
     String method();
 
+    /**
+     * The body
+     */
+    String body();
+
     @Override
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
