@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.Executor;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
+
 // Maybe http://www.uofr.net/~greg/java/get-resource-listing.html
 public class EmbeddedResourceHandler extends AbstractResourceHandler {
     // We're using File because it's good at dealing with path concatenation and slashes. Not actually opening the file.
@@ -19,6 +21,10 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     public EmbeddedResourceHandler(String root, Executor ioThread) {
         super(ioThread);
         this.root = new File(root);
+    }
+
+    public EmbeddedResourceHandler(String root) {
+        this(root, newFixedThreadPool(4));
     }
 
     @Override
