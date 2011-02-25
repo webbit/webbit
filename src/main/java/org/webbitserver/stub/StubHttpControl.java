@@ -9,7 +9,9 @@ public class StubHttpControl implements HttpControl {
     private HttpRequest request;
     private HttpResponse response;
     private WebSocketConnection webSocketConnection;
-    private WebSocketHandler handler;
+    private WebSocketHandler webSocketHandler;
+    private EventSourceHandler eventSourceHandler;
+    private EventSourceConnection eventSourceConnection;
 
     public StubHttpControl() {
     }
@@ -64,13 +66,19 @@ public class StubHttpControl implements HttpControl {
 
     @Override
     public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-        this.handler = handler;
+        this.webSocketHandler = handler;
         return webSocketConnection;
     }
 
     @Override
     public WebSocketConnection createWebSocketConnection() {
         return webSocketConnection;
+    }
+
+    @Override
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler eventSourceHandler) {
+        this.eventSourceHandler = eventSourceHandler;
+        return eventSourceConnection;
     }
 
     public WebSocketConnection webSocketConnection() {
@@ -83,7 +91,7 @@ public class StubHttpControl implements HttpControl {
     }
 
     public WebSocketHandler webSocketHandler() {
-        return handler;
+        return webSocketHandler;
     }
 
     @Override

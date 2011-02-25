@@ -1,9 +1,13 @@
 package samples.eventsource;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.WebServer;
 import org.webbitserver.handler.EmbeddedResourceHandler;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
@@ -11,20 +15,14 @@ import static org.webbitserver.WebServers.createWebServer;
 
 public class Main {
     public static class Pusher implements Runnable {
-        public HttpResponse response;
-        public HttpControl control;
+        private List<EventSourceConnection> connections = new ArrayList<EventSourceConnection>();
 
         @Override
         public void run() {
             while (true) {
                 try {
-                    if(control != null) {
-                        control.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                response.write("data: " + new Date() + "\n");
-                            }
-                        });
+                    for (EventSourceConnection connection : connections) {
+                        connection.send(new Date().toString());
                     }
                     sleep(1000);
                 } catch (InterruptedException e) {
@@ -33,6 +31,10 @@ public class Main {
                 }
             }
         }
+
+        public void addConnection(EventSourceConnection connection) {
+            connections.add(connection);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -40,12 +42,10 @@ public class Main {
         newSingleThreadExecutor().execute(pusher);
 
         WebServer webServer = createWebServer(9876)
-                .add("/events", new HttpHandler() {
+                .add("/events", new EventSourceHandler() {
                     @Override
-                    public void handleHttpRequest(HttpRequest request, final HttpResponse response, final HttpControl control) throws Exception {
-                        response.header("Content-Type", "text/event-stream").header("Cache-Control", "no-cache");
-                        pusher.response = response;
-                        pusher.control = control;
+                    public void onOpen(EventSourceConnection connection) throws Exception {
+                        pusher.addConnection(connection);
                     }
                 })
                 .add(new EmbeddedResourceHandler("samples/eventsource/content"))

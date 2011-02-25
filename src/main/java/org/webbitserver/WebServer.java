@@ -78,6 +78,8 @@ public interface WebServer {
      */
     WebServer add(String path, WebSocketHandler handler);
 
+    WebServer add(String path, EventSourceHandler handler);
+
     /**
      * Start web server in background.
      */

@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 public class WebSocketConnectionWrapper implements WebSocketConnection {
-    
+
     private WebSocketConnection connection;
 
     public WebSocketConnectionWrapper(WebSocketConnection connection) {

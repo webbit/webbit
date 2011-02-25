@@ -99,7 +99,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         write(copiedBuffer(content, CharsetUtil.UTF_8));
         return this;
     }
-    
+
     @Override
     public NettyHttpResponse error(Throwable error) {
         response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);

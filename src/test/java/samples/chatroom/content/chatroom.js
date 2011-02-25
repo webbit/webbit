@@ -26,13 +26,13 @@ function login() {
 function onMessage(incoming) {
     switch (incoming.action) {
         case 'JOIN':
-            logText("* User '" + incoming.username +"' joined.");
+            logText("* User '" + incoming.username + "' joined.");
             break;
         case 'LEAVE':
-            logText("* User '" + incoming.username +"' left.");
+            logText("* User '" + incoming.username + "' left.");
             break;
         case 'SAY':
-            logText("[" + incoming.username +"] " + incoming.message);
+            logText("[" + incoming.username + "] " + incoming.message);
             break;
     }
 }
@@ -45,10 +45,19 @@ function connect() {
     // connect to socket
     logText('* Connecting...');
     ws = new WebSocket('ws://' + document.location.host + '/chatsocket');
-    ws.onopen    = function(e) { logText('* Connected!'); login(); };
-    ws.onclose   = function(e) { logText('* Disconnected'); };
-    ws.onerror   = function(e) { logText('* Unexpected error'); };
-    ws.onmessage = function(e) { onMessage(JSON.parse(e.data)); };
+    ws.onopen = function(e) {
+        logText('* Connected!');
+        login();
+    };
+    ws.onclose = function(e) {
+        logText('* Disconnected');
+    };
+    ws.onerror = function(e) {
+        logText('* Unexpected error');
+    };
+    ws.onmessage = function(e) {
+        onMessage(JSON.parse(e.data));
+    };
 
     // wire up text input event
     var entry = document.getElementById('entry');

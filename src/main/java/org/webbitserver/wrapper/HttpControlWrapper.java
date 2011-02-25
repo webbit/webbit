@@ -29,7 +29,7 @@ public class HttpControlWrapper implements HttpControl {
             return control;
         }
     }
-    
+
     @Override
     public void nextHandler() {
         control.nextHandler();
@@ -53,6 +53,11 @@ public class HttpControlWrapper implements HttpControl {
     @Override
     public WebSocketConnection createWebSocketConnection() {
         return control.createWebSocketConnection();
+    }
+
+    @Override
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+        return control.upgradeToEventSourceConnection(handler);
     }
 
     @Override

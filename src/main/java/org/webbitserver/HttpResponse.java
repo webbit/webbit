@@ -8,7 +8,7 @@ import java.nio.charset.Charset;
  *
  * IMPORTANT: The connection will remain open until {@link #end()} or {@link #error(Throwable)} is called. Don't
  * forget these!
- * 
+ *
  * @author Joe Walnes
  */
 public interface HttpResponse {
@@ -54,7 +54,7 @@ public interface HttpResponse {
 
     /**
      * Adds a cookie
-     * 
+     *
      * @param httpCookie the cookie
      */
     HttpResponse cookie(HttpCookie httpCookie);
@@ -68,11 +68,11 @@ public interface HttpResponse {
     HttpResponse content(String content);
 
     /**
-     * Writes immediately to the client without closing the connection. 
+     * Writes immediately to the client without closing the connection.
      * (The {@link #content(String)} method caches content until {@link #end()} is called()
-     * 
+     *
      * TODO: Make content write immediately instead and remove this method?
-     * 
+     *
      * @param content what to write
      */
     HttpResponse write(String content);
