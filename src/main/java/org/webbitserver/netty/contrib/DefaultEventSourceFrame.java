@@ -13,6 +13,11 @@ public class DefaultEventSourceFrame {
     }
 
     public ChannelBuffer toChannelBuffer() {
-        return copiedBuffer("data:" + message + "\n\n", CharsetUtil.UTF_8);
+        return copiedBuffer(toString(), CharsetUtil.UTF_8);
+    }
+
+    @Override
+    public String toString() {
+        return "data:" + message + "\n\n";
     }
 }
