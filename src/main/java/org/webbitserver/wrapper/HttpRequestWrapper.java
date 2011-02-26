@@ -80,6 +80,11 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public String body() {
+        return request.body();
+    }
+
+    @Override
     public Map<String, Object> data() {
         return request.data();
     }
