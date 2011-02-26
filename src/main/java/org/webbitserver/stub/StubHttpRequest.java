@@ -24,6 +24,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     private SocketAddress remoteAddress = new InetSocketAddress("localhost", 0);
     private Object id = "StubID";
     private long timestamp = 0;
+    private String body;
 
     public StubHttpRequest() {
     }
@@ -78,6 +79,12 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     }
 
     @Override
+    public String cookieValue(String name) {
+        HttpCookie cookie = cookie(name);
+        return cookie == null ? null : cookie.getValue();
+    }
+
+    @Override
     public List<String> headers(String name) {
         List<String> result = new ArrayList<String>();
         for (Map.Entry<String, String> header : headers) {
@@ -96,6 +103,16 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     @Override
     public String method() {
         return method;
+    }
+
+    @Override
+    public String body() {
+        return body;
+    }
+
+    public StubHttpRequest body(String body) {
+        this.body = body;
+        return this;
     }
 
     public StubHttpRequest method(String method) {

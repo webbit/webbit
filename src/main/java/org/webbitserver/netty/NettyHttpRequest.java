@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.InboundCookieParser;
 
 import java.net.HttpCookie;
@@ -59,6 +60,12 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public String cookieValue(String name) {
+        HttpCookie cookie = cookie(name);
+        return cookie == null ? null : cookie.getValue();
+    }
+
+    @Override
     public List<Map.Entry<String, String>> allHeaders() {
         return httpRequest.getHeaders();
     }
@@ -66,6 +73,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public String method() {
         return httpRequest.getMethod().getName();
+    }
+
+    @Override
+    public String body() {
+        return httpRequest.getContent().toString(CharsetUtil.UTF_8); // TODO get charset from request
     }
 
     @Override
