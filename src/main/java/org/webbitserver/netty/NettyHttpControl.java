@@ -87,7 +87,7 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
         NettyEventSourceConnection eventSourceConnection = new NettyEventSourceConnection(executor, nettyHttpRequest, ctx);
-        new NettyEventSourceChannelHandler(executor, ctx, nettyHttpRequest, httpRequest,
+        new NettyEventSourceChannelHandler(executor, ctx, nettyHttpRequest,
                 defaultHttpResponse, handler, eventSourceConnection, exceptionHandler, ioExceptionHandler);
         return eventSourceConnection;
     }

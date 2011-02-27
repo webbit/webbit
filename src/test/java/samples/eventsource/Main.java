@@ -16,14 +16,13 @@ import static org.webbitserver.WebServers.createWebServer;
 public class Main {
     public static class Pusher implements Runnable {
         private List<EventSourceConnection> connections = new ArrayList<EventSourceConnection>();
+        private int count = 1;
 
         @Override
         public void run() {
             while (true) {
                 try {
-                    for (EventSourceConnection connection : connections) {
-                        connection.send(new Date().toString());
-                    }
+                    broadcast(new Date().toString());
                     sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -32,8 +31,21 @@ public class Main {
             }
         }
 
+        private void broadcast(String message) {
+            for (EventSourceConnection connection : connections) {
+                connection.send(message);
+            }
+        }
+
         public void addConnection(EventSourceConnection connection) {
+            connection.data("id", count++);
             connections.add(connection);
+            broadcast("Client " + connection.data("id") + " joined");
+        }
+
+        public void removeConnection(EventSourceConnection connection) {
+            connections.remove(connection);
+            broadcast("Client " + connection.data("id") + " left");
         }
     }
 
@@ -46,6 +58,11 @@ public class Main {
                     @Override
                     public void onOpen(EventSourceConnection connection) throws Exception {
                         pusher.addConnection(connection);
+                    }
+
+                    @Override
+                    public void onClose(EventSourceConnection connection) throws Exception {
+                        pusher.removeConnection(connection);
                     }
                 })
                 .add(new EmbeddedResourceHandler("samples/eventsource/content"))
