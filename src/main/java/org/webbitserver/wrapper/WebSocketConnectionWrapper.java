@@ -1,30 +1,30 @@
 package org.webbitserver.wrapper;
 
+import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
-import org.webbitserver.WebSocketConnection;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class WebSocketConnectionWrapper implements WebSocketConnection {
+public class WebSocketConnectionWrapper implements CometConnection {
 
-    private WebSocketConnection connection;
+    private CometConnection connection;
 
-    public WebSocketConnectionWrapper(WebSocketConnection connection) {
+    public WebSocketConnectionWrapper(CometConnection connection) {
         this.connection = connection;
     }
 
-    public WebSocketConnection underlyingControl() {
+    public CometConnection underlyingControl() {
         return connection;
     }
 
-    public WebSocketConnectionWrapper underlyingControl(WebSocketConnection control) {
+    public WebSocketConnectionWrapper underlyingControl(CometConnection control) {
         this.connection = control;
         return this;
     }
 
-    public WebSocketConnection originalControl() {
+    public CometConnection originalControl() {
         if (connection instanceof WebSocketConnectionWrapper) {
             WebSocketConnectionWrapper wrapper = (WebSocketConnectionWrapper) connection;
             return wrapper.originalControl();

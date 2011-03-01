@@ -41,12 +41,12 @@ public class LoggingHandler implements HttpHandler {
             private LoggingWebSocketConnection loggingWebSocketConnection;
 
             @Override
-            public WebSocketConnection createWebSocketConnection() {
+            public CometConnection createWebSocketConnection() {
                 return loggingWebSocketConnection;
             }
 
             @Override
-            public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+            public CometConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
                 loggingWebSocketConnection = new LoggingWebSocketConnection(super.createWebSocketConnection());
                 return super.upgradeToWebSocketConnection(
                         new LoggingWebSocketHandler(loggingWebSocketConnection, handler));
@@ -58,7 +58,7 @@ public class LoggingHandler implements HttpHandler {
 
     private class LoggingWebSocketConnection extends WebSocketConnectionWrapper {
 
-        LoggingWebSocketConnection(WebSocketConnection connection) {
+        LoggingWebSocketConnection(CometConnection connection) {
             super(connection);
         }
 
@@ -72,28 +72,28 @@ public class LoggingHandler implements HttpHandler {
 
     private class LoggingWebSocketHandler implements WebSocketHandler {
 
-        private final WebSocketConnection loggingConnection;
+        private final CometConnection loggingConnection;
         private final WebSocketHandler handler;
 
-        LoggingWebSocketHandler(WebSocketConnection loggingConnection, WebSocketHandler handler) {
+        LoggingWebSocketHandler(CometConnection loggingConnection, WebSocketHandler handler) {
             this.loggingConnection = loggingConnection;
             this.handler = handler;
         }
 
         @Override
-        public void onOpen(WebSocketConnection connection) throws Exception {
+        public void onOpen(CometConnection connection) throws Exception {
             logSink.webSocketOpen(connection);
             handler.onOpen(loggingConnection);
         }
 
         @Override
-        public void onMessage(WebSocketConnection connection, String message) throws Exception {
+        public void onMessage(CometConnection connection, String message) throws Exception {
             logSink.webSocketInboundData(connection, message);
             handler.onMessage(loggingConnection, message);
         }
 
         @Override
-        public void onClose(WebSocketConnection connection) throws Exception {
+        public void onClose(CometConnection connection) throws Exception {
             logSink.webSocketClose(connection);
             logSink.httpEnd(connection.httpRequest());
             handler.onClose(loggingConnection);

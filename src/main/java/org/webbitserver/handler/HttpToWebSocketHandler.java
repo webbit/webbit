@@ -3,7 +3,6 @@ package org.webbitserver.handler;
 import org.webbitserver.*;
 
 public class HttpToWebSocketHandler implements HttpHandler {
-
     private final WebSocketHandler webSocketHandler;
 
     public HttpToWebSocketHandler(WebSocketHandler webSocketHandler) {

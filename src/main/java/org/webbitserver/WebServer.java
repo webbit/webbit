@@ -78,7 +78,7 @@ public interface WebServer {
      */
     WebServer add(String path, WebSocketHandler handler);
 
-    WebServer add(String path, EventSourceHandler handler);
+    WebServer add(String path, CometHandler handler);
 
     /**
      * Start web server in background.

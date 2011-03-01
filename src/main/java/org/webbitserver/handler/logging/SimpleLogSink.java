@@ -1,7 +1,7 @@
 package org.webbitserver.handler.logging;
 
+import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
-import org.webbitserver.WebSocketConnection;
 
 import java.io.Flushable;
 import java.io.IOException;
@@ -47,22 +47,22 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void webSocketOpen(WebSocketConnection connection) {
+    public void webSocketOpen(CometConnection connection) {
         custom(connection.httpRequest(), "WEBSOCKET-OPEN", null);
     }
 
     @Override
-    public void webSocketClose(WebSocketConnection connection) {
+    public void webSocketClose(CometConnection connection) {
         custom(connection.httpRequest(), "WEBSOCKET-CLOSE", null);
     }
 
     @Override
-    public void webSocketInboundData(WebSocketConnection connection, String data) {
+    public void webSocketInboundData(CometConnection connection, String data) {
         custom(connection.httpRequest(), "WEBSOCKET-IN", data);
     }
 
     @Override
-    public void webSocketOutboundData(WebSocketConnection connection, String data) {
+    public void webSocketOutboundData(CometConnection connection, String data) {
         custom(connection.httpRequest(), "WEBSOCKET-OUT", data);
     }
 

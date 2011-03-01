@@ -1,20 +1,17 @@
 package org.webbitserver.handler;
 
-import org.webbitserver.EventSourceHandler;
-import org.webbitserver.HttpControl;
-import org.webbitserver.HttpHandler;
-import org.webbitserver.HttpRequest;
-import org.webbitserver.HttpResponse;
+import org.webbitserver.*;
+import org.webbitserver.CometHandler;
 
 public class HttpToEventSourceHandler implements HttpHandler {
-    private final EventSourceHandler eventSourceHandler;
+    private final CometHandler cometHandler;
 
-    public HttpToEventSourceHandler(EventSourceHandler eventSourceHandler) {
-        this.eventSourceHandler = eventSourceHandler;
+    public HttpToEventSourceHandler(CometHandler cometHandler) {
+        this.cometHandler = cometHandler;
     }
 
     @Override
-    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-        control.upgradeToEventSourceConnection(eventSourceHandler);
+    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) {
+        control.upgradeToEventSourceConnection(cometHandler);
     }
 }

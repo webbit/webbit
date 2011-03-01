@@ -8,7 +8,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.webbitserver.EventSourceHandler;
+import org.webbitserver.CometHandler;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
@@ -115,7 +115,7 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public WebServer add(String path, EventSourceHandler handler) {
+    public WebServer add(String path, CometHandler handler) {
         return add(path, new HttpToEventSourceHandler(handler));
     }
 

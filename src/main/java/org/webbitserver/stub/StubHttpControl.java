@@ -8,10 +8,10 @@ public class StubHttpControl implements HttpControl {
 
     private HttpRequest request;
     private HttpResponse response;
-    private WebSocketConnection webSocketConnection;
+    private CometConnection webSocketConnection;
     private WebSocketHandler webSocketHandler;
-    private EventSourceHandler eventSourceHandler;
-    private EventSourceConnection eventSourceConnection;
+    private CometHandler eventSourceHandler;
+    private CometConnection cometConnection;
 
     public StubHttpControl() {
     }
@@ -21,11 +21,11 @@ public class StubHttpControl implements HttpControl {
         this.response = response;
     }
 
-    public StubHttpControl(WebSocketConnection connection) {
+    public StubHttpControl(CometConnection connection) {
         this.webSocketConnection = connection;
     }
 
-    public StubHttpControl(HttpRequest request, HttpResponse response, WebSocketConnection connection) {
+    public StubHttpControl(HttpRequest request, HttpResponse response, CometConnection connection) {
         this.request = request;
         this.response = response;
         this.webSocketConnection = connection;
@@ -65,27 +65,27 @@ public class StubHttpControl implements HttpControl {
     }
 
     @Override
-    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+    public CometConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         this.webSocketHandler = handler;
         return webSocketConnection;
     }
 
     @Override
-    public WebSocketConnection createWebSocketConnection() {
+    public CometConnection createWebSocketConnection() {
         return webSocketConnection;
     }
 
     @Override
-    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler eventSourceHandler) {
-        this.eventSourceHandler = eventSourceHandler;
-        return eventSourceConnection;
+    public CometConnection upgradeToEventSourceConnection(CometHandler cometHandler) {
+        this.eventSourceHandler = cometHandler;
+        return cometConnection;
     }
 
-    public WebSocketConnection webSocketConnection() {
+    public CometConnection webSocketConnection() {
         return webSocketConnection;
     }
 
-    public StubHttpControl webSocketConnection(WebSocketConnection webSocketConnection) {
+    public StubHttpControl webSocketConnection(CometConnection webSocketConnection) {
         this.webSocketConnection = webSocketConnection;
         return this;
     }

@@ -1,7 +1,7 @@
 package samples.chatroom;
 
 import com.google.gson.Gson;
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.CometConnection;
 import org.webbitserver.WebSocketHandler;
 
 import java.util.HashSet;
@@ -29,15 +29,15 @@ public class Chatroom implements WebSocketHandler {
         String message;
     }
 
-    private Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
+    private Set<CometConnection> connections = new HashSet<CometConnection>();
 
     @Override
-    public void onOpen(WebSocketConnection connection) throws Exception {
+    public void onOpen(CometConnection connection) throws Exception {
         connections.add(connection);
     }
 
     @Override
-    public void onMessage(WebSocketConnection connection, String msg) throws Exception {
+    public void onMessage(CometConnection connection, String msg) throws Exception {
         Incoming incoming = json.fromJson(msg, Incoming.class);
         switch (incoming.action) {
             case LOGIN:
@@ -49,7 +49,7 @@ public class Chatroom implements WebSocketHandler {
         }
     }
 
-    private void login(WebSocketConnection connection, String username) {
+    private void login(CometConnection connection, String username) {
         connection.data(USERNAME_KEY, username); // associate username with connection
 
         Outgoing outgoing = new Outgoing();
@@ -58,7 +58,7 @@ public class Chatroom implements WebSocketHandler {
         broadcast(outgoing);
     }
 
-    private void say(WebSocketConnection connection, String message) {
+    private void say(CometConnection connection, String message) {
         String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             Outgoing outgoing = new Outgoing();
@@ -71,7 +71,7 @@ public class Chatroom implements WebSocketHandler {
 
     private void broadcast(Outgoing outgoing) {
         String jsonStr = this.json.toJson(outgoing);
-        for (WebSocketConnection connection : connections) {
+        for (CometConnection connection : connections) {
             if (connection.data(USERNAME_KEY) != null) { // only broadcast to those who have completed login
                 connection.send(jsonStr);
             }
@@ -79,7 +79,7 @@ public class Chatroom implements WebSocketHandler {
     }
 
     @Override
-    public void onClose(WebSocketConnection connection) throws Exception {
+    public void onClose(CometConnection connection) throws Exception {
         String username = (String) connection.data(USERNAME_KEY);
         if (username != null) {
             Outgoing outgoing = new Outgoing();

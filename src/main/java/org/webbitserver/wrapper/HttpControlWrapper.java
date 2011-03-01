@@ -46,17 +46,17 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+    public CometConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         return control.upgradeToWebSocketConnection(handler);
     }
 
     @Override
-    public WebSocketConnection createWebSocketConnection() {
+    public CometConnection createWebSocketConnection() {
         return control.createWebSocketConnection();
     }
 
     @Override
-    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+    public CometConnection upgradeToEventSourceConnection(CometHandler handler) {
         return control.upgradeToEventSourceConnection(handler);
     }
 

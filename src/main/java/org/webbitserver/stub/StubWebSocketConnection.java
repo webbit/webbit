@@ -1,7 +1,7 @@
 package org.webbitserver.stub;
 
+import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
-import org.webbitserver.WebSocketConnection;
 
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
  * Implementation of WebSocketConnection that is easy to construct, and inspect results.
  * Useful for testing.
  */
-public class StubWebSocketConnection extends StubDataHolder implements WebSocketConnection {
+public class StubWebSocketConnection extends StubDataHolder implements CometConnection {
     private final List<String> sentMessages = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;

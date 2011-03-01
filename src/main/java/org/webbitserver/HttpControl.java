@@ -10,11 +10,11 @@ public interface HttpControl extends Executor {
 
     void nextHandler(HttpRequest request, HttpResponse response, HttpControl control);
 
-    WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler);
+    CometConnection upgradeToWebSocketConnection(WebSocketHandler handler);
 
-    WebSocketConnection createWebSocketConnection();
+    CometConnection createWebSocketConnection();
 
-    EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler);
+    CometConnection upgradeToEventSourceConnection(CometHandler handler);
 
     Executor handlerExecutor();
 }

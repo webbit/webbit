@@ -2,7 +2,9 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -10,10 +12,9 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.CometConnection;
 import org.webbitserver.WebSocketHandler;
 
-import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
@@ -21,13 +22,8 @@ import java.util.concurrent.Executor;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
-public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
-    private final Executor executor;
-    private final NettyHttpRequest nettyHttpRequest;
+public class NettyWebSocketChannelHandler extends CometChannelHandler {
     private final WebSocketHandler handler;
-    private final WebSocketConnection webSocketConnection;
-    private final Thread.UncaughtExceptionHandler exceptionHandler;
-    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
     public NettyWebSocketChannelHandler(Executor executor,
                                         ChannelHandlerContext ctx,
@@ -35,16 +31,24 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                                         HttpRequest request,
                                         HttpResponse response,
                                         WebSocketHandler handler,
-                                        WebSocketConnection webSocketConnection,
+                                        CometConnection cometConnection,
                                         Thread.UncaughtExceptionHandler exceptionHandler,
                                         Thread.UncaughtExceptionHandler ioExceptionHandler) {
-        this.executor = executor;
-        this.nettyHttpRequest = nettyHttpRequest;
+        super(handler, ctx, exceptionHandler, nettyHttpRequest, executor, ioExceptionHandler, cometConnection, request, response);
         this.handler = handler;
-        this.webSocketConnection = webSocketConnection;
-        this.exceptionHandler = exceptionHandler;
-        this.ioExceptionHandler = ioExceptionHandler;
+    }
 
+    @Override
+    protected void adjustPipeline(ChannelHandlerContext ctx) {
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        p.remove("aggregator");
+        p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
+        p.replace("handler", "wshandler", this);
+        p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
+    }
+
+    @Override
+    protected void prepareConnection(HttpRequest request, HttpResponse response) {
         if (!requestingWebsocketUpgrade(request)) {
             throw new RuntimeException("Expecting WebSocket upgrade. Looks like a standard HTTP request.");
         }
@@ -55,23 +59,6 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         } else {
             upgradeResponseOldSkool(request, response);
         }
-
-        ChannelPipeline p = ctx.getChannel().getPipeline();
-        p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
-        p.replace("handler", "wshandler", this);
-
-        ctx.getChannel().write(response);
-
-        p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
-
-        try {
-            handler.onOpen(this.webSocketConnection);
-        } catch (Exception e) {
-            // TODO
-            e.printStackTrace();
-        }
-
     }
 
     private boolean requestingWebsocketUpgrade(HttpRequest request) {
@@ -135,46 +122,12 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    handler.onMessage(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
+                    handler.onMessage(cometConnection, ((WebSocketFrame) e.getMessage()).getTextData());
                 } catch (Exception e1) {
                     // TODO
                     e1.printStackTrace();
                 }
             }
         });
-    }
-
-    @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    handler.onClose(webSocketConnection);
-                } catch (Exception e1) {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), e1);
-                }
-            }
-        });
-    }
-
-    @Override
-    public String toString() {
-        return nettyHttpRequest.toString();
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
-        if (e.getCause() instanceof ClosedChannelException) {
-            e.getChannel().close();
-        } else {
-            final Thread thread = Thread.currentThread();
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    ioExceptionHandler.uncaughtException(thread, e.getCause());
-                }
-            });
-        }
     }
 }

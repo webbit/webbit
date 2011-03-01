@@ -1,14 +1,14 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.webbitserver.EventSourceConnection;
+import org.webbitserver.CometConnection;
 import org.webbitserver.netty.contrib.DefaultEventSourceFrame;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class NettyEventSourceConnection implements EventSourceConnection {
+public class NettyEventSourceConnection implements CometConnection {
     private final Executor executor;
     private final NettyHttpRequest nettyHttpRequest;
     private final ChannelHandlerContext ctx;
@@ -25,13 +25,13 @@ public class NettyEventSourceConnection implements EventSourceConnection {
     }
 
     @Override
-    public EventSourceConnection send(String message) {
+    public CometConnection send(String message) {
         ctx.getChannel().write(new DefaultEventSourceFrame(message).toChannelBuffer());
         return this;
     }
 
     @Override
-    public EventSourceConnection close() {
+    public CometConnection close() {
         ctx.getChannel().close();
         return this;
     }

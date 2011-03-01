@@ -2,13 +2,13 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.CometConnection;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class NettyWebSocketConnection implements WebSocketConnection {
+public class NettyWebSocketConnection implements CometConnection {
 
     private final Executor executor;
     private final NettyHttpRequest nettyHttpRequest;
@@ -26,13 +26,13 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     }
 
     @Override
-    public WebSocketConnection send(String message) {
+    public CometConnection send(String message) {
         ctx.getChannel().write(new DefaultWebSocketFrame(message));
         return this;
     }
 
     @Override
-    public WebSocketConnection close() {
+    public CometConnection close() {
         ctx.getChannel().close();
         return this;
     }
