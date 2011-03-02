@@ -37,7 +37,7 @@ import java.util.concurrent.Executor;
  * @author Joe Walnes
  * @see WebServers
  * @see HttpHandler
- * @see WebSocketConnection
+ * @see CometConnection
  */
 public interface WebServer {
 
@@ -70,15 +70,15 @@ public interface WebServer {
      *
      * This is shortcut for {@code add(newPathMatchHandler(path,newHttpToWebSocketHandler(handler)))}.
      *
-     * @see WebSocketHandler
+     * @see CometHandler
      * @see HttpHandler
      * @see #add(HttpHandler)
      * @see org.webbitserver.handler.HttpToWebSocketHandler
      * @see org.webbitserver.handler.PathMatchHandler
      */
-    WebServer add(String path, WebSocketHandler handler);
+    WebServer addWebSocket(String path, CometHandler handler);
 
-    WebServer add(String path, CometHandler handler);
+    WebServer addEventSource(String path, CometHandler handler);
 
     /**
      * Start web server in background.

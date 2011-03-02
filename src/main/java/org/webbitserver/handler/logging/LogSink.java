@@ -8,10 +8,10 @@ public interface LogSink {
     void httpStart(HttpRequest request);
     void httpEnd(HttpRequest request);
 
-    void webSocketOpen(CometConnection connection);
-    void webSocketClose(CometConnection connection);
+    void cometConnectionOpen(CometConnection connection);
+    void cometConnectionClose(CometConnection connection);
     void webSocketInboundData(CometConnection connection, String data);
-    void webSocketOutboundData(CometConnection connection, String data);
+    void cometOutboundData(CometConnection connection, String data);
 
     void error(HttpRequest request, Throwable error);
 

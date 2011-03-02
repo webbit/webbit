@@ -46,7 +46,7 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public CometConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+    public CometConnection upgradeToWebSocketConnection(CometHandler handler) {
         return control.upgradeToWebSocketConnection(handler);
     }
 
@@ -60,6 +60,10 @@ public class HttpControlWrapper implements HttpControl {
         return control.upgradeToEventSourceConnection(handler);
     }
 
+    public CometConnection createEventSourceConnection() {
+        return control.createEventSourceConnection();
+    }
+
     @Override
     public Executor handlerExecutor() {
         return control.handlerExecutor();
@@ -69,5 +73,4 @@ public class HttpControlWrapper implements HttpControl {
     public void execute(Runnable command) {
         control.execute(command);
     }
-
 }

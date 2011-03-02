@@ -3,9 +3,9 @@ package org.webbitserver.handler;
 import org.webbitserver.*;
 
 public class HttpToWebSocketHandler implements HttpHandler {
-    private final WebSocketHandler webSocketHandler;
+    private final CometHandler webSocketHandler;
 
-    public HttpToWebSocketHandler(WebSocketHandler webSocketHandler) {
+    public HttpToWebSocketHandler(CometHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
     }
 

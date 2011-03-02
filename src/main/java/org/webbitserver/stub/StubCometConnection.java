@@ -10,16 +10,16 @@ import java.util.concurrent.Executor;
  * Implementation of WebSocketConnection that is easy to construct, and inspect results.
  * Useful for testing.
  */
-public class StubWebSocketConnection extends StubDataHolder implements CometConnection {
+public class StubCometConnection extends StubDataHolder implements CometConnection {
     private final List<String> sentMessages = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;
 
-    public StubWebSocketConnection(HttpRequest httpRequest) {
+    public StubCometConnection(HttpRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
 
-    public StubWebSocketConnection() {
+    public StubCometConnection() {
         this(new StubHttpRequest());
     }
 
@@ -28,19 +28,19 @@ public class StubWebSocketConnection extends StubDataHolder implements CometConn
         return httpRequest;
     }
 
-    public StubWebSocketConnection httpRequest(HttpRequest httpRequest) {
+    public StubCometConnection httpRequest(HttpRequest httpRequest) {
         this.httpRequest = httpRequest;
         return this;
     }
 
     @Override
-    public StubWebSocketConnection send(String message) {
+    public StubCometConnection send(String message) {
         sentMessages.add(message);
         return this;
     }
 
     @Override
-    public StubWebSocketConnection close() {
+    public StubCometConnection close() {
         closed = true;
         return this;
     }
@@ -50,7 +50,7 @@ public class StubWebSocketConnection extends StubDataHolder implements CometConn
     }
 
     @Override
-    public StubWebSocketConnection data(String key, Object value) {
+    public StubCometConnection data(String key, Object value) {
         super.data(key, value);
         return this;
     }
@@ -58,6 +58,11 @@ public class StubWebSocketConnection extends StubDataHolder implements CometConn
     @Override
     public Executor handlerExecutor() {
         return this;
+    }
+
+    @Override
+    public String protocol() {
+        return "cometstub";
     }
 
     @Override

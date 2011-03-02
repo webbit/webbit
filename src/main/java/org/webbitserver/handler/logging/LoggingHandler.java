@@ -1,9 +1,9 @@
 package org.webbitserver.handler.logging;
 
 import org.webbitserver.*;
+import org.webbitserver.wrapper.CometConnectionWrapper;
 import org.webbitserver.wrapper.HttpControlWrapper;
 import org.webbitserver.wrapper.HttpResponseWrapper;
-import org.webbitserver.wrapper.WebSocketConnectionWrapper;
 
 public class LoggingHandler implements HttpHandler {
 
@@ -38,52 +38,71 @@ public class LoggingHandler implements HttpHandler {
 
         HttpControlWrapper controlWrapper = new HttpControlWrapper(control) {
 
-            private LoggingWebSocketConnection loggingWebSocketConnection;
+            private LoggingCometConnection loggingCometConnection;
 
             @Override
             public CometConnection createWebSocketConnection() {
-                return loggingWebSocketConnection;
+                return loggingCometConnection;
             }
 
             @Override
-            public CometConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-                loggingWebSocketConnection = new LoggingWebSocketConnection(super.createWebSocketConnection());
+            public CometConnection upgradeToWebSocketConnection(CometHandler handler) {
+                loggingCometConnection = new LoggingCometConnection(super.createWebSocketConnection());
                 return super.upgradeToWebSocketConnection(
-                        new LoggingWebSocketHandler(loggingWebSocketConnection, handler));
+                        new LoggingCometHandler(loggingCometConnection, handler));
+            }
+
+            @Override
+            public CometConnection createEventSourceConnection() {
+                return loggingCometConnection;
+            }
+
+            @Override
+            public CometConnection upgradeToEventSourceConnection(CometHandler handler) {
+                loggingCometConnection = new LoggingCometConnection(super.createEventSourceConnection());
+                return super.upgradeToEventSourceConnection(
+                        new LoggingCometHandler(loggingCometConnection, handler));
             }
         };
         control.nextHandler(request, responseWrapper, controlWrapper);
     }
 
 
-    private class LoggingWebSocketConnection extends WebSocketConnectionWrapper {
+    private class LoggingCometConnection extends CometConnectionWrapper {
 
-        LoggingWebSocketConnection(CometConnection connection) {
+        LoggingCometConnection(CometConnection connection) {
             super(connection);
         }
 
         @Override
-        public WebSocketConnectionWrapper send(String message) {
-            logSink.webSocketOutboundData(this, message);
+        public CometConnectionWrapper send(String message) {
+            logSink.cometOutboundData(this, message);
             return super.send(message);
         }
 
     }
 
-    private class LoggingWebSocketHandler implements WebSocketHandler {
+    private class LoggingCometHandler implements CometHandler {
 
         private final CometConnection loggingConnection;
-        private final WebSocketHandler handler;
+        private final CometHandler handler;
 
-        LoggingWebSocketHandler(CometConnection loggingConnection, WebSocketHandler handler) {
+        LoggingCometHandler(CometConnection loggingConnection, CometHandler handler) {
             this.loggingConnection = loggingConnection;
             this.handler = handler;
         }
 
         @Override
         public void onOpen(CometConnection connection) throws Exception {
-            logSink.webSocketOpen(connection);
+            logSink.cometConnectionOpen(connection);
             handler.onOpen(loggingConnection);
+        }
+
+        @Override
+        public void onClose(CometConnection connection) throws Exception {
+            logSink.cometConnectionClose(connection);
+            logSink.httpEnd(connection.httpRequest());
+            handler.onClose(loggingConnection);
         }
 
         @Override
@@ -91,14 +110,6 @@ public class LoggingHandler implements HttpHandler {
             logSink.webSocketInboundData(connection, message);
             handler.onMessage(loggingConnection, message);
         }
-
-        @Override
-        public void onClose(CometConnection connection) throws Exception {
-            logSink.webSocketClose(connection);
-            logSink.httpEnd(connection.httpRequest());
-            handler.onClose(loggingConnection);
-        }
-
     }
 
 }

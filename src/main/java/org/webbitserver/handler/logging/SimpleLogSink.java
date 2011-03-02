@@ -47,23 +47,23 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void webSocketOpen(CometConnection connection) {
-        custom(connection.httpRequest(), "WEBSOCKET-OPEN", null);
+    public void cometConnectionOpen(CometConnection connection) {
+        custom(connection.httpRequest(), action(connection, "OPEN"), null);
     }
 
     @Override
-    public void webSocketClose(CometConnection connection) {
-        custom(connection.httpRequest(), "WEBSOCKET-CLOSE", null);
+    public void cometConnectionClose(CometConnection connection) {
+        custom(connection.httpRequest(), action(connection, "CLOSE"), null);
     }
 
     @Override
     public void webSocketInboundData(CometConnection connection, String data) {
-        custom(connection.httpRequest(), "WEBSOCKET-IN", data);
+        custom(connection.httpRequest(), action(connection, "IN"), data);
     }
 
     @Override
-    public void webSocketOutboundData(CometConnection connection, String data) {
-        custom(connection.httpRequest(), "WEBSOCKET-OUT", data);
+    public void cometOutboundData(CometConnection connection, String data) {
+        custom(connection.httpRequest(), action(connection, "OUT"), data);
     }
 
     @Override
@@ -83,6 +83,10 @@ public class SimpleLogSink implements LogSink {
             trouble = true;
             panic(e);
         }
+    }
+
+    private String action(CometConnection connection, String action) {
+        return connection.protocol().toUpperCase() + "-" + action;
     }
 
     protected void flush() throws IOException {

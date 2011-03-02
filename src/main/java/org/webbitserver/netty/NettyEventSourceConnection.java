@@ -66,4 +66,9 @@ public class NettyEventSourceConnection implements CometConnection {
     public Executor handlerExecutor() {
         return executor;
     }
+
+    @Override
+    public String protocol() {
+        return EVENT_SOURCE;
+    }
 }

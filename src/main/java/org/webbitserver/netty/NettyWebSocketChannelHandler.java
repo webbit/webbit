@@ -13,7 +13,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.CometConnection;
-import org.webbitserver.WebSocketHandler;
+import org.webbitserver.CometHandler;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,14 +23,14 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class NettyWebSocketChannelHandler extends CometChannelHandler {
-    private final WebSocketHandler handler;
+    private final CometHandler handler;
 
     public NettyWebSocketChannelHandler(Executor executor,
                                         ChannelHandlerContext ctx,
                                         NettyHttpRequest nettyHttpRequest,
                                         HttpRequest request,
                                         HttpResponse response,
-                                        WebSocketHandler handler,
+                                        CometHandler handler,
                                         CometConnection cometConnection,
                                         Thread.UncaughtExceptionHandler exceptionHandler,
                                         Thread.UncaughtExceptionHandler ioExceptionHandler) {

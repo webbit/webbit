@@ -2,12 +2,12 @@ package samples.chatroom;
 
 import com.google.gson.Gson;
 import org.webbitserver.CometConnection;
-import org.webbitserver.WebSocketHandler;
+import org.webbitserver.CometHandler;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class Chatroom implements WebSocketHandler {
+public class Chatroom implements CometHandler {
 
     private final Gson json = new Gson();
 

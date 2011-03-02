@@ -72,7 +72,7 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+    public NettyWebSocketConnection upgradeToWebSocketConnection(CometHandler handler) {
         NettyWebSocketConnection webSocketConnection = createWebSocketConnection();
         new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest,
                 defaultHttpResponse, handler, webSocketConnection, exceptionHandler, ioExceptionHandler);
@@ -90,6 +90,11 @@ public class NettyHttpControl implements HttpControl {
         new NettyEventSourceChannelHandler(executor, ctx, nettyHttpRequest,
                 defaultHttpResponse, handler, eventSourceConnection, exceptionHandler, ioExceptionHandler, httpRequest);
         return eventSourceConnection;
+    }
+
+    @Override
+    public CometConnection createEventSourceConnection() {
+        return new NettyEventSourceConnection(executor, nettyHttpRequest, ctx);
     }
 
     @Override

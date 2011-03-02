@@ -54,7 +54,7 @@ public class Main {
         newSingleThreadExecutor().execute(pusher);
 
         WebServer webServer = createWebServer(9876)
-                .add("/events", new CometHandler() {
+                .addEventSource("/events", new CometHandler() {
                     @Override
                     public void onOpen(CometConnection connection) throws Exception {
                         pusher.addConnection(connection);
@@ -63,6 +63,11 @@ public class Main {
                     @Override
                     public void onClose(CometConnection connection) throws Exception {
                         pusher.removeConnection(connection);
+                    }
+
+                    @Override
+                    public void onMessage(CometConnection connection, String msg) throws Exception {
+                        throw new IllegalStateException("Should never happen");
                     }
                 })
                 .add(new EmbeddedResourceHandler("samples/eventsource/content"))

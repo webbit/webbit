@@ -64,6 +64,11 @@ public class NettyWebSocketConnection implements CometConnection {
     }
 
     @Override
+    public String protocol() {
+        return WEB_SOCKET;
+    }
+
+    @Override
     public void execute(Runnable command) {
         handlerExecutor().execute(command);
     }
