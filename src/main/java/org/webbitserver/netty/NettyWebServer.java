@@ -10,9 +10,8 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.webbitserver.CometHandler;
 import org.webbitserver.HttpHandler;
+import org.webbitserver.handler.HttpToCometHandler;
 import org.webbitserver.WebServer;
-import org.webbitserver.handler.HttpToEventSourceHandler;
-import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.PathMatchHandler;
 import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
@@ -109,13 +108,8 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public NettyWebServer addWebSocket(String path, CometHandler handler) {
-        return add(path, new HttpToWebSocketHandler(handler));
-    }
-
-    @Override
-    public WebServer addEventSource(String path, CometHandler handler) {
-        return add(path, new HttpToEventSourceHandler(handler));
+    public NettyWebServer add(String path, CometHandler handler) {
+        return add(path, new HttpToCometHandler(handler));
     }
 
     @Override

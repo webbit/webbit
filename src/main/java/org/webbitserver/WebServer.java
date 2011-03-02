@@ -66,19 +66,17 @@ public interface WebServer {
     WebServer add(String path, HttpHandler handler);
 
     /**
-     * Add a WebSocketHandler for dealing with streaming WebSocket connections.
+     * Add a CometHandler for dealing with streaming connections (WebSocket or EventSource).
      *
      * This is shortcut for {@code add(newPathMatchHandler(path,newHttpToWebSocketHandler(handler)))}.
      *
      * @see CometHandler
      * @see HttpHandler
      * @see #add(HttpHandler)
-     * @see org.webbitserver.handler.HttpToWebSocketHandler
+     * @see org.webbitserver.handler.HttpToCometHandler
      * @see org.webbitserver.handler.PathMatchHandler
      */
-    WebServer addWebSocket(String path, CometHandler handler);
-
-    WebServer addEventSource(String path, CometHandler handler);
+    WebServer add(String path, CometHandler handler);
 
     /**
      * Start web server in background.

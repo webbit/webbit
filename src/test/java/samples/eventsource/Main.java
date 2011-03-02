@@ -54,7 +54,7 @@ public class Main {
         newSingleThreadExecutor().execute(pusher);
 
         WebServer webServer = createWebServer(9876)
-                .addEventSource("/events", new CometHandler() {
+                .add("/events", new CometHandler() {
                     @Override
                     public void onOpen(CometConnection connection) throws Exception {
                         pusher.addConnection(connection);

@@ -49,21 +49,12 @@ public class NettyWebSocketChannelHandler extends CometChannelHandler {
 
     @Override
     protected void prepareConnection(HttpRequest request, HttpResponse response) {
-        if (!requestingWebsocketUpgrade(request)) {
-            throw new RuntimeException("Expecting WebSocket upgrade. Looks like a standard HTTP request.");
-        }
-
         // Support both commonly used versions of the WebSocket spec.
         if (isNewSkoolWebSocketRequest(request)) {
             upgradeResponseNewSkool(request, response);
         } else {
             upgradeResponseOldSkool(request, response);
         }
-    }
-
-    private boolean requestingWebsocketUpgrade(HttpRequest request) {
-        return UPGRADE.equalsIgnoreCase(request.getHeader(CONNECTION)) &&
-                WEBSOCKET.equalsIgnoreCase(request.getHeader(UPGRADE));
     }
 
     private boolean isNewSkoolWebSocketRequest(HttpRequest req) {
