@@ -30,6 +30,12 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public NettyHttpRequest uri(String uri) {
+        httpRequest.setUri(uri);
+        return this;
+    }
+
+    @Override
     public String header(String name) {
         return httpRequest.getHeader(name);
     }

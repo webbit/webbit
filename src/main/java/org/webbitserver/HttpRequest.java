@@ -20,6 +20,12 @@ public interface HttpRequest extends DataHolder {
     String uri();
 
     /**
+     * Modify uri
+     * @param uri new uri
+     */
+    HttpRequest uri(String uri);
+
+    /**
      * Retrieve the value single HTTP header.
      *
      * If the header is not found, null is returned.
