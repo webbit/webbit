@@ -10,7 +10,7 @@ end
 
 config dev
   include :default
-  include org.jboss.netty-netty/3.2.4
+  include org.jboss.netty-netty/3.2.4.Final
 end
 
 config test
