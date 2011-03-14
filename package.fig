@@ -1,0 +1,19 @@
+# fig --publish org.webbitserver-webbit/0.1.2
+resource target/webbit-0.1.2.jar
+resource target/webbit-0.1.2-sources.jar
+
+config default
+  append CLASSPATH=@/target/webbit-0.1.2.jar
+  append SOURCEPATH=@/target/webbit-0.1.2-sources.jar
+  include netty
+end
+
+config dev
+  include :default
+  include org.jboss.netty-netty/3.2.4
+end
+
+config test
+  include :dev
+  include junit/4.8.2
+end
