@@ -74,7 +74,8 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         private URL getResource(File file) throws IOException {
-            return getClass().getClassLoader().getResource(file.getPath());
+            String path = file.getPath();
+            return getClass().getClassLoader().getResource(path);
         }
     }
 }
