@@ -5,7 +5,7 @@
     <name>${project.artifactId}</name>
     <description>A Java event based WebSocket and HTTP server</description>
     <url>http://webbitserver.org/</url>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -21,7 +21,7 @@
     </licenses>
     <scm>
         <connection>scm:git:git://github.com/joewalnes/webbit.git</connection>
-        <developerConnection>scm:git:git@github.com:aslakhellesoy/webbit.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:joewalnes/webbit.git</developerConnection>
         <url>git://github.com/joewalnes/webbit.git</url>
     </scm>
     <repositories>
