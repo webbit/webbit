@@ -5,16 +5,17 @@ import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
+import java.net.URI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PathMatchHandler implements HttpHandler {
 
-    private final Pattern pattern;
+    private final Pattern pathPattern;
     private final HttpHandler httpHandler;
 
-    public PathMatchHandler(Pattern pattern, HttpHandler httpHandler) {
-        this.pattern = pattern;
+    public PathMatchHandler(Pattern pathPattern, HttpHandler httpHandler) {
+        this.pathPattern = pathPattern;
         this.httpHandler = httpHandler;
     }
 
@@ -24,7 +25,8 @@ public class PathMatchHandler implements HttpHandler {
 
     @Override
     public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-        Matcher matcher = pattern.matcher(request.uri());
+        String path = URI.create(request.uri()).getPath();
+        Matcher matcher = pathPattern.matcher(path);
         if (matcher.matches()) {
             httpHandler.handleHttpRequest(request, response, control);
         } else {
