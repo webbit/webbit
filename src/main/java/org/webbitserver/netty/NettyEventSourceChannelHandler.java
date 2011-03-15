@@ -27,7 +27,10 @@ public class NettyEventSourceChannelHandler extends CometChannelHandler {
     protected void prepareConnection(HttpRequest req, HttpResponse res) {
         res.setStatus(HttpResponseStatus.OK);
         res.addHeader("Content-Type", "text/event-stream");
+        res.addHeader("Transfer-Encoding", "identity");
+        res.addHeader("Connection", "keep-alive");
         res.addHeader("Cache-Control", "no-cache");
+        res.setChunked(false);
     }
 
     @Override
@@ -35,5 +38,6 @@ public class NettyEventSourceChannelHandler extends CometChannelHandler {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
         p.replace("handler", "ssehandler", this);
+//        ctx.getChannel().write("");
     }
 }
