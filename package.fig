@@ -5,15 +5,19 @@ resource target/webbit-0.1.2-sources.jar
 config default
   append CLASSPATH=@/target/webbit-0.1.2.jar
   append SOURCEPATH=@/target/webbit-0.1.2-sources.jar
-  include netty
+  include org.jboss.netty-netty
 end
 
-config dev
+config with-deps
+  include :build
+end
+
+config build
   include :default
   include org.jboss.netty-netty/3.2.4.Final
 end
 
 config test
-  include :dev
+  include :build
   include junit/4.8.2
 end
