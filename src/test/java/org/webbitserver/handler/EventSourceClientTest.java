@@ -24,7 +24,7 @@ import static org.webbitserver.WebServers.createWebServer;
 
 public class EventSourceClientTest {
     private WebServer webServer;
-    private EventSource es;
+    private EventSource eventSource;
 
     @Before
     public void createServer() {
@@ -33,7 +33,7 @@ public class EventSourceClientTest {
 
     @After
     public void die() throws IOException, InterruptedException {
-        es.disconnect().await();
+        eventSource.disconnect().await();
         webServer.stop().join();
     }
 
@@ -77,7 +77,7 @@ public class EventSourceClientTest {
                 .start();
 
         final CountDownLatch latch = new CountDownLatch(messages.size());
-        es = new EventSource(URI.create("http://localhost:59504/es/hello?echoThis=yo"), new EventSourceHandler() {
+        eventSource = new EventSource(URI.create("http://localhost:59504/es/hello?echoThis=yo"), new EventSourceHandler() {
             int n = 0;
 
             @Override
@@ -100,7 +100,7 @@ public class EventSourceClientTest {
                 t.printStackTrace();
             }
         });
-        es.connect().await();
+        eventSource.connect().await();
         assertTrue("Didn't get all messages", latch.await(1000, TimeUnit.MILLISECONDS));
     }
 }
