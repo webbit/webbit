@@ -2,9 +2,11 @@ package org.webbitserver.es;
 
 public class MessageEvent {
     public final String data;
+    public final String lastEventId;
 
-    public MessageEvent(String data) {
+    public MessageEvent(String data, String lastEventId) {
         this.data = data;
+        this.lastEventId = lastEventId;
     }
 
     @Override
@@ -15,19 +17,23 @@ public class MessageEvent {
         MessageEvent that = (MessageEvent) o;
 
         if (data != null ? !data.equals(that.data) : that.data != null) return false;
+        if (lastEventId != null ? !lastEventId.equals(that.lastEventId) : that.lastEventId != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return data != null ? data.hashCode() : 0;
+        int result = data != null ? data.hashCode() : 0;
+        result = 31 * result + (lastEventId != null ? lastEventId.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
         return "MessageEvent{" +
                 "data='" + data + '\'' +
+                ", lastEventId='" + lastEventId + '\'' +
                 '}';
     }
 }

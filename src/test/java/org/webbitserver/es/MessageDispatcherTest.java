@@ -18,10 +18,19 @@ public class MessageDispatcherTest {
     }
 
     @Test
-    public void dispatchesSingleLineMessages() throws Exception {
+    public void dispatchesSingleLineMessage() throws Exception {
         md.line("data: hello");
         md.line("");
 
-        verify(h).onMessage(eq(new MessageEvent("hello")));
+        verify(h).onMessage(eq(new MessageEvent("hello", null)));
+    }
+
+    @Test
+    public void dispatchesSingleLineMessageWithId() throws Exception {
+        md.line("data: hello");
+        md.line("id: 1");
+        md.line("");
+
+        verify(h).onMessage(eq(new MessageEvent("hello", "1")));
     }
 }

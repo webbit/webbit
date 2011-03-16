@@ -5,8 +5,13 @@ package org.webbitserver.es;
  * and dispatches messages to the {@link EventSourceHandler}.
  */
 class MessageDispatcher {
+    private static final String DATA = "data";
+    private static final String ID = "id";
+
     private final EventSourceHandler eventSourceHandler;
+
     private StringBuffer data = new StringBuffer();
+    private String lastEventId;
 
     public MessageDispatcher(EventSourceHandler eventSourceHandler) {
         this.eventSourceHandler = eventSourceHandler;
@@ -22,8 +27,10 @@ class MessageDispatcher {
             String field = line.substring(0, colonIndex);
             String value = line.substring(colonIndex + 1).replaceFirst(" ", "");
 
-            if(field.equals("data")) {
+            if(DATA.equals(field)) {
                 data.append(value).append("\n");
+            } else if(ID.equals(field)) {
+                lastEventId = value;
             }
         }
     }
@@ -33,8 +40,9 @@ class MessageDispatcher {
         if(dataString.endsWith("\n")) {
             dataString = dataString.substring(0, dataString.length()-1);
         }
-        MessageEvent e = new MessageEvent(dataString);
+        MessageEvent e = new MessageEvent(dataString, lastEventId);
         eventSourceHandler.onMessage(e);
         data = new StringBuffer();
+        lastEventId = null;
     }
 }
