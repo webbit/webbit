@@ -54,7 +54,7 @@ public class EventSourceClientTest {
 
     private void assertSentAndReceived(final List<String> messages) throws IOException, InterruptedException {
         webServer
-                .add("/es", new CometHandler() {
+                .add("/es/.*", new CometHandler() {
                     @Override
                     public void onOpen(CometConnection connection) throws Exception {
                         // For some reason we have to sleep a little here before starting to send messages.
@@ -62,7 +62,8 @@ public class EventSourceClientTest {
                         // Not sure where this race condition occurs - it could be in webbit itself...
                         sleep(10);
                         for (String message : messages) {
-                            connection.send(message);
+                            URI uri = URI.create(connection.httpRequest().uri());
+                            connection.send(message + " " + uri.getPath().split("/")[2]);
                         }
                     }
 
@@ -77,7 +78,7 @@ public class EventSourceClientTest {
                 .start();
 
         final CountDownLatch latch = new CountDownLatch(messages.size());
-        es = new EventSource(URI.create("http://localhost:59504/es"), new EventSourceHandler() {
+        es = new EventSource(URI.create("http://localhost:59504/es/hello"), new EventSourceHandler() {
             int n = 0;
 
             @Override
@@ -90,7 +91,8 @@ public class EventSourceClientTest {
 
             @Override
             public void onMessage(MessageEvent event) {
-                assertEquals(messages.get(n++), event.data);
+                assertEquals(messages.get(n++) + " hello", event.data);
+                assertEquals("http://localhost:59504/es/hello", event.origin);
                 latch.countDown();
             }
 

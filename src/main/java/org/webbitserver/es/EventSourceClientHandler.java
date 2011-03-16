@@ -21,24 +21,24 @@ import java.net.URI;
 import java.nio.charset.Charset;
 
 class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
-    private URI url;
+    private URI uri;
     private EventSourceHandler eventSourceHandler;
     private boolean handshakeCompleted = false;
     private Channel channel;
     private MessageDispatcher messageDispatcher;
 
-    public EventSourceClientHandler(URI url, EventSourceHandler eventSourceHandler) {
-        this.url = url;
+    public EventSourceClientHandler(URI uri, EventSourceHandler eventSourceHandler) {
+        this.uri = uri;
         this.eventSourceHandler = eventSourceHandler;
-        this.messageDispatcher = new MessageDispatcher(eventSourceHandler);
+        this.messageDispatcher = new MessageDispatcher(eventSourceHandler, uri.toString());
     }
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url.getPath());
+        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toString());
         request.addHeader(Names.ACCEPT, "text/event-stream");
-        request.addHeader(Names.HOST, url.getHost());
-        request.addHeader(Names.ORIGIN, "http://" + url.getHost());
+        request.addHeader(Names.HOST, uri.getHost());
+        request.addHeader(Names.ORIGIN, "http://" + uri.getHost());
         request.addHeader(Names.CACHE_CONTROL, "no-cache");
         e.getChannel().write(request);
         channel = e.getChannel();

@@ -16,16 +16,16 @@ import java.util.concurrent.Executors;
 public class EventSource {
 
     private final ClientBootstrap bootstrap;
-    private final URI url;
+    private final URI uri;
     private final EventSourceClientHandler clientHandler;
 
-    public EventSource(final URI url, EventSourceHandler eventSourceHandler) {
-        this.url = url;
+    public EventSource(final URI uri, EventSourceHandler eventSourceHandler) {
+        this.uri = uri;
         bootstrap = new ClientBootstrap(
                     new NioClientSocketChannelFactory(
                             Executors.newSingleThreadExecutor(),
                             Executors.newSingleThreadExecutor()));
-        clientHandler = new EventSourceClientHandler(url, eventSourceHandler);
+        clientHandler = new EventSourceClientHandler(uri, eventSourceHandler);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
@@ -39,7 +39,7 @@ public class EventSource {
     }
 
     public ChannelFuture connect() {
-        return bootstrap.connect(new InetSocketAddress(url.getHost(), url.getPort()));
+        return bootstrap.connect(new InetSocketAddress(uri.getHost(), uri.getPort()));
     }
 
     public ChannelFuture disconnect() {
