@@ -4,9 +4,11 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.InboundCookieParser;
+import org.webbitserver.helpers.QueryParameters;
 
 import java.net.HttpCookie;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.util.*;
 
 public class NettyHttpRequest implements org.webbitserver.HttpRequest {
@@ -57,6 +59,16 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
             }
         }
         return null;
+    }
+
+    @Override
+    public String queryParam(String key) {
+        return new QueryParameters(URI.create(uri()).getQuery()).first(key);
+    }
+
+    @Override
+    public List<String> queryParams(String key) {
+        return new QueryParameters(URI.create(uri()).getQuery()).all(key);
     }
 
     @Override

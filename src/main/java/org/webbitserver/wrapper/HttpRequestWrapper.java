@@ -1,9 +1,11 @@
 package org.webbitserver.wrapper;
 
 import org.webbitserver.HttpRequest;
+import org.webbitserver.helpers.QueryParameters;
 
 import java.net.HttpCookie;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +59,16 @@ public class HttpRequestWrapper implements HttpRequest {
     @Override
     public HttpCookie cookie(String name) {
         return request.cookie(name);
+    }
+
+    @Override
+    public String queryParam(String key) {
+        return request.queryParam(key);
+    }
+
+    @Override
+    public List<String> queryParams(String key) {
+        return request.queryParams(key);
     }
 
     @Override
