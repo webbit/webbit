@@ -62,8 +62,7 @@ public class EventSourceClientTest {
                         // Not sure where this race condition occurs - it could be in webbit itself...
                         sleep(10);
                         for (String message : messages) {
-                            URI uri = URI.create(connection.httpRequest().uri());
-                            connection.send(message + " " + uri.getPath().split("/")[2]);
+                            connection.send(message + " " + connection.httpRequest().queryParam("echoThis"));
                         }
                     }
 
@@ -78,7 +77,7 @@ public class EventSourceClientTest {
                 .start();
 
         final CountDownLatch latch = new CountDownLatch(messages.size());
-        es = new EventSource(URI.create("http://localhost:59504/es/hello"), new EventSourceHandler() {
+        es = new EventSource(URI.create("http://localhost:59504/es/hello?echoThis=yo"), new EventSourceHandler() {
             int n = 0;
 
             @Override
@@ -91,8 +90,8 @@ public class EventSourceClientTest {
 
             @Override
             public void onMessage(MessageEvent event) {
-                assertEquals(messages.get(n++) + " hello", event.data);
-                assertEquals("http://localhost:59504/es/hello", event.origin);
+                assertEquals(messages.get(n++) + " yo", event.data);
+                assertEquals("http://localhost:59504/es/hello?echoThis=yo", event.origin);
                 latch.countDown();
             }
 
