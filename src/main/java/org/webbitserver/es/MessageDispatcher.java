@@ -36,6 +36,9 @@ class MessageDispatcher {
     }
 
     private void dispatchEvent() {
+        if(data.length() == 0) {
+            return;
+        }
         String dataString = data.toString();
         if(dataString.endsWith("\n")) {
             dataString = dataString.substring(0, dataString.length()-1);

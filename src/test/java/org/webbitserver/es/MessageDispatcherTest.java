@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class MessageDispatcherTest {
     public EventSourceHandler h;
@@ -23,6 +24,16 @@ public class MessageDispatcherTest {
         md.line("");
 
         verify(h).onMessage(eq(new MessageEvent("hello", null)));
+    }
+
+    @Test
+    public void doesntFireMultipleTimesIfSeveralEmptyLines() throws Exception {
+        md.line("data: hello");
+        md.line("");
+        md.line("");
+
+        verify(h).onMessage(eq(new MessageEvent("hello", null)));
+        verifyNoMoreInteractions(h);
     }
 
     @Test
