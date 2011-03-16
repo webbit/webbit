@@ -3,6 +3,7 @@ package org.webbitserver.helpers;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,15 @@ import java.util.StringTokenizer;
 
 public class QueryParameters {
     private final Map<String, List<String>> params = new HashMap<String, List<String>>();
+    private static final List<String> EMPTY = Collections.emptyList();
 
     public QueryParameters(String query) {
+        if(query != null) {
+            parse(query);
+        }
+    }
+
+    private void parse(String query) {
         try {
             // StringTokenizer is faster than split. http://www.javamex.com/tutorials/regular_expressions/splitting_tokenisation_performance.shtml
             StringTokenizer st = new StringTokenizer(query, "&");
@@ -37,6 +45,6 @@ public class QueryParameters {
     }
 
     public List<String> all(String key) {
-        return params.get(key);
+        return params.containsKey(key) ? params.get(key) : EMPTY;
     }
 }
