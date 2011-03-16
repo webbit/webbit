@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 import org.junit.Before;
 import org.junit.Test;

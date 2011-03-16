@@ -6,9 +6,9 @@ import org.junit.Test;
 import org.webbitserver.CometConnection;
 import org.webbitserver.CometHandler;
 import org.webbitserver.WebServer;
-import org.webbitserver.es.EventSource;
-import org.webbitserver.es.EventSourceHandler;
-import org.webbitserver.es.MessageEvent;
+import org.webbitserver.eventsource.EventSource;
+import org.webbitserver.eventsource.EventSourceHandler;
+import org.webbitserver.eventsource.MessageEvent;
 
 import java.io.IOException;
 import java.net.URI;

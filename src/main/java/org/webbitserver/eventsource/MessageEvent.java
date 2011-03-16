@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 public class MessageEvent {
     public final String data;

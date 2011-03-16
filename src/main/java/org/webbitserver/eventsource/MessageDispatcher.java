@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 /**
  * <a href="http://dev.w3.org/html5/eventsource/#event-stream-interpretation">Interprets an event stream</a>

@@ -3,4 +3,4 @@
  * It is likely to be moved to a separate project, but it's currently kept in Webbit since it allows
  * end-to-end testing of Webbit's EventSource server support.
  */
-package org.webbitserver.es;
+package org.webbitserver.eventsource;

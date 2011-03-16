@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;

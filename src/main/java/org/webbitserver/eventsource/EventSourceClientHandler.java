@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 import org.jboss.netty.buffer.BigEndianHeapChannelBuffer;
 import org.jboss.netty.channel.Channel;

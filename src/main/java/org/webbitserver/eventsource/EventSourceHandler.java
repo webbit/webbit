@@ -1,4 +1,4 @@
-package org.webbitserver.es;
+package org.webbitserver.eventsource;
 
 public interface EventSourceHandler {
     void onConnect();
