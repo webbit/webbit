@@ -42,6 +42,12 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public HttpRequestWrapper uri(String uri) {
+        request.uri(uri);
+        return this;
+    }
+
+    @Override
     public String header(String name) {
         return request.header(name);
     }
