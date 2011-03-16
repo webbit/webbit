@@ -13,19 +13,19 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.Executors;
 
-public abstract class EventSource {
+public class EventSource {
 
     private final ClientBootstrap bootstrap;
     private final URI url;
     private final EventSourceClientHandler clientHandler;
 
-    public EventSource(final URI url) {
+    public EventSource(final URI url, EventSourceHandler eventSourceHandler) {
         this.url = url;
         bootstrap = new ClientBootstrap(
                     new NioClientSocketChannelFactory(
-                            Executors.newCachedThreadPool(),
-                            Executors.newCachedThreadPool()));
-        clientHandler = new EventSourceClientHandler(url, this);
+                            Executors.newSingleThreadExecutor(),
+                            Executors.newSingleThreadExecutor()));
+        clientHandler = new EventSourceClientHandler(url, eventSourceHandler);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
@@ -45,9 +45,4 @@ public abstract class EventSource {
     public ChannelFuture disconnect() {
         return clientHandler.close();
     }
-
-    public abstract void onConnect();
-    public abstract void onMessage(String message);
-    public abstract void onDisconnect();
-    public abstract void onError(Throwable t);
 }

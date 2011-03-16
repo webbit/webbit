@@ -20,15 +20,17 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import java.net.URI;
 import java.nio.charset.Charset;
 
-public class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
+class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
     private URI url;
-    private EventSource callback;
+    private EventSourceHandler eventSourceHandler;
     private boolean handshakeCompleted = false;
     private Channel channel;
+    private MessageDispatcher messageDispatcher;
 
-    public EventSourceClientHandler(URI url, EventSource callback) {
+    public EventSourceClientHandler(URI url, EventSourceHandler eventSourceHandler) {
         this.url = url;
-        this.callback = callback;
+        this.eventSourceHandler = eventSourceHandler;
+        this.messageDispatcher = new MessageDispatcher(eventSourceHandler);
     }
 
     @Override
@@ -44,7 +46,7 @@ public class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        callback.onDisconnect();
+        eventSourceHandler.onDisconnect();
         handshakeCompleted = false;
     }
 
@@ -61,22 +63,19 @@ public class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
             }
 
             handshakeCompleted = true;
-            // ctx.getPipeline().replace("decoder", "es-decoder", new EventSourceFrameDecoder());
             ctx.getPipeline().replace("decoder", "es-decoder", new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-            callback.onConnect();
+            eventSourceHandler.onConnect();
             return;
         }
 
         BigEndianHeapChannelBuffer frame = (BigEndianHeapChannelBuffer) e.getMessage();
-
-        String message = frame.toString(Charset.forName("UTF-8"));
-//        DefaultWebSocketFrame frame = (DefaultWebSocketFrame) e.getMessage();
-        callback.onMessage(message);
+        String line = frame.toString(Charset.forName("UTF-8"));
+        messageDispatcher.line(line);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        callback.onError(e.getCause());
+        eventSourceHandler.onError(e.getCause());
     }
 
     public ChannelFuture close() {

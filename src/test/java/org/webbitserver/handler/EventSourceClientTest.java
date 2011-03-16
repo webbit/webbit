@@ -1,35 +1,69 @@
 package org.webbitserver.handler;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.webbitserver.CometConnection;
 import org.webbitserver.CometHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.es.EventSource;
+import org.webbitserver.es.EventSourceHandler;
+import org.webbitserver.es.MessageEvent;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.sleep;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.webbitserver.WebServers.createWebServer;
 
 public class EventSourceClientTest {
-    private WebServer webServer = createWebServer(59504);
+    private WebServer webServer;
+    private EventSource es;
+
+    @Before
+    public void createServer() {
+        webServer = createWebServer(59504);
+    }
 
     @After
     public void die() throws IOException, InterruptedException {
+        es.disconnect().await();
         webServer.stop().join();
     }
 
     @Test
-    public void canReadFromEventSource() throws Exception {
+    public void canSendAndReadTwoSingleLineMessages() throws Exception {
+        assertSentAndReceived(asList("a", "b"));
+    }
+
+    @Test
+    public void canSendAndReadThreeSingleLineMessages() throws Exception {
+        assertSentAndReceived(asList("C", "D", "E"));
+    }
+
+    @Test
+    public void canSendAndReadOneMultiLineMessages() throws Exception {
+        assertSentAndReceived(asList("f\ng\nh"));
+    }
+
+    private void assertSentAndReceived(final List<String> messages) throws IOException, InterruptedException {
         webServer
                 .add("/es", new CometHandler() {
                     @Override
                     public void onOpen(CometConnection connection) throws Exception {
-                        connection.send("ONE");
-                        connection.send("TWO");
-                        connection.send("THREE");
+                        // For some reason we have to sleep a little here before starting to send messages.
+                        // Removing this sleep (intermittently) causes tests to fail. The first test never fails.
+                        // Not sure where this race condition occurs - it could be in webbit itself...
+                        sleep(10);
+                        for (String message : messages) {
+                            connection.send(message);
+                        }
                     }
 
                     @Override
@@ -42,31 +76,30 @@ public class EventSourceClientTest {
                 })
                 .start();
 
-        Thread.sleep(500);
+        final CountDownLatch latch = new CountDownLatch(messages.size());
+        es = new EventSource(URI.create("http://localhost:59504/es"), new EventSourceHandler() {
+            int n = 0;
 
-        EventSource ws = new EventSource(URI.create("http://localhost:59504/es")) {
             @Override
             public void onConnect() {
-                System.out.println("connect");
             }
 
             @Override
             public void onDisconnect() {
-                throw new RuntimeException("TODO");
             }
 
             @Override
-            public void onMessage(String message) {
-                System.out.println("frame.getTextData() = " + message);
+            public void onMessage(MessageEvent event) {
+                assertEquals(messages.get(n++), event.data);
+                latch.countDown();
             }
 
             @Override
             public void onError(Throwable t) {
                 t.printStackTrace();
             }
-        };
-        ws.connect();
-
-        sleep(1000);
+        });
+        es.connect().await();
+        assertTrue("Didn't get all messages", latch.await(1000, TimeUnit.MILLISECONDS));
     }
 }
