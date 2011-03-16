@@ -59,6 +59,24 @@ public interface HttpRequest extends DataHolder {
     HttpCookie cookie(String name);
 
     /**
+     * Get query parameter value.
+     *
+     * @param key parameter name
+     * @return the value of the parameter
+     * @see {@link #queryParams(String)}
+     */
+    String queryParam(String key);
+
+    /**
+     * Get all query parameter values.
+     *
+     * @param key parameter name
+     * @return the values of the parameter
+     * @see {@link #queryParam(String)}
+     */
+    List<String> queryParams(String key);
+
+    /**
      * Get the value of named cookie
      *
      * @param name cookie name
