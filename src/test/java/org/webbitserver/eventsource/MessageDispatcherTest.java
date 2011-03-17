@@ -45,4 +45,13 @@ public class MessageDispatcherTest {
 
         verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", "1", ORIGIN)));
     }
+
+    @Test
+    public void dispatchesSingleLineMessageWithCustomEvent() throws Exception {
+        md.line("data: hello");
+        md.line("event: beeroclock");
+        md.line("");
+
+        verify(h).emitMessage(eq("beeroclock"), eq(new MessageEvent("hello", null, ORIGIN)));
+    }
 }

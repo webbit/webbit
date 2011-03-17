@@ -7,7 +7,8 @@ package org.webbitserver.eventsource;
 class MessageDispatcher {
     private static final String DATA = "data";
     private static final String ID = "id";
-   private static final String DEFAULT_EVENT = "message";
+    private static final String EVENT = "event";
+    private static final String DEFAULT_EVENT = "message";
 
     private final MessageEmitter messageEmitter;
     private final String origin;
@@ -23,33 +24,36 @@ class MessageDispatcher {
 
     public void line(String line) {
         int colonIndex;
-        if(line.trim().isEmpty()) {
+        if (line.trim().isEmpty()) {
             dispatchEvent();
-        } else if(line.startsWith(":")) {
+        } else if (line.startsWith(":")) {
             // ignore
-        } else if((colonIndex = line.indexOf(":")) != -1) {
+        } else if ((colonIndex = line.indexOf(":")) != -1) {
             String field = line.substring(0, colonIndex);
             String value = line.substring(colonIndex + 1).replaceFirst(" ", "");
 
-            if(DATA.equals(field)) {
+            if (DATA.equals(field)) {
                 data.append(value).append("\n");
-            } else if(ID.equals(field)) {
+            } else if (ID.equals(field)) {
                 lastEventId = value;
+            } else if (EVENT.equals(field)) {
+                event = value;
             }
         }
     }
 
     private void dispatchEvent() {
-        if(data.length() == 0) {
+        if (data.length() == 0) {
             return;
         }
         String dataString = data.toString();
-        if(dataString.endsWith("\n")) {
-            dataString = dataString.substring(0, dataString.length()-1);
+        if (dataString.endsWith("\n")) {
+            dataString = dataString.substring(0, dataString.length() - 1);
         }
         MessageEvent message = new MessageEvent(dataString, lastEventId, origin);
         messageEmitter.emitMessage(event, message);
         data = new StringBuffer();
         lastEventId = null;
+        event = DEFAULT_EVENT;
     }
 }
