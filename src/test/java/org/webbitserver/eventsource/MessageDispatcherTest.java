@@ -54,4 +54,22 @@ public class MessageDispatcherTest {
 
         verify(h).emitMessage(eq("beeroclock"), eq(new MessageEvent("hello", null, ORIGIN)));
     }
+
+    @Test
+    public void ignoresLinesStartingWithColon() throws Exception {
+        md.line(": ignore this");
+        md.line("data: hello");
+        md.line(": this too");
+        md.line("");
+
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", null, ORIGIN)));
+    }
+
+    @Test
+    public void dispatchesSingleLineMessageWithoutColon() throws Exception {
+        md.line("data");
+        md.line("");
+
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("", null, ORIGIN)));
+    }
 }
