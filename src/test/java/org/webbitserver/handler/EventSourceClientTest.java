@@ -85,9 +85,9 @@ public class EventSourceClientTest {
             }
 
             @Override
-            public void onMessage(MessageEvent event) {
-                assertEquals(messages.get(n++) + " yo", event.data);
-                assertEquals("http://localhost:59504/es/hello?echoThis=yo", event.origin);
+            public void onMessage(String event, MessageEvent message) {
+                assertEquals(messages.get(n++) + " yo", message.data);
+                assertEquals("http://localhost:59504/es/hello?echoThis=yo", message.origin);
                 latch.countDown();
             }
 

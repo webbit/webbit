@@ -125,11 +125,11 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements M
         });
     }
 
-    public void emitMessage(final org.webbitserver.eventsource.MessageEvent e) {
+    public void emitMessage(final String event, final org.webbitserver.eventsource.MessageEvent message) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                eventSourceHandler.onMessage(e);
+                eventSourceHandler.onMessage(event, message);
             }
         });
     }

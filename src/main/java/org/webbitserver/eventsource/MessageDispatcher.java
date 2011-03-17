@@ -7,12 +7,14 @@ package org.webbitserver.eventsource;
 class MessageDispatcher {
     private static final String DATA = "data";
     private static final String ID = "id";
+   private static final String DEFAULT_EVENT = "message";
 
     private final MessageEmitter messageEmitter;
     private final String origin;
 
     private StringBuffer data = new StringBuffer();
     private String lastEventId;
+    private String event = DEFAULT_EVENT;
 
     public MessageDispatcher(MessageEmitter messageEmitter, String origin) {
         this.messageEmitter = messageEmitter;
@@ -45,8 +47,8 @@ class MessageDispatcher {
         if(dataString.endsWith("\n")) {
             dataString = dataString.substring(0, dataString.length()-1);
         }
-        MessageEvent e = new MessageEvent(dataString, lastEventId, origin);
-        messageEmitter.emitMessage(e);
+        MessageEvent message = new MessageEvent(dataString, lastEventId, origin);
+        messageEmitter.emitMessage(event, message);
         data = new StringBuffer();
         lastEventId = null;
     }

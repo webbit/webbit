@@ -24,7 +24,7 @@ public class MessageDispatcherTest {
         md.line("data: hello");
         md.line("");
 
-        verify(h).emitMessage(eq(new MessageEvent("hello", null, ORIGIN)));
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", null, ORIGIN)));
     }
 
     @Test
@@ -33,7 +33,7 @@ public class MessageDispatcherTest {
         md.line("");
         md.line("");
 
-        verify(h).emitMessage(eq(new MessageEvent("hello", null, ORIGIN)));
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", null, ORIGIN)));
         verifyNoMoreInteractions(h);
     }
 
@@ -43,6 +43,6 @@ public class MessageDispatcherTest {
         md.line("id: 1");
         md.line("");
 
-        verify(h).emitMessage(eq(new MessageEvent("hello", "1", ORIGIN)));
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", "1", ORIGIN)));
     }
 }
