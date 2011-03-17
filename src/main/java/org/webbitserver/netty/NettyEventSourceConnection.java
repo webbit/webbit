@@ -1,12 +1,15 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.CometConnection;
-import org.webbitserver.netty.contrib.DefaultEventSourceFrame;
+import org.webbitserver.netty.contrib.EventSourceMessage;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+
+import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 
 public class NettyEventSourceConnection implements CometConnection {
     private final Executor executor;
@@ -26,7 +29,7 @@ public class NettyEventSourceConnection implements CometConnection {
 
     @Override
     public CometConnection send(String message) {
-        ctx.getChannel().write(new DefaultEventSourceFrame(message).toChannelBuffer());
+        ctx.getChannel().write(copiedBuffer(message, CharsetUtil.UTF_8));
         return this;
     }
 

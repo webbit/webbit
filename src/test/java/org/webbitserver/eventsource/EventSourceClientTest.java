@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.webbitserver.CometConnection;
 import org.webbitserver.CometHandler;
 import org.webbitserver.WebServer;
+import org.webbitserver.netty.contrib.EventSourceMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -100,7 +101,9 @@ public class EventSourceClientTest {
                     @Override
                     public void onOpen(CometConnection connection) throws Exception {
                         for (String message : messagesToSend) {
-                            connection.send(message + " " + connection.httpRequest().queryParam("echoThis"));
+                            String data = message + " " + connection.httpRequest().queryParam("echoThis");
+                            String event = new EventSourceMessage().data(data).end().toString();
+                            connection.send(event);
                         }
                     }
 
