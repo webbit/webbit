@@ -40,6 +40,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
     private boolean connecting = false;
     private boolean reconnectOnClose = true;
     private long reconnectionTimeMillis;
+    private String lastEventId;
 
     public EventSourceChannelHandler(Executor executor, long reconnectionTimeMillis, ClientBootstrap bootstrap, URI uri, EventSourceHandler eventSourceHandler) {
         this.executor = executor;
@@ -56,6 +57,9 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
         request.addHeader(Names.HOST, uri.getHost());
         request.addHeader(Names.ORIGIN, "http://" + uri.getHost());
         request.addHeader(Names.CACHE_CONTROL, "no-cache");
+        if(lastEventId != null) {
+            request.addHeader("Last-Event-ID", lastEventId);
+        }
         e.getChannel().write(request);
         channel = e.getChannel();
         connecting = false;
@@ -159,6 +163,9 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
     }
 
     public void emitMessage(final String event, final org.webbitserver.eventsource.MessageEvent message) {
+        if(message.lastEventId != null) {
+            lastEventId = message.lastEventId;
+        }
         executor.execute(new Runnable() {
             @Override
             public void run() {
