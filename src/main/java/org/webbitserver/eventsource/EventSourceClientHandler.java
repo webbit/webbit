@@ -2,7 +2,6 @@ package org.webbitserver.eventsource;
 
 import org.jboss.netty.buffer.BigEndianHeapChannelBuffer;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -19,18 +18,23 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.concurrent.Executor;
 
-class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
-    private URI uri;
-    private EventSourceHandler eventSourceHandler;
-    private boolean handshakeCompleted = false;
+class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements MessageEmitter {
+
+    private final Executor executor;
+    private final URI uri;
+    private final EventSourceHandler eventSourceHandler;
+    private final MessageDispatcher messageDispatcher;
+
+    private boolean needResponse = true;
     private Channel channel;
-    private MessageDispatcher messageDispatcher;
 
-    public EventSourceClientHandler(URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSourceClientHandler(Executor executor, URI uri, EventSourceHandler eventSourceHandler) {
+        this.executor = executor;
         this.uri = uri;
         this.eventSourceHandler = eventSourceHandler;
-        this.messageDispatcher = new MessageDispatcher(eventSourceHandler, uri.toString());
+        this.messageDispatcher = new MessageDispatcher(this, uri.toString());
     }
 
     @Override
@@ -46,13 +50,14 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        eventSourceHandler.onDisconnect();
-        handshakeCompleted = false;
+        emitDisconnect();
+        needResponse = true;
+        channel = null;
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (!handshakeCompleted) {
+        if (needResponse) {
             HttpResponse response = (HttpResponse) e.getMessage();
 
             final boolean validStatus = response.getStatus().getCode() == 200;
@@ -62,9 +67,9 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
                 throw new EventSourceException("Invalid response:" + response.toString());
             }
 
-            handshakeCompleted = true;
+            needResponse = false;
             ctx.getPipeline().replace("decoder", "es-decoder", new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-            eventSourceHandler.onConnect();
+            emitConnect();
             return;
         }
 
@@ -75,10 +80,57 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        eventSourceHandler.onError(e.getCause());
+        Throwable error = e.getCause();
+        emitError(error);
     }
 
-    public ChannelFuture close() {
-        return channel.close();
+    public EventSourceClientHandler close() {
+        if(channel != null) {
+            channel.close();
+        }
+        return this;
+    }
+
+    public EventSourceClientHandler join() throws InterruptedException {
+        if(channel != null) {
+            channel.getCloseFuture().await();
+        }
+        return this;
+    }
+
+    private void emitConnect() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                eventSourceHandler.onConnect();
+            }
+        });
+    }
+
+    private void emitDisconnect() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                eventSourceHandler.onDisconnect();
+            }
+        });
+    }
+
+    private void emitError(final Throwable error) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                eventSourceHandler.onError(error);
+            }
+        });
+    }
+
+    public void emitMessage(final org.webbitserver.eventsource.MessageEvent e) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                eventSourceHandler.onMessage(e);
+            }
+        });
     }
 }

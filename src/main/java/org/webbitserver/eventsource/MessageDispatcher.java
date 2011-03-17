@@ -8,14 +8,14 @@ class MessageDispatcher {
     private static final String DATA = "data";
     private static final String ID = "id";
 
-    private final EventSourceHandler eventSourceHandler;
+    private final MessageEmitter messageEmitter;
     private final String origin;
 
     private StringBuffer data = new StringBuffer();
     private String lastEventId;
 
-    public MessageDispatcher(EventSourceHandler eventSourceHandler, String origin) {
-        this.eventSourceHandler = eventSourceHandler;
+    public MessageDispatcher(MessageEmitter messageEmitter, String origin) {
+        this.messageEmitter = messageEmitter;
         this.origin = origin;
     }
 
@@ -46,7 +46,7 @@ class MessageDispatcher {
             dataString = dataString.substring(0, dataString.length()-1);
         }
         MessageEvent e = new MessageEvent(dataString, lastEventId, origin);
-        eventSourceHandler.onMessage(e);
+        messageEmitter.emitMessage(e);
         data = new StringBuffer();
         lastEventId = null;
     }

@@ -11,6 +11,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class EventSource {
@@ -19,13 +20,13 @@ public class EventSource {
     private final URI uri;
     private final EventSourceClientHandler clientHandler;
 
-    public EventSource(final URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSource(Executor executor, final URI uri, EventSourceHandler eventSourceHandler) {
         this.uri = uri;
         bootstrap = new ClientBootstrap(
                     new NioClientSocketChannelFactory(
                             Executors.newSingleThreadExecutor(),
                             Executors.newSingleThreadExecutor()));
-        clientHandler = new EventSourceClientHandler(uri, eventSourceHandler);
+        clientHandler = new EventSourceClientHandler(executor, uri, eventSourceHandler);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
@@ -38,11 +39,30 @@ public class EventSource {
         });
     }
 
+    public EventSource(URI uri, EventSourceHandler eventSourceHandler) {
+        this(Executors.newSingleThreadExecutor(), uri, eventSourceHandler);
+    }
+
     public ChannelFuture connect() {
         return bootstrap.connect(new InetSocketAddress(uri.getHost(), uri.getPort()));
     }
 
-    public ChannelFuture disconnect() {
-        return clientHandler.close();
+    /**
+     * Close the connection
+     * @return self
+     */
+    public EventSource close() {
+        clientHandler.close();
+        return this;
+    }
+
+    /**
+     * Wait for until the connection is closed
+     * @return self
+     * @throws InterruptedException if waiting was interrupted
+     */
+    public EventSource join() throws InterruptedException {
+        clientHandler.join();
+        return this;
     }
 }

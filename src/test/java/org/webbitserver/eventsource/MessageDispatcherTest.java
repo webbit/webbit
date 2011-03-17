@@ -10,12 +10,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class MessageDispatcherTest {
     private static final String ORIGIN = "http://host.com:99/foo";
-    public EventSourceHandler h;
+    public MessageEmitter h;
     public MessageDispatcher md;
 
     @Before
     public void setup() {
-        h = mock(EventSourceHandler.class);
+        h = mock(MessageEmitter.class);
         md = new MessageDispatcher(h, ORIGIN);
     }
 
@@ -24,7 +24,7 @@ public class MessageDispatcherTest {
         md.line("data: hello");
         md.line("");
 
-        verify(h).onMessage(eq(new MessageEvent("hello", null, ORIGIN)));
+        verify(h).emitMessage(eq(new MessageEvent("hello", null, ORIGIN)));
     }
 
     @Test
@@ -33,7 +33,7 @@ public class MessageDispatcherTest {
         md.line("");
         md.line("");
 
-        verify(h).onMessage(eq(new MessageEvent("hello", null, ORIGIN)));
+        verify(h).emitMessage(eq(new MessageEvent("hello", null, ORIGIN)));
         verifyNoMoreInteractions(h);
     }
 
@@ -43,6 +43,6 @@ public class MessageDispatcherTest {
         md.line("id: 1");
         md.line("");
 
-        verify(h).onMessage(eq(new MessageEvent("hello", "1", ORIGIN)));
+        verify(h).emitMessage(eq(new MessageEvent("hello", "1", ORIGIN)));
     }
 }
