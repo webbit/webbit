@@ -15,18 +15,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class EventSource {
-
+    public static final long DEFAULT_RECONNECTION_TIME_MILLIS = 2000;
     private final ClientBootstrap bootstrap;
-    private final URI uri;
-    private final EventSourceClientHandler clientHandler;
+    private final EventSourceChannelHandler clientHandler;
 
-    public EventSource(Executor executor, final URI uri, EventSourceHandler eventSourceHandler) {
-        this.uri = uri;
+    public EventSource(Executor executor, long reconnectionTimeMillis, final URI uri, EventSourceHandler eventSourceHandler) {
         bootstrap = new ClientBootstrap(
                     new NioClientSocketChannelFactory(
                             Executors.newSingleThreadExecutor(),
                             Executors.newSingleThreadExecutor()));
-        clientHandler = new EventSourceClientHandler(executor, uri, eventSourceHandler);
+        bootstrap.setOption("remoteAddress", new InetSocketAddress(uri.getHost(), uri.getPort()));
+
+        clientHandler = new EventSourceChannelHandler(executor, reconnectionTimeMillis, bootstrap, uri, eventSourceHandler);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
@@ -40,11 +40,11 @@ public class EventSource {
     }
 
     public EventSource(URI uri, EventSourceHandler eventSourceHandler) {
-        this(Executors.newSingleThreadExecutor(), uri, eventSourceHandler);
+        this(Executors.newSingleThreadExecutor(), DEFAULT_RECONNECTION_TIME_MILLIS, uri, eventSourceHandler);
     }
 
     public ChannelFuture connect() {
-        return bootstrap.connect(new InetSocketAddress(uri.getHost(), uri.getPort()));
+        return bootstrap.connect();
     }
 
     /**

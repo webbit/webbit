@@ -91,7 +91,7 @@ public interface WebServer {
     WebServer stop() throws IOException;
 
     /**
-     * Call after {@link #stop()} to wait until webserver has stopped it's background
+     * Call after {@link #stop()} to wait until webserver has stopped its background
      * threads and closed all socket connections. This method blocks.
      */
     WebServer join() throws InterruptedException;

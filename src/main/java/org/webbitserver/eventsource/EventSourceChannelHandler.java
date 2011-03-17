@@ -1,5 +1,6 @@
 package org.webbitserver.eventsource;
 
+import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.BigEndianHeapChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -15,23 +16,34 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.Timeout;
+import org.jboss.netty.util.Timer;
+import org.jboss.netty.util.TimerTask;
 
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements MessageEmitter {
+class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements MessageEmitter {
 
     private final Executor executor;
+    private final ClientBootstrap bootstrap;
     private final URI uri;
     private final EventSourceHandler eventSourceHandler;
     private final MessageDispatcher messageDispatcher;
+    private final Timer timer = new HashedWheelTimer();
 
     private boolean needResponse = true;
     private Channel channel;
+    private boolean connecting = false;
+    private boolean reconnectOnClose = true;
+    private long reconnectionTimeMillis;
 
-    public EventSourceClientHandler(Executor executor, URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSourceChannelHandler(Executor executor, long reconnectionTimeMillis, ClientBootstrap bootstrap, URI uri, EventSourceHandler eventSourceHandler) {
         this.executor = executor;
+        this.bootstrap = bootstrap;
         this.uri = uri;
         this.eventSourceHandler = eventSourceHandler;
         this.messageDispatcher = new MessageDispatcher(this, uri.toString());
@@ -46,6 +58,7 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements M
         request.addHeader(Names.CACHE_CONTROL, "no-cache");
         e.getChannel().write(request);
         channel = e.getChannel();
+        connecting = false;
     }
 
     @Override
@@ -53,6 +66,19 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements M
         emitDisconnect();
         needResponse = true;
         channel = null;
+    }
+
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        if(!connecting && reconnectOnClose) {
+            connecting = true;
+            timer.newTimeout(new TimerTask() {
+                @Override
+                public void run(Timeout timeout) throws Exception {
+                    bootstrap.connect().await();
+                }
+            }, reconnectionTimeMillis, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
@@ -82,17 +108,19 @@ class EventSourceClientHandler extends SimpleChannelUpstreamHandler implements M
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         Throwable error = e.getCause();
         emitError(error);
+        ctx.getChannel().close();
     }
 
-    public EventSourceClientHandler close() {
-        if(channel != null) {
+    public EventSourceChannelHandler close() {
+        reconnectOnClose = false;
+        if (channel != null) {
             channel.close();
         }
         return this;
     }
 
-    public EventSourceClientHandler join() throws InterruptedException {
-        if(channel != null) {
+    public EventSourceChannelHandler join() throws InterruptedException {
+        if (channel != null) {
             channel.getCloseFuture().await();
         }
         return this;
