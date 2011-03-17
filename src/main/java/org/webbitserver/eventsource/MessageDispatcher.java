@@ -70,7 +70,6 @@ class MessageDispatcher {
         MessageEvent message = new MessageEvent(dataString, lastEventId, origin);
         messageEmitter.emitMessage(eventName, message);
         data = new StringBuffer();
-        lastEventId = null;
         eventName = DEFAULT_EVENT;
     }
 }

@@ -88,4 +88,16 @@ public class MessageDispatcherTest {
 
         verifyNoMoreInteractions(h);
     }
+
+    @Test
+    public void usesTheEventIdOfPreviousEventIfNoneSet() throws Exception {
+        md.line("data: hello");
+        md.line("id: reused");
+        md.line("");
+        md.line("data: world");
+        md.line("");
+
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("hello", "reused", ORIGIN)));
+        verify(h).emitMessage(eq("message"), eq(new MessageEvent("world", "reused", ORIGIN)));
+    }
 }
