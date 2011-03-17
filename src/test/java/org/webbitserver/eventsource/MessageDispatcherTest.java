@@ -72,4 +72,20 @@ public class MessageDispatcherTest {
 
         verify(h).emitMessage(eq("message"), eq(new MessageEvent("", null, ORIGIN)));
     }
+
+    @Test
+    public void setsRetryTimeToSevenSeconds() throws Exception {
+        md.line("retry: 7000");
+        md.line("");
+
+        verify(h).setReconnectionTime(7000);
+    }
+
+    @Test
+    public void doesntSetRetryTimeUnlessEntireValueIsNumber() throws Exception {
+        md.line("retry: 7000L");
+        md.line("");
+
+        verifyNoMoreInteractions(h);
+    }
 }

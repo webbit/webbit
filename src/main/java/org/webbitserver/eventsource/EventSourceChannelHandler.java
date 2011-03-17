@@ -111,6 +111,11 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
         ctx.getChannel().close();
     }
 
+    @Override
+    public void setReconnectionTime(long reconnectionTimeMillis) {
+        this.reconnectionTimeMillis = reconnectionTimeMillis;
+    }
+
     public EventSourceChannelHandler close() {
         reconnectOnClose = false;
         if (channel != null) {
