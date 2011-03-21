@@ -1,5 +1,6 @@
 package org.webbitserver.handler.logging;
 
+import org.webbitserver.EventSourceConnection;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 
@@ -21,4 +22,9 @@ public interface LogSink {
 
     void custom(HttpRequest request, String action, String data);
 
+    void eventSourceConnectionOpen(EventSourceConnection connection);
+
+    void eventSourceConnectionClose(EventSourceConnection connection);
+
+    void eventSourceOutboundData(EventSourceConnection connection, String data);
 }

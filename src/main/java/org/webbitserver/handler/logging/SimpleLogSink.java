@@ -1,5 +1,6 @@
 package org.webbitserver.handler.logging;
 
+import org.webbitserver.EventSourceConnection;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 
@@ -48,22 +49,22 @@ public class SimpleLogSink implements LogSink {
 
     @Override
     public void webSocketConnectionOpen(WebSocketConnection connection) {
-        custom(connection.httpRequest(), action("OPEN"), null);
+        custom(connection.httpRequest(), "WEB-SOCKET-OPEN", null);
     }
 
     @Override
     public void webSocketConnectionClose(WebSocketConnection connection) {
-        custom(connection.httpRequest(), action("CLOSE"), null);
+        custom(connection.httpRequest(), "WEB-SOCKET-CLOSE", null);
     }
 
     @Override
     public void webSocketInboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), action("IN"), data);
+        custom(connection.httpRequest(), "WEB-SOCKET-IN", data);
     }
 
     @Override
     public void webSocketOutboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), action("OUT"), data);
+        custom(connection.httpRequest(), "WEB-SOCKET-OUT", data);
     }
 
     @Override
@@ -85,8 +86,19 @@ public class SimpleLogSink implements LogSink {
         }
     }
 
-    private String action(String action) {
-        return "WEB-SOCKET-" + action;
+    @Override
+    public void eventSourceConnectionOpen(EventSourceConnection connection) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-OPEN", null);
+    }
+
+    @Override
+    public void eventSourceConnectionClose(EventSourceConnection connection) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-CLOSE", null);
+    }
+
+    @Override
+    public void eventSourceOutboundData(EventSourceConnection connection, String data) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-OUT", data);
     }
 
     protected void flush() throws IOException {
