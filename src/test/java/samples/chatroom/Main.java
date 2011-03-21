@@ -1,8 +1,8 @@
 package samples.chatroom;
 
 import org.webbitserver.WebServer;
-import org.webbitserver.handler.logging.LoggingHandler;
 import org.webbitserver.handler.StaticFileHandler;
+import org.webbitserver.handler.logging.LoggingHandler;
 import org.webbitserver.handler.logging.SimpleLogSink;
 
 import static org.webbitserver.WebServers.createWebServer;

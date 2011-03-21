@@ -9,7 +9,10 @@ import org.webbitserver.helpers.QueryParameters;
 import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
@@ -60,7 +63,7 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public HttpCookie cookie(String name) {
         for (HttpCookie cookie : cookies()) {
-            if(cookie.getName().equals(name)) {
+            if (cookie.getName().equals(name)) {
                 return cookie;
             }
         }

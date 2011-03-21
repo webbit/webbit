@@ -1,6 +1,12 @@
 package org.webbitserver.stub;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.concurrent.Executor;
 
@@ -8,8 +14,8 @@ public class StubHttpControl implements HttpControl {
 
     private HttpRequest request;
     private HttpResponse response;
-    private CometHandler cometHandler;
-    private CometConnection cometConnection;
+    private WebSocketHandler webSocketHandler;
+    private WebSocketConnection webSocketConnection;
 
     public StubHttpControl() {
     }
@@ -19,14 +25,14 @@ public class StubHttpControl implements HttpControl {
         this.response = response;
     }
 
-    public StubHttpControl(CometConnection connection) {
-        this.cometConnection = connection;
+    public StubHttpControl(WebSocketConnection connection) {
+        this.webSocketConnection = connection;
     }
 
-    public StubHttpControl(HttpRequest request, HttpResponse response, CometConnection connection) {
+    public StubHttpControl(HttpRequest request, HttpResponse response, WebSocketConnection connection) {
         this.request = request;
         this.response = response;
-        this.cometConnection = connection;
+        this.webSocketConnection = connection;
     }
 
     public HttpRequest request() {
@@ -63,38 +69,40 @@ public class StubHttpControl implements HttpControl {
     }
 
     @Override
-    public CometConnection upgradeToWebSocketConnection(CometHandler handler) {
-        this.cometHandler = handler;
-        return this.cometConnection;
+    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
+        this.webSocketHandler = handler;
+        return this.webSocketConnection;
     }
 
     @Override
-    public CometConnection createWebSocketConnection() {
-        return this.cometConnection;
+    public WebSocketConnection createWebSocketConnection() {
+        return this.webSocketConnection;
     }
 
     @Override
-    public CometConnection upgradeToEventSourceConnection(CometHandler cometHandler) {
-        this.cometHandler = cometHandler;
-        return cometConnection;
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+        throw new UnsupportedOperationException();
+//        this.webSocketHandler = handler;
+//        return webSocketConnection;
     }
 
     @Override
-    public CometConnection createEventSourceConnection() {
-        return this.cometConnection;
+    public EventSourceConnection createEventSourceConnection() {
+        throw new UnsupportedOperationException();
+//        return this.webSocketConnection;
     }
 
-    public CometConnection cometConnection() {
-        return this.cometConnection;
+    public WebSocketConnection webSocketConnection() {
+        return this.webSocketConnection;
     }
 
-    public StubHttpControl cometConnection(CometConnection cometConnection) {
-        this.cometConnection = cometConnection;
+    public StubHttpControl webSocketConnection(WebSocketConnection connection) {
+        this.webSocketConnection = connection;
         return this;
     }
 
-    public CometHandler cometHandler() {
-        return cometHandler;
+    public WebSocketHandler webSocketHandler() {
+        return webSocketHandler;
     }
 
     @Override

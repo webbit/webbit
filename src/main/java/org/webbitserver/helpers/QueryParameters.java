@@ -14,7 +14,7 @@ public class QueryParameters {
     private static final List<String> EMPTY = Collections.emptyList();
 
     public QueryParameters(String query) {
-        if(query != null) {
+        if (query != null) {
             parse(query);
         }
     }

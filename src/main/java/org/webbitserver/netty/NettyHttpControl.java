@@ -2,7 +2,12 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.webbitserver.*;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.Iterator;
 import java.util.concurrent.Executor;
@@ -72,10 +77,19 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public NettyWebSocketConnection upgradeToWebSocketConnection(CometHandler handler) {
+    public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         NettyWebSocketConnection webSocketConnection = createWebSocketConnection();
-        new NettyWebSocketChannelHandler(executor, ctx, nettyHttpRequest, httpRequest,
-                defaultHttpResponse, handler, webSocketConnection, exceptionHandler, ioExceptionHandler);
+        new NettyWebSocketChannelHandler(
+                executor,
+                handler,
+                ctx,
+                exceptionHandler,
+                nettyHttpRequest,
+                ioExceptionHandler,
+                webSocketConnection,
+                httpRequest,
+                defaultHttpResponse
+        );
         return webSocketConnection;
     }
 
@@ -85,10 +99,19 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public CometConnection upgradeToEventSourceConnection(CometHandler handler) {
+    public NettyEventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
         NettyEventSourceConnection eventSourceConnection = createEventSourceConnection();
-        new NettyEventSourceChannelHandler(executor, ctx, nettyHttpRequest,
-                defaultHttpResponse, handler, eventSourceConnection, exceptionHandler, ioExceptionHandler, httpRequest);
+        new NettyEventSourceChannelHandler(
+                executor,
+                handler,
+                ctx,
+                exceptionHandler,
+                nettyHttpRequest,
+                ioExceptionHandler,
+                eventSourceConnection,
+                httpRequest,
+                defaultHttpResponse
+        );
         return eventSourceConnection;
     }
 

@@ -3,8 +3,8 @@ package org.webbitserver.eventsource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.webbitserver.CometConnection;
-import org.webbitserver.CometHandler;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.netty.contrib.EventSourceMessage;
 
@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Thread.sleep;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -69,7 +70,7 @@ public class EventSourceClientTest {
     }
 
     private void startClient(final List<String> expectedMessages, final CountDownLatch messageCountdown, final CountDownLatch errorCountdown, long reconnectionTimeMillis) throws InterruptedException {
-        eventSource = new EventSource(Executors.newSingleThreadExecutor(), reconnectionTimeMillis, URI.create("http://localhost:59504/es/hello?echoThis=yo"), new EventSourceHandler() {
+        eventSource = new EventSource(Executors.newSingleThreadExecutor(), reconnectionTimeMillis, URI.create("http://localhost:59504/es/hello?echoThis=yo"), new EventSourceClientHandler() {
             int n = 0;
 
             @Override
@@ -97,9 +98,13 @@ public class EventSourceClientTest {
 
     private void startServer(final List<String> messagesToSend) throws IOException {
         webServer
-                .add("/es/.*", new CometHandler() {
+                .add("/es/.*", new EventSourceHandler() {
                     @Override
-                    public void onOpen(CometConnection connection) throws Exception {
+                    public void onOpen(EventSourceConnection connection) throws Exception {
+                        // Need to sleep a little before sending messages back to client. This is because of a race condition in the
+                        // client's handshake logic. TODO: Read up on http://bruno.biasedbit.com/blag/2010/07/15/handshaking-tutorial-with-netty/
+                        // and do this properly.
+                        sleep(100);
                         for (String message : messagesToSend) {
                             String data = message + " " + connection.httpRequest().queryParam("echoThis");
                             String event = new EventSourceMessage().data(data).end().toString();
@@ -108,11 +113,7 @@ public class EventSourceClientTest {
                     }
 
                     @Override
-                    public void onClose(CometConnection connection) throws Exception {
-                    }
-
-                    @Override
-                    public void onMessage(CometConnection connection, String msg) throws Exception {
+                    public void onClose(EventSourceConnection connection) throws Exception {
                     }
                 })
                 .start();

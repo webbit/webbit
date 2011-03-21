@@ -1,11 +1,9 @@
 package org.webbitserver.wrapper;
 
 import org.webbitserver.HttpRequest;
-import org.webbitserver.helpers.QueryParameters;
 
 import java.net.HttpCookie;
 import java.net.SocketAddress;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

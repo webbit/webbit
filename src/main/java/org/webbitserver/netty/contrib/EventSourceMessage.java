@@ -50,7 +50,7 @@ public class EventSourceMessage {
 
     private void appendFieldValue(String field, String value) {
         payload.append(field);
-        if(value != null && !value.isEmpty()) {
+        if (value != null && !value.isEmpty()) {
             payload.append(COLON);
             payload.append(value);
         }

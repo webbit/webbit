@@ -31,7 +31,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
     private final Executor executor;
     private final ClientBootstrap bootstrap;
     private final URI uri;
-    private final EventSourceHandler eventSourceHandler;
+    private final EventSourceClientHandler eventSourceHandler;
     private final MessageDispatcher messageDispatcher;
     private final Timer timer = new HashedWheelTimer();
 
@@ -42,7 +42,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
     private long reconnectionTimeMillis;
     private String lastEventId;
 
-    public EventSourceChannelHandler(Executor executor, long reconnectionTimeMillis, ClientBootstrap bootstrap, URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSourceChannelHandler(Executor executor, long reconnectionTimeMillis, ClientBootstrap bootstrap, URI uri, EventSourceClientHandler eventSourceHandler) {
         this.executor = executor;
         this.bootstrap = bootstrap;
         this.uri = uri;
@@ -57,7 +57,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
         request.addHeader(Names.HOST, uri.getHost());
         request.addHeader(Names.ORIGIN, "http://" + uri.getHost());
         request.addHeader(Names.CACHE_CONTROL, "no-cache");
-        if(lastEventId != null) {
+        if (lastEventId != null) {
             request.addHeader("Last-Event-ID", lastEventId);
         }
         e.getChannel().write(request);
@@ -74,7 +74,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
 
     @Override
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        if(!connecting && reconnectOnClose) {
+        if (!connecting && reconnectOnClose) {
             connecting = true;
             timer.newTimeout(new TimerTask() {
                 @Override
@@ -163,7 +163,7 @@ class EventSourceChannelHandler extends SimpleChannelUpstreamHandler implements 
     }
 
     public void emitMessage(final String event, final org.webbitserver.eventsource.MessageEvent message) {
-        if(message.lastEventId != null) {
+        if (message.lastEventId != null) {
             lastEventId = message.lastEventId;
         }
         executor.execute(new Runnable() {

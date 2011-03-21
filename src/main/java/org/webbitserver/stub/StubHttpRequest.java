@@ -72,7 +72,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     @Override
     public HttpCookie cookie(String name) {
         for (HttpCookie cookie : cookies()) {
-            if(cookie.getName().equals(name)) {
+            if (cookie.getName().equals(name)) {
                 return cookie;
             }
         }

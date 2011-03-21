@@ -1,25 +1,26 @@
 package org.webbitserver.stub;
 
-import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.WebSocketConnection;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
  * Implementation of WebSocketConnection that is easy to construct, and inspect results.
  * Useful for testing.
  */
-public class StubCometConnection extends StubDataHolder implements CometConnection {
+public class StubWebSocketConnection extends StubDataHolder implements WebSocketConnection {
     private final List<String> sentMessages = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;
 
-    public StubCometConnection(HttpRequest httpRequest) {
+    public StubWebSocketConnection(HttpRequest httpRequest) {
         this.httpRequest = httpRequest;
     }
 
-    public StubCometConnection() {
+    public StubWebSocketConnection() {
         this(new StubHttpRequest());
     }
 
@@ -28,19 +29,19 @@ public class StubCometConnection extends StubDataHolder implements CometConnecti
         return httpRequest;
     }
 
-    public StubCometConnection httpRequest(HttpRequest httpRequest) {
+    public StubWebSocketConnection httpRequest(HttpRequest httpRequest) {
         this.httpRequest = httpRequest;
         return this;
     }
 
     @Override
-    public StubCometConnection send(String message) {
+    public StubWebSocketConnection send(String message) {
         sentMessages.add(message);
         return this;
     }
 
     @Override
-    public StubCometConnection close() {
+    public StubWebSocketConnection close() {
         closed = true;
         return this;
     }
@@ -49,8 +50,12 @@ public class StubCometConnection extends StubDataHolder implements CometConnecti
         return closed;
     }
 
+    public List<String> sentMessages() {
+        return sentMessages;
+    }
+
     @Override
-    public StubCometConnection data(String key, Object value) {
+    public StubWebSocketConnection data(String key, Object value) {
         super.data(key, value);
         return this;
     }
@@ -58,11 +63,6 @@ public class StubCometConnection extends StubDataHolder implements CometConnecti
     @Override
     public Executor handlerExecutor() {
         return this;
-    }
-
-    @Override
-    public String protocol() {
-        return "cometstub";
     }
 
     @Override

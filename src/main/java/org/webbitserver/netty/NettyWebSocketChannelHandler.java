@@ -4,7 +4,10 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -12,33 +15,75 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
-import org.webbitserver.CometConnection;
-import org.webbitserver.CometHandler;
+import org.webbitserver.WebSocketHandler;
 
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY1;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY2;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_LOCATION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_LOCATION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PROTOCOL;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
-public class NettyWebSocketChannelHandler extends CometChannelHandler {
-    private final CometHandler handler;
+public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
+    protected final Executor executor;
+    protected final NettyHttpRequest nettyHttpRequest;
+    protected final NettyWebSocketConnection webSocketConnection;
+    protected final Thread.UncaughtExceptionHandler exceptionHandler;
+    protected final Thread.UncaughtExceptionHandler ioExceptionHandler;
+    protected final WebSocketHandler handler;
 
-    public NettyWebSocketChannelHandler(Executor executor,
-                                        ChannelHandlerContext ctx,
-                                        NettyHttpRequest nettyHttpRequest,
-                                        HttpRequest request,
-                                        HttpResponse response,
-                                        CometHandler handler,
-                                        CometConnection cometConnection,
-                                        Thread.UncaughtExceptionHandler exceptionHandler,
-                                        Thread.UncaughtExceptionHandler ioExceptionHandler) {
-        super(handler, ctx, exceptionHandler, nettyHttpRequest, executor, ioExceptionHandler, cometConnection, request, response);
+    public NettyWebSocketChannelHandler(
+            Executor executor,
+            WebSocketHandler handler,
+            ChannelHandlerContext ctx,
+            UncaughtExceptionHandler exceptionHandler,
+            NettyHttpRequest nettyHttpRequest,
+            UncaughtExceptionHandler ioExceptionHandler,
+            NettyWebSocketConnection webSocketConnection,
+            HttpRequest req,
+            HttpResponse res
+    ) {
         this.handler = handler;
+        this.exceptionHandler = exceptionHandler;
+        this.nettyHttpRequest = nettyHttpRequest;
+        this.executor = executor;
+        this.ioExceptionHandler = ioExceptionHandler;
+        this.webSocketConnection = webSocketConnection;
+
+        prepareConnection(req, res);
+        ctx.getChannel().write(res);
+
+        adjustPipeline(ctx);
+
+        try {
+            handler.onOpen(this.webSocketConnection);
+        } catch (Exception e) {
+            // TODO
+            e.printStackTrace();
+        }
     }
 
-    @Override
+    protected void prepareConnection(HttpRequest request, HttpResponse response) {
+        // Support both commonly used versions of the WebSocket spec.
+        if (isNewSkoolWebSocketRequest(request)) {
+            upgradeResponseNewSkool(request, response);
+        } else {
+            upgradeResponseOldSkool(request, response);
+        }
+    }
+
     protected void adjustPipeline(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
@@ -48,12 +93,36 @@ public class NettyWebSocketChannelHandler extends CometChannelHandler {
     }
 
     @Override
-    protected void prepareConnection(HttpRequest request, HttpResponse response) {
-        // Support both commonly used versions of the WebSocket spec.
-        if (isNewSkoolWebSocketRequest(request)) {
-            upgradeResponseNewSkool(request, response);
+    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    handler.onClose(webSocketConnection);
+                } catch (Exception e1) {
+                    exceptionHandler.uncaughtException(Thread.currentThread(), e1);
+                }
+            }
+        });
+    }
+
+    @Override
+    public String toString() {
+        return nettyHttpRequest.toString();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
+        if (e.getCause() instanceof ClosedChannelException) {
+            e.getChannel().close();
         } else {
-            upgradeResponseOldSkool(request, response);
+            final Thread thread = Thread.currentThread();
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    ioExceptionHandler.uncaughtException(thread, e.getCause());
+                }
+            });
         }
     }
 
@@ -113,7 +182,7 @@ public class NettyWebSocketChannelHandler extends CometChannelHandler {
             @Override
             public void run() {
                 try {
-                    handler.onMessage(cometConnection, ((WebSocketFrame) e.getMessage()).getTextData());
+                    handler.onMessage(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
                 } catch (Exception e1) {
                     // TODO
                     e1.printStackTrace();

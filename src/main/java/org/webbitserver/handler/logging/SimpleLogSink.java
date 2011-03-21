@@ -1,7 +1,7 @@
 package org.webbitserver.handler.logging;
 
-import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.WebSocketConnection;
 
 import java.io.Flushable;
 import java.io.IOException;
@@ -47,23 +47,23 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void cometConnectionOpen(CometConnection connection) {
-        custom(connection.httpRequest(), action(connection, "OPEN"), null);
+    public void webSocketConnectionOpen(WebSocketConnection connection) {
+        custom(connection.httpRequest(), action("OPEN"), null);
     }
 
     @Override
-    public void cometConnectionClose(CometConnection connection) {
-        custom(connection.httpRequest(), action(connection, "CLOSE"), null);
+    public void webSocketConnectionClose(WebSocketConnection connection) {
+        custom(connection.httpRequest(), action("CLOSE"), null);
     }
 
     @Override
-    public void webSocketInboundData(CometConnection connection, String data) {
-        custom(connection.httpRequest(), action(connection, "IN"), data);
+    public void webSocketInboundData(WebSocketConnection connection, String data) {
+        custom(connection.httpRequest(), action("IN"), data);
     }
 
     @Override
-    public void cometOutboundData(CometConnection connection, String data) {
-        custom(connection.httpRequest(), action(connection, "OUT"), data);
+    public void webSocketOutboundData(WebSocketConnection connection, String data) {
+        custom(connection.httpRequest(), action("OUT"), data);
     }
 
     @Override
@@ -85,8 +85,8 @@ public class SimpleLogSink implements LogSink {
         }
     }
 
-    private String action(CometConnection connection, String action) {
-        return connection.protocol().toUpperCase() + "-" + action;
+    private String action(String action) {
+        return "WEB-SOCKET-" + action;
     }
 
     protected void flush() throws IOException {

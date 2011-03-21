@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 /**
  * <a href="http://dev.w3.org/html5/eventsource/#event-stream-interpretation">Interprets an event stream</a>
- * and dispatches messages to the {@link EventSourceHandler}.
+ * and dispatches messages to the {@link EventSourceClientHandler}.
  */
 class MessageDispatcher {
     private static final String DATA = "data";

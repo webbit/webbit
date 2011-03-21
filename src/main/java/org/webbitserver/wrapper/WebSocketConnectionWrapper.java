@@ -1,32 +1,32 @@
 package org.webbitserver.wrapper;
 
-import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.WebSocketConnection;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class CometConnectionWrapper implements CometConnection {
+public class WebSocketConnectionWrapper implements WebSocketConnection {
 
-    private CometConnection connection;
+    private WebSocketConnection connection;
 
-    public CometConnectionWrapper(CometConnection connection) {
+    public WebSocketConnectionWrapper(WebSocketConnection connection) {
         this.connection = connection;
     }
 
-    public CometConnection underlyingControl() {
+    public WebSocketConnection underlyingControl() {
         return connection;
     }
 
-    public CometConnectionWrapper underlyingControl(CometConnection control) {
+    public WebSocketConnectionWrapper underlyingControl(WebSocketConnection control) {
         this.connection = control;
         return this;
     }
 
-    public CometConnection originalControl() {
-        if (connection instanceof CometConnectionWrapper) {
-            CometConnectionWrapper wrapper = (CometConnectionWrapper) connection;
+    public WebSocketConnection originalControl() {
+        if (connection instanceof WebSocketConnectionWrapper) {
+            WebSocketConnectionWrapper wrapper = (WebSocketConnectionWrapper) connection;
             return wrapper.originalControl();
         } else {
             return connection;
@@ -39,13 +39,13 @@ public class CometConnectionWrapper implements CometConnection {
     }
 
     @Override
-    public CometConnectionWrapper send(String message) {
+    public WebSocketConnectionWrapper send(String message) {
         connection.send(message);
         return this;
     }
 
     @Override
-    public CometConnectionWrapper close() {
+    public WebSocketConnectionWrapper close() {
         connection.close();
         return this;
     }
@@ -61,7 +61,7 @@ public class CometConnectionWrapper implements CometConnection {
     }
 
     @Override
-    public CometConnectionWrapper data(String key, Object value) {
+    public WebSocketConnectionWrapper data(String key, Object value) {
         connection.data(key, value);
         return this;
     }
@@ -74,11 +74,6 @@ public class CometConnectionWrapper implements CometConnection {
     @Override
     public Executor handlerExecutor() {
         return connection.handlerExecutor();
-    }
-
-    @Override
-    public String protocol() {
-        return connection.protocol();
     }
 
     @Override

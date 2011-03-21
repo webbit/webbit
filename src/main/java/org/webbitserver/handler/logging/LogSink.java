@@ -1,17 +1,21 @@
 package org.webbitserver.handler.logging;
 
-import org.webbitserver.CometConnection;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.WebSocketConnection;
 
 public interface LogSink {
 
     void httpStart(HttpRequest request);
+
     void httpEnd(HttpRequest request);
 
-    void cometConnectionOpen(CometConnection connection);
-    void cometConnectionClose(CometConnection connection);
-    void webSocketInboundData(CometConnection connection, String data);
-    void cometOutboundData(CometConnection connection, String data);
+    void webSocketConnectionOpen(WebSocketConnection connection);
+
+    void webSocketConnectionClose(WebSocketConnection connection);
+
+    void webSocketInboundData(WebSocketConnection connection, String data);
+
+    void webSocketOutboundData(WebSocketConnection connection, String data);
 
     void error(HttpRequest request, Throwable error);
 

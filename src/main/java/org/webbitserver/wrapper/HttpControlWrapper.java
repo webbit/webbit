@@ -1,6 +1,12 @@
 package org.webbitserver.wrapper;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.concurrent.Executor;
 
@@ -46,21 +52,21 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public CometConnection upgradeToWebSocketConnection(CometHandler handler) {
+    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         return control.upgradeToWebSocketConnection(handler);
     }
 
     @Override
-    public CometConnection createWebSocketConnection() {
+    public WebSocketConnection createWebSocketConnection() {
         return control.createWebSocketConnection();
     }
 
     @Override
-    public CometConnection upgradeToEventSourceConnection(CometHandler handler) {
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
         return control.upgradeToEventSourceConnection(handler);
     }
 
-    public CometConnection createEventSourceConnection() {
+    public EventSourceConnection createEventSourceConnection() {
         return control.createEventSourceConnection();
     }
 

@@ -68,7 +68,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         private byte[] read(InputStream content) throws IOException {
             try {
                 return read(content.available(), content);
-            } catch(NullPointerException happensWhenReadingDirectoryPAthInJar) {
+            } catch (NullPointerException happensWhenReadingDirectoryPAthInJar) {
                 return null;
             }
         }

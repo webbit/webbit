@@ -2,24 +2,29 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.webbitserver.CometHandler;
+import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
-import org.webbitserver.handler.HttpToCometHandler;
 import org.webbitserver.WebServer;
+import org.webbitserver.WebSocketHandler;
+import org.webbitserver.handler.HttpToEventSourceHandler;
+import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.PathMatchHandler;
 import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -109,8 +114,13 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public NettyWebServer add(String path, CometHandler handler) {
-        return add(path, new HttpToCometHandler(handler));
+    public NettyWebServer add(String path, WebSocketHandler handler) {
+        return add(path, new HttpToWebSocketHandler(handler));
+    }
+
+    @Override
+    public WebServer add(String path, EventSourceHandler handler) {
+        return add(path, new HttpToEventSourceHandler(handler));
     }
 
     @Override

@@ -19,11 +19,11 @@ public class EventSource {
     private final ClientBootstrap bootstrap;
     private final EventSourceChannelHandler clientHandler;
 
-    public EventSource(Executor executor, long reconnectionTimeMillis, final URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSource(Executor executor, long reconnectionTimeMillis, final URI uri, EventSourceClientHandler eventSourceHandler) {
         bootstrap = new ClientBootstrap(
-                    new NioClientSocketChannelFactory(
-                            Executors.newSingleThreadExecutor(),
-                            Executors.newSingleThreadExecutor()));
+                new NioClientSocketChannelFactory(
+                        Executors.newSingleThreadExecutor(),
+                        Executors.newSingleThreadExecutor()));
         bootstrap.setOption("remoteAddress", new InetSocketAddress(uri.getHost(), uri.getPort()));
 
         clientHandler = new EventSourceChannelHandler(executor, reconnectionTimeMillis, bootstrap, uri, eventSourceHandler);
@@ -39,7 +39,7 @@ public class EventSource {
         });
     }
 
-    public EventSource(URI uri, EventSourceHandler eventSourceHandler) {
+    public EventSource(URI uri, EventSourceClientHandler eventSourceHandler) {
         this(Executors.newSingleThreadExecutor(), DEFAULT_RECONNECTION_TIME_MILLIS, uri, eventSourceHandler);
     }
 
@@ -49,6 +49,7 @@ public class EventSource {
 
     /**
      * Close the connection
+     *
      * @return self
      */
     public EventSource close() {
@@ -58,6 +59,7 @@ public class EventSource {
 
     /**
      * Wait for until the connection is closed
+     *
      * @return self
      * @throws InterruptedException if waiting was interrupted
      */
