@@ -2,12 +2,7 @@ package org.webbitserver.helpers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class QueryParameters {
     private final Map<String, List<String>> params = new HashMap<String, List<String>>();
@@ -46,5 +41,9 @@ public class QueryParameters {
 
     public List<String> all(String key) {
         return params.containsKey(key) ? params.get(key) : EMPTY;
+    }
+
+    public Set<String> keys() {
+        return params.keySet();
     }
 }

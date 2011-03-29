@@ -81,6 +81,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public Set<String> queryParamKeys() {
+        return parsedQueryParams().keys();
+    }
+
+    @Override
     public String postParam(String key) {
         return parsedPostParams().first(key);
     }
@@ -88,6 +93,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public List<String> postParams(String key) {
         return parsedPostParams().all(key);
+    }
+
+    @Override
+    public Set<String> postParamKeys() {
+        return parsedPostParams().keys();
     }
 
     private QueryParameters parsedQueryParams() {

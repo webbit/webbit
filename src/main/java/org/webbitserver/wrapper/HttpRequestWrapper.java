@@ -73,6 +73,16 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public List<String> queryParams(String key) {
+        return request.queryParams(key);
+    }
+
+    @Override
+    public Set<String> queryParamKeys() {
+        return request.queryParamKeys();
+    }
+
+    @Override
     public String postParam(String key) {
         return request.postParam(key);
     }
@@ -83,8 +93,8 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
-    public List<String> queryParams(String key) {
-        return request.queryParams(key);
+    public Set<String> postParamKeys() {
+        return request.postParamKeys();
     }
 
     @Override
