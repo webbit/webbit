@@ -90,6 +90,16 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     }
 
     @Override
+    public String postParam(String key) {
+        throw new UnsupportedOperationException(); // TODO: Implement this
+    }
+
+    @Override
+    public List<String> postParams(String key) {
+        throw new UnsupportedOperationException(); // TODO: Implement this
+    }
+
+    @Override
     public String cookieValue(String name) {
         HttpCookie cookie = cookie(name);
         return cookie == null ? null : cookie.getValue();

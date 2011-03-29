@@ -19,6 +19,9 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     private final Object id;
     private final long timestamp;
 
+    public QueryParameters queryParameters;
+    public QueryParameters postParameters;
+
     public NettyHttpRequest(MessageEvent messageEvent, HttpRequest httpRequest, Object id, long timestamp) {
         this.messageEvent = messageEvent;
         this.httpRequest = httpRequest;
@@ -69,12 +72,36 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public String queryParam(String key) {
-        return new QueryParameters(URI.create(uri()).getQuery()).first(key);
+        return parsedQueryParams().first(key);
     }
 
     @Override
     public List<String> queryParams(String key) {
-        return new QueryParameters(URI.create(uri()).getQuery()).all(key);
+        return parsedQueryParams().all(key);
+    }
+
+    @Override
+    public String postParam(String key) {
+        return parsedPostParams().first(key);
+    }
+
+    @Override
+    public List<String> postParams(String key) {
+        return parsedPostParams().all(key);
+    }
+
+    private QueryParameters parsedQueryParams() {
+        if (queryParameters == null) {
+            queryParameters = new QueryParameters(URI.create(uri()).getQuery());
+        }
+        return queryParameters;
+    }
+
+    private QueryParameters parsedPostParams() {
+        if (postParameters == null) {
+            postParameters = new QueryParameters(body());
+        }
+        return postParameters;
     }
 
     @Override

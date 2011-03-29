@@ -33,9 +33,10 @@ public class HttpRequestTest {
     }
 
     @Test
-    public void returnsEmptyLisrtWhenThereIsNoSuchParameter() throws Exception {
+    public void returnsEmptyListWhenThereIsNoSuchParameter() throws Exception {
         HttpRequest req = new StubHttpRequest("http://host.com:8080/path?poisson=cabillaud");
         assertEquals(EMPTY, req.queryParams("fish"));
         assertNull(req.queryParam("fish"));
     }
+
 }

@@ -77,6 +77,27 @@ public interface HttpRequest extends DataHolder {
     List<String> queryParams(String key);
 
     /**
+     * Get post parameter value.
+     *
+     * @param key parameter name
+     * @return the value of the parameter
+     * @see {@link #postParams(String)}
+     */
+    String postParam(String key);
+
+    /**
+     * Get all post parameter values.
+     *
+     * @param key parameter name
+     * @return the values of the parameter
+     * @see {@link #postParam(String)}
+     */
+    List<String> postParams(String key);
+
+    // TODO: aggregate params() methods
+    // TODO: iterate over param keys
+
+    /**
      * Get the value of named cookie
      *
      * @param name cookie name
@@ -117,4 +138,5 @@ public interface HttpRequest extends DataHolder {
      * Timestamp (millis since epoch) of when this request was first received by the server.
      */
     long timestamp();
+
 }
