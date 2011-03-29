@@ -93,17 +93,17 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
 
     @Override
     public String postParam(String key) {
-        throw new UnsupportedOperationException(); // TODO: Implement this
+        return new QueryParameters(body()).first(key);
     }
 
     @Override
     public List<String> postParams(String key) {
-        throw new UnsupportedOperationException(); // TODO: Implement this
+        return new QueryParameters(body()).all(key);
     }
 
     @Override
     public Set<String> postParamKeys() {
-        throw new UnsupportedOperationException(); // TODO: Implement this
+        return new QueryParameters(body()).keys();
     }
 
     @Override
