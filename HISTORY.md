@@ -1,6 +1,7 @@
-0.1.2 (In Git)
+0.1.6 (2011-03-30)
 ==================
 
+* Added support for [Server-Sent Events/EventSource](http://dev.w3.org/html5/eventsource/) (#18 Aslak Hellesøy)
 * Requests with full url as request uri (and not only path) are correctly matched. (Aslak Hellesøy)
 * Added HttpRequest.queryParam(String key) and HttpRequest.queryParams(String key) (#20 Aslak Hellesøy)
 * Added new AliasHandler for forwarding requests. (Aslak Hellesøy)
