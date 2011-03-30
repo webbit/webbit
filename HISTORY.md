@@ -1,4 +1,4 @@
-0.1.8 (2011-03-30)
+0.1.9 (2011-03-30)
 ==================
 
 * Added support for [Server-Sent Events/EventSource](http://dev.w3.org/html5/eventsource/) (#18 Aslak Hellesøy)
