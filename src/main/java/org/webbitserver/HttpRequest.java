@@ -4,6 +4,7 @@ import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Retrieves information about inbound HTTP request.
@@ -77,6 +78,36 @@ public interface HttpRequest extends DataHolder {
     List<String> queryParams(String key);
 
     /**
+     * List all query parameter keys.
+     * @see {@link #queryParam(String)}
+     */
+    Set<String> queryParamKeys();
+
+    /**
+     * Get post parameter value.
+     *
+     * @param key parameter name
+     * @return the value of the parameter
+     * @see {@link #postParams(String)}
+     */
+    String postParam(String key);
+
+    /**
+     * Get all post parameter values.
+     *
+     * @param key parameter name
+     * @return the values of the parameter
+     * @see {@link #postParam(String)}
+     */
+    List<String> postParams(String key);
+
+    /**
+     * List all post parameter keys.
+     * @see {@link #postParam(String)}
+     */
+    Set<String> postParamKeys();
+
+    /**
      * Get the value of named cookie
      *
      * @param name cookie name
@@ -117,4 +148,5 @@ public interface HttpRequest extends DataHolder {
      * Timestamp (millis since epoch) of when this request was first received by the server.
      */
     long timestamp();
+
 }

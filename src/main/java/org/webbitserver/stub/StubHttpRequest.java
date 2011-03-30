@@ -8,10 +8,7 @@ import java.net.HttpCookie;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation of HttpRequest that is easy to construct manually and populate.
@@ -87,6 +84,26 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
     @Override
     public List<String> queryParams(String key) {
         return new QueryParameters(URI.create(uri()).getQuery()).all(key);
+    }
+
+    @Override
+    public Set<String> queryParamKeys() {
+        return new QueryParameters(URI.create(uri()).getQuery()).keys();
+    }
+
+    @Override
+    public String postParam(String key) {
+        return new QueryParameters(body()).first(key);
+    }
+
+    @Override
+    public List<String> postParams(String key) {
+        return new QueryParameters(body()).all(key);
+    }
+
+    @Override
+    public Set<String> postParamKeys() {
+        return new QueryParameters(body()).keys();
     }
 
     @Override

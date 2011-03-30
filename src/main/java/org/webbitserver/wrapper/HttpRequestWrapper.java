@@ -76,6 +76,26 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public Set<String> queryParamKeys() {
+        return request.queryParamKeys();
+    }
+
+    @Override
+    public String postParam(String key) {
+        return request.postParam(key);
+    }
+
+    @Override
+    public List<String> postParams(String key) {
+        return request.postParams(key);
+    }
+
+    @Override
+    public Set<String> postParamKeys() {
+        return request.postParamKeys();
+    }
+
+    @Override
     public String cookieValue(String name) {
         return request.cookieValue(name);
     }
