@@ -54,7 +54,7 @@ build/$(LIBRARY)-tests.jar: dist/$(LIBRARY).jar $(call find,src/test/java,java)
 # Run tests, and create .tests-pass if they succeed
 build/.tests-pass: build/$(LIBRARY)-tests.jar
 	@rm -f $@
-	java -cp $(CLASSPATH):dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
+	java -cp dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar:$(CLASSPATH) org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
 	@touch $@
 
 # Clean up

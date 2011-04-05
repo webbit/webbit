@@ -1,3 +1,8 @@
+0.1.11 (2011-03-30)
+==================
+
+* Fixed a bug where static (embedded) resources were served improperly if they were of a certain size (Aslak Hellesøy)
+
 0.1.10 (2011-03-30)
 ==================
 

@@ -30,11 +30,21 @@ public class HttpClient {
     public static String contents(URLConnection urlConnection) throws IOException {
         int length = urlConnection.getContentLength();
         byte[] buffer = new byte[length == -1 ? BUFFER_SIZE_IF_NO_CONTENT_LENGTH_HEADER : length];
-        int realLength = urlConnection.getInputStream().read(buffer);
-        if (length != -1 && length != realLength) {
-            throw new IOException("Content-Length header (" + length + ") did not match actual length (" + realLength + ")");
+
+        int read = 0;
+        while (length == -1 || read < length) {
+            int more = urlConnection.getInputStream().read(buffer, read, buffer.length - read);
+            if(more == -1) {
+                break;
+            } else {
+                read += more;
+            }
         }
-        return new String(buffer, 0, realLength);
+
+        if (length != -1 && length != read) {
+            throw new IOException("Content-Length header (" + length + ") did not match actual length (" + read + ")");
+        }
+        return new String(buffer, 0, read);
     }
 
 
