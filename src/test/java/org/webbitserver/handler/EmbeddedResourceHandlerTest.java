@@ -9,9 +9,7 @@ import org.webbitserver.stub.StubHttpControl;
 import org.webbitserver.stub.StubHttpRequest;
 import org.webbitserver.stub.StubHttpResponse;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;

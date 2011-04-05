@@ -7,7 +7,6 @@ import org.webbitserver.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
