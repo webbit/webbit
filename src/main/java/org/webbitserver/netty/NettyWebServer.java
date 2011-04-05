@@ -137,6 +137,9 @@ public class NettyWebServer implements WebServer {
         if (channel != null) {
             channel.close();
         }
+        if (bootstrap != null) {
+            bootstrap.releaseExternalResources();
+        }
         return this;
     }
 
