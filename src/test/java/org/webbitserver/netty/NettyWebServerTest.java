@@ -26,7 +26,6 @@ public class NettyWebServerTest {
 
         // Build, start, wait and stop the Netty Web Server
         NettyWebServer instance = new NettyWebServer(8080).start();
-        Thread.sleep(1000); // sleep for 1 second
         instance.stop();
 
         threadCountEnd = this.getCurrentThreadCount();
