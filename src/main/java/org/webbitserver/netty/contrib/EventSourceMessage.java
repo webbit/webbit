@@ -23,6 +23,10 @@ public class EventSourceMessage {
         return this;
     }
 
+    public EventSourceMessage id(long id) {
+        return id(String.valueOf(id));
+    }
+
     public EventSourceMessage id(String id) {
         appendFieldValue(ID, id);
         return this;
