@@ -134,15 +134,11 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer stop() throws IOException {
-        try {
-            if (channel != null) {
-                channel.close();
-            }
-            if (bootstrap != null) {
-                bootstrap.releaseExternalResources();
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
+        if (channel != null) {
+            channel.close();
+        }
+        if (bootstrap != null) {
+            bootstrap.releaseExternalResources();
         }
         return this;
     }
