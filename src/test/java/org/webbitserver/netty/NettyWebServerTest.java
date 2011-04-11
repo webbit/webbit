@@ -18,9 +18,7 @@ public class NettyWebServerTest {
     }
 
     private int getCurrentThreadCount() {
-        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        Thread[] threadArray = threadSet.toArray(new Thread[threadSet.size()]);
-        return threadArray.length;
+        return Thread.getAllStackTraces().keySet().size();
     }
 
 }
