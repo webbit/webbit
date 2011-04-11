@@ -5,32 +5,15 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- *
- * @author Kushal Pisavadia
- */
 public class NettyWebServerTest {
-
-    /**
-     * Tests the stop() method in NettyWebServer. Makes sure that we are stopping
-     * the web server cleanly and not leaving any resources hanging.
-     *
-     * @throws Exception
-     * @see NettyWebServer
-     */
     @Test
-    public void testStop() throws Exception {
-        int threadCountStart = 0, threadCountEnd = 0;
-
-        threadCountStart = this.getCurrentThreadCount();
+    public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
+        int threadCountStart = getCurrentThreadCount();
 
         // Build, start, wait and stop the Netty Web Server
-        NettyWebServer instance = new NettyWebServer(8080).start();
-        instance.stop();
+        new NettyWebServer(8080).start().stop();
 
-        threadCountEnd = this.getCurrentThreadCount();
-
-        assertEquals(threadCountStart, threadCountEnd);
+        assertEquals(threadCountStart, getCurrentThreadCount());
     }
 
     private int getCurrentThreadCount() {
