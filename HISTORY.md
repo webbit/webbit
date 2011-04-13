@@ -1,3 +1,8 @@
+0.1.12 (In Git)
+==================
+
+* Added EventSourceConnection.send(EventSourceMessage) (Aslak Hellesøy)
+
 0.1.11 (2011-03-30)
 ==================
 

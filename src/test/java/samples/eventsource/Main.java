@@ -4,6 +4,7 @@ import org.webbitserver.EventSourceConnection;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.handler.EmbeddedResourceHandler;
+import org.webbitserver.netty.contrib.EventSourceMessage;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,7 +46,7 @@ public class Main {
 
         private void broadcast(String message) {
             for (EventSourceConnection connection : connections) {
-                connection.send("data:" + message + "\n\n");
+                connection.send(new EventSourceMessage(message));
             }
         }
     }

@@ -13,6 +13,14 @@ public class EventSourceMessage {
     private static final String LF = "\n";
     private StringBuilder payload = new StringBuilder();
 
+    public EventSourceMessage() {
+    }
+
+    public EventSourceMessage(String data) {
+        this();
+        data(data);
+    }
+
     public EventSourceMessage data(String data) {
         prependOnAllLines(DATA, data);
         return this;
@@ -38,13 +46,7 @@ public class EventSourceMessage {
         return this;
     }
 
-    public EventSourceMessage end() {
-        payload.append(LF);
-        return this;
-    }
-
-    @Override
-    public String toString() {
+    public String build() {
         return payload.toString();
     }
 

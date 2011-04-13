@@ -3,6 +3,7 @@ package org.webbitserver.netty;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.EventSourceConnection;
+import org.webbitserver.netty.contrib.EventSourceMessage;
 
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +25,11 @@ public class NettyEventSourceConnection implements EventSourceConnection {
     @Override
     public NettyHttpRequest httpRequest() {
         return nettyHttpRequest;
+    }
+
+    @Override
+    public EventSourceConnection send(EventSourceMessage message) {
+        return send(message.build()).send("\n");
     }
 
     @Override
