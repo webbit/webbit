@@ -1,6 +1,7 @@
 0.1.12 (In Git)
 ==================
 
+* Fixed NPE when getting query parameters without a value: ?nothing=&some=thing (Aslak Hellesøy)
 * Added EventSourceConnection.send(EventSourceMessage) (Aslak Hellesøy)
 
 0.1.11 (2011-03-30)

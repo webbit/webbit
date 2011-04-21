@@ -21,7 +21,7 @@ public class QueryParameters {
             while (st.hasMoreTokens()) {
                 String[] pair = st.nextToken().split("=");
                 String key = URLDecoder.decode(pair[0], "UTF-8");
-                String value = URLDecoder.decode(pair[1], "UTF-8");
+                String value = pair.length == 1 ? null : URLDecoder.decode(pair[1], "UTF-8");
                 List<String> values = params.get(key);
                 if (values == null) {
                     values = new ArrayList<String>();
