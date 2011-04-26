@@ -115,8 +115,9 @@ public class SimpleLogSink implements LogSink {
 
     protected Appendable formatLogEntry(Appendable out, HttpRequest request, String action, String data) throws IOException {
         long cumulativeTimeOfRequest = cumulativeTimeOfRequest(request);
-        formatValue(out, new Date(request.timestamp()));
-        formatValue(out, request.timestamp());
+        Date now = new Date();
+        formatValue(out, now);
+        formatValue(out, now.getTime());
         formatValue(out, cumulativeTimeOfRequest);
         formatValue(out, request.id());
         formatValue(out, address(request.remoteAddress()));
