@@ -28,6 +28,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.jboss.netty.channel.Channels.pipeline;
@@ -37,6 +38,7 @@ public class NettyWebServer implements WebServer {
     private final SocketAddress socketAddress;
     private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
+    private final List<ExecutorService> executorServices = new ArrayList<ExecutorService>();
     private final Executor executor;
     private Channel channel;
 
@@ -47,6 +49,12 @@ public class NettyWebServer implements WebServer {
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
+    }
+
+    private NettyWebServer(ExecutorService executorService, int port) {
+        this((Executor)executorService, port);
+        // If we created the executor, we have to be responsible for tearing it down.
+        executorServices.add(executorService);
     }
 
     public NettyWebServer(final Executor executor, int port) {
@@ -125,9 +133,11 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
-        bootstrap.setFactory(new NioServerSocketChannelFactory(
-                Executors.newSingleThreadExecutor(),
-                Executors.newSingleThreadExecutor(), 1));
+        ExecutorService exec1 = Executors.newSingleThreadExecutor();
+        executorServices.add(exec1);
+        ExecutorService exec2 = Executors.newSingleThreadExecutor();
+        executorServices.add(exec2);
+        bootstrap.setFactory(new NioServerSocketChannelFactory(exec1, exec2, 1));
         channel = bootstrap.bind(socketAddress);
         return this;
     }
@@ -139,6 +149,9 @@ public class NettyWebServer implements WebServer {
         }
         if (bootstrap != null) {
             bootstrap.releaseExternalResources();
+        }
+        for (ExecutorService executorService : executorServices) {
+            executorService.shutdown();
         }
         return this;
     }
