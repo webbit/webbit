@@ -3,6 +3,7 @@
 
 * Fixed NPE when getting query parameters without a value: ?nothing=&some=thing (Aslak Hellesøy)
 * Added EventSourceConnection.send(EventSourceMessage) (Aslak Hellesøy)
+* Added BasicAuthenticationHandler for HTTP BASIC authentication (#8 Joe Walnes)
 
 0.1.11 (2011-03-30)
 ==================
