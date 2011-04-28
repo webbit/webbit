@@ -1,6 +1,7 @@
 0.1.12 (In Git)
 ==================
 
+* Shut down ExecutorServices used by Netty web server (Matt Hellige)
 * Fixed NPE when getting query parameters without a value: ?nothing=&some=thing (Aslak Hellesøy)
 * Added EventSourceConnection.send(EventSourceMessage) (Aslak Hellesøy)
 
