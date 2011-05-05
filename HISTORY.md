@@ -1,5 +1,7 @@
-0.1.12 (In Git)
+0.1.12 (2011-05-05)
 ==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.11...v0.1.12)
 
 * Shut down ExecutorServices used by Netty web server (Matt Hellige)
 * Fixed NPE when getting query parameters without a value: ?nothing=&some=thing (Aslak Hellesøy)
