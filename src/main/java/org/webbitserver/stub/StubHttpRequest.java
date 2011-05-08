@@ -36,6 +36,7 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
         return uri;
     }
 
+    @Override
     public StubHttpRequest uri(String uri) {
         this.uri = uri;
         return this;
