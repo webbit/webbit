@@ -66,6 +66,7 @@ public class HttpControlWrapper implements HttpControl {
         return control.upgradeToEventSourceConnection(handler);
     }
 
+    @Override
     public EventSourceConnection createEventSourceConnection() {
         return control.createEventSourceConnection();
     }
