@@ -1,3 +1,7 @@
+In Git
+==================
+* Allow WebSocket message handler to throw anything. (Aslak Hellesøy)
+
 0.1.12 (2011-05-05)
 ==================
 
