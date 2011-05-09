@@ -45,7 +45,7 @@ public class Base64 {
     }
 
     public static String encode(byte[] input) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         int outputCharCount = 0;
         for (int i = 0; i < input.length; i += 3) {
             int remaining = Math.min(3, input.length - i);
@@ -63,7 +63,11 @@ public class Base64 {
             for (int i = 0; i < input.length(); i += 4) {
                 int a[] = {mapCharToInt(in), mapCharToInt(in), mapCharToInt(in), mapCharToInt(in)};
                 int oneBigNumber = (a[0] & 0x3f) << 18 | (a[1] & 0x3f) << 12 | (a[2] & 0x3f) << 6 | (a[3] & 0x3f);
-                for (int j = 0; j < 3; j++) if (a[j + 1] >= 0) out.write(0xff & oneBigNumber >> 8 * (2 - j));
+                for (int j = 0; j < 3; j++) {
+                    if (a[j + 1] >= 0) {
+                        out.write(0xff & oneBigNumber >> 8 * (2 - j));
+                    }
+                }
             }
             return out.toByteArray();
         } catch (IOException e) {
