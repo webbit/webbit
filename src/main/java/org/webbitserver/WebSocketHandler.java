@@ -5,5 +5,5 @@ public interface WebSocketHandler {
 
     void onClose(WebSocketConnection connection) throws Exception;
 
-    void onMessage(WebSocketConnection connection, String msg) throws Exception;
+    void onMessage(WebSocketConnection connection, String msg) throws Throwable;
 }

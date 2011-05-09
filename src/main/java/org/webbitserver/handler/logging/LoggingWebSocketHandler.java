@@ -29,7 +29,7 @@ class LoggingWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void onMessage(WebSocketConnection connection, String message) throws Exception {
+    public void onMessage(WebSocketConnection connection, String message) throws Throwable {
         logSink.webSocketInboundData(connection, message);
         handler.onMessage(loggingConnection, message);
     }

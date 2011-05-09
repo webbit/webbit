@@ -183,9 +183,9 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             public void run() {
                 try {
                     handler.onMessage(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
-                } catch (Exception e1) {
+                } catch (Throwable t) {
                     // TODO
-                    e1.printStackTrace();
+                    t.printStackTrace();
                 }
             }
         });
