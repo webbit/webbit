@@ -1,5 +1,8 @@
-In Git
+0.1.13 (2011-05-09)
 ==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.12...v0.1.13)
+
 * Allow WebSocket message handler to throw anything. (Aslak Hellesøy)
 
 0.1.12 (2011-05-05)
