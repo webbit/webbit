@@ -24,6 +24,28 @@
         <developerConnection>scm:git:git@github.com:joewalnes/webbit.git</developerConnection>
         <url>git://github.com/joewalnes/webbit.git</url>
     </scm>
+    <developers>
+        <developer>
+            <id>joewalnes</id>
+            <name>Joe Walnes</name>
+            <email>joe@walnes.com</email>
+        </developer>
+        <developer>
+            <id>aslakhellesoy</id>
+            <name>Aslak Hellesøy</name>
+            <email>aslak.hellesoy@gmail.com</email>
+        </developer>
+        <developer>
+            <id>KushalP</id>
+            <name>Kushal Pisavadia</name>
+            <email>kushi.p@gmail.com</email>
+        </developer>
+        <developer>
+            <id>hellige</id>
+            <name>Matt Hellige</name>
+            <email>mhellige@drw.com</email>
+        </developer>
+    </developers>
     <repositories>
         <repository>
             <id>repository.jboss.org</id>
