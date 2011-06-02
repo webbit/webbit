@@ -1,3 +1,10 @@
+0.1.14 (2011-06-02)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.13...v0.1.12)
+
+* Fixed illegal error content on non-error pages. (Joe Walnes)
+
 0.1.13 (2011-05-09)
 ==================
 
