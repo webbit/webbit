@@ -7,7 +7,7 @@ import org.webbitserver.HttpResponse;
 import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 
 /**
- * Simple handler that shows the user who they are logged in as.
+ * Simple handler that shows the user who they are logged in as, using plain ol' HTTP
  */
 public class WhoAmIHttpHandler implements HttpHandler {
     @Override

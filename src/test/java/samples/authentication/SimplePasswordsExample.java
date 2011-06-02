@@ -23,7 +23,8 @@ public class SimplePasswordsExample {
 
         WebServer webServer = createWebServer(45453)
                 .add(new BasicAuthenticationHandler(passwords))
-                .add("/whoami", new WhoAmIHandler())
+                .add("/whoami", new WhoAmIHttpHandler())
+                .add("/whoami-ws", new WhoAmIWebSocketHandler())
                 .add(new StaticFileHandler("src/test/java/samples/authentication/content"))
                 .start();
 

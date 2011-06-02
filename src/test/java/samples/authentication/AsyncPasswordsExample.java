@@ -22,7 +22,8 @@ public class AsyncPasswordsExample {
     public static void main(String[] args) throws IOException {
         WebServer webServer = createWebServer(45454)
                 .add(new BasicAuthenticationHandler(new SlowPasswordAuthenticator()))
-                .add("/whoami", new WhoAmIHandler())
+                .add("/whoami", new WhoAmIHttpHandler())
+                .add("/whoami-ws", new WhoAmIWebSocketHandler())
                 .add(new StaticFileHandler("src/test/java/samples/authentication/content"))
                 .start();
 
