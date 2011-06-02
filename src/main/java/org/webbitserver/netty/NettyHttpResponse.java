@@ -124,8 +124,9 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse end() {
-        // Generate an error page if response status code is not OK (200).
-        if (response.getStatus().getCode() != 200) {
+        // Generate an error page if response status code is not OK.
+        int code = response.getStatus().getCode();
+        if (code < 200 || code >= 300) {
             response.setContent(copiedBuffer(response.getStatus().toString(), CharsetUtil.UTF_8));
             header("Content-Length", response.getContent().readableBytes());
         }
