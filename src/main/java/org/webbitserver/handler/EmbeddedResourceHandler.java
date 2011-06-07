@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -33,7 +32,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     }
 
     protected class ResourceWorker extends IOWorker {
-        private URL resource;
+        private InputStream resource;
         private InputStream content;
         private File file;
 
@@ -50,7 +49,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         @Override
         protected byte[] fileBytes() throws IOException {
-            content = resource.openStream();
+            content = resource;
             if (content == null || (content instanceof ByteArrayInputStream)) {
                 // It seems that directory listings are reported as BAOS, while files are not. Seems fragile, but works...
                 return null;
@@ -61,8 +60,8 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         @Override
         protected byte[] welcomeBytes() throws IOException {
-            URL resourceURL = getResource(new File(file, welcomeFileName));
-            return resourceURL == null ? null : read(resourceURL.openStream());
+            InputStream resourceStream = getResource(new File(file, welcomeFileName));
+            return resourceStream == null ? null : read(resourceStream);
         }
 
         private byte[] read(InputStream content) throws IOException {
@@ -73,9 +72,9 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
             }
         }
 
-        private URL getResource(File file) throws IOException {
+        private InputStream getResource(File file) throws IOException {
             String resourcePath = file.getPath();
-            return getClass().getClassLoader().getResource(resourcePath);
+            return getClass().getClassLoader().getResourceAsStream(resourcePath);
         }
     }
 }
