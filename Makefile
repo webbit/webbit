@@ -8,17 +8,21 @@ LIBRARY=webbit
 CLASSPATH=$(shell echo $(wildcard lib/*.jar) | sed -e 's/ /:/g')
 JARJARRULES='rule org.jboss.netty.** org.webbitserver.dependencies.org.jboss.netty.@1'
 
-# Non file targets
-.PHONY: all jar test clean again chatroom
-
 # Default target: Compile, run tests and build tarball
 all: jar test
 jar: dist/$(LIBRARY).jar dist/$(LIBRARY)-src.jar
 test: build/.tests-pass
+.PHONY: all jar test
 
 # Run sample chatroom
 chatroom: test
 	java -cp $(CLASSPATH):dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
+.PHONY: chatroom
+
+# Run sample echo server
+echo: test
+	java -cp $(CLASSPATH):dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar samples.echo.Main
+.PHONY: echo
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
 find = $(shell find $(1) -name '*.$(2)')
@@ -60,5 +64,7 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 # Clean up
 clean:
 	rm -rf build dist out
+.PHONY: clean
 
 again: clean all
+.PHONY: again
