@@ -1,9 +1,10 @@
-0.1.14 (2011-06-02)
+0.1.14 (Not yet released)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.13...v0.1.12)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.13...v0.1.14)
 
 * Fixed illegal error content on non-error pages. (Joe Walnes)
+* Added StubConnection, which can be used for stubbing both EventSource and WebSocket connections. (Aslak Hellesøy)
 
 0.1.13 (2011-05-09)
 ==================
