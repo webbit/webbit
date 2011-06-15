@@ -29,7 +29,7 @@ public class NettyEventSourceConnection implements EventSourceConnection {
 
     @Override
     public EventSourceConnection send(EventSourceMessage message) {
-        return send(message.build()).send("\n");
+        return send(message.build() + "\n");
     }
 
     @Override

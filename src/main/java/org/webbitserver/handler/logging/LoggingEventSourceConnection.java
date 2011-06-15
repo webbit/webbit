@@ -1,6 +1,7 @@
 package org.webbitserver.handler.logging;
 
 import org.webbitserver.EventSourceConnection;
+import org.webbitserver.netty.contrib.EventSourceMessage;
 import org.webbitserver.wrapper.EventSourceConnectionWrapper;
 
 class LoggingEventSourceConnection extends EventSourceConnectionWrapper {
@@ -18,4 +19,9 @@ class LoggingEventSourceConnection extends EventSourceConnectionWrapper {
         return super.send(message);
     }
 
+    @Override
+    public EventSourceConnectionWrapper send(EventSourceMessage message) {
+        logSink.eventSourceOutboundData(this, message.build() + "\n");
+        return super.send(message);
+    }
 }
