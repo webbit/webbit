@@ -14,14 +14,16 @@ public class Chatroom implements WebSocketHandler {
     public static final String USERNAME_KEY = "username";
 
     static class Incoming {
-        enum Action { LOGIN, SAY }
+        enum Action {LOGIN, SAY}
+
         Action action;
         String loginUsername;
         String message;
     }
 
     static class Outgoing {
-        enum Action { JOIN, LEAVE, SAY }
+        enum Action {JOIN, LEAVE, SAY}
+
         Action action;
         String username;
         String message;

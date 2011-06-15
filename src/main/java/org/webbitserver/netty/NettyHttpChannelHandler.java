@@ -6,8 +6,8 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.List;

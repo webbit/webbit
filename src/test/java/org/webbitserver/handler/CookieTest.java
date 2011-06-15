@@ -2,12 +2,20 @@ package org.webbitserver.handler;
 
 import org.junit.After;
 import org.junit.Test;
-import org.webbitserver.*;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebServer;
 
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URLConnection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;

@@ -90,7 +90,7 @@ public class StaticFileHandlerTest {
         assertReturnedWithStatus(200, handle(request("/a/")));
         assertReturnedWithStatus(200, handle(request("/b")));
     }
-    
+
     @Test
     public void shouldGuessMimeTypeFromExtension() throws Exception {
         mkdir("a/b");
@@ -125,7 +125,7 @@ public class StaticFileHandlerTest {
     public void shouldNotAllowAccessToFilesOutsideTheRoot() throws Exception {
         assertReturnedWithStatus(404, handle(request("../../etc/passwd")));
     }
-    
+
     /**
      * End to end integration test, that fires up a real web server and uses HTTP to check
      * the responses.

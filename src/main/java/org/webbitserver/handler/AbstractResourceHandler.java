@@ -152,7 +152,15 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected byte[] read(int length, InputStream in) throws IOException {
             byte[] data = new byte[length];
             try {
-                in.read(data);
+                int read = 0;
+                while (read < length) {
+                    int more = in.read(data, read, data.length - read);
+                    if(more == -1) {
+                        break;
+                    } else {
+                        read += more;
+                    }
+                }
             } finally {
                 in.close();
             }

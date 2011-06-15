@@ -1,6 +1,12 @@
 package org.webbitserver.stub;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.concurrent.Executor;
 
@@ -8,8 +14,8 @@ public class StubHttpControl implements HttpControl {
 
     private HttpRequest request;
     private HttpResponse response;
+    private WebSocketHandler webSocketHandler;
     private WebSocketConnection webSocketConnection;
-    private WebSocketHandler handler;
 
     public StubHttpControl() {
     }
@@ -64,26 +70,39 @@ public class StubHttpControl implements HttpControl {
 
     @Override
     public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-        this.handler = handler;
-        return webSocketConnection;
+        this.webSocketHandler = handler;
+        return this.webSocketConnection;
     }
 
     @Override
     public WebSocketConnection createWebSocketConnection() {
-        return webSocketConnection;
+        return this.webSocketConnection;
+    }
+
+    @Override
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+        throw new UnsupportedOperationException();
+//        this.webSocketHandler = handler;
+//        return webSocketConnection;
+    }
+
+    @Override
+    public EventSourceConnection createEventSourceConnection() {
+        throw new UnsupportedOperationException();
+//        return this.webSocketConnection;
     }
 
     public WebSocketConnection webSocketConnection() {
-        return webSocketConnection;
+        return this.webSocketConnection;
     }
 
-    public StubHttpControl webSocketConnection(WebSocketConnection webSocketConnection) {
-        this.webSocketConnection = webSocketConnection;
+    public StubHttpControl webSocketConnection(WebSocketConnection connection) {
+        this.webSocketConnection = connection;
         return this;
     }
 
     public WebSocketHandler webSocketHandler() {
-        return handler;
+        return webSocketHandler;
     }
 
     @Override

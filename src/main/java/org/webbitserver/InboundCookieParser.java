@@ -14,11 +14,11 @@ public class InboundCookieParser {
             String[] nvPairs = headerValue.split(";");
             for (String nvPair : nvPairs) {
                 String[] nameAndValue = nvPair.split("=");
-                if(nameAndValue[1].startsWith("\"")) {
+                if (nameAndValue[1].startsWith("\"")) {
                     nameAndValue[1] = nameAndValue[1].substring(1);
                 }
-                if(nameAndValue[1].endsWith("\"")) {
-                    nameAndValue[1] = nameAndValue[1].substring(0, nameAndValue[1].length()-1);
+                if (nameAndValue[1].endsWith("\"")) {
+                    nameAndValue[1] = nameAndValue[1].substring(0, nameAndValue[1].length() - 1);
                 }
                 result.add(new HttpCookie(nameAndValue[0], nameAndValue[1]));
             }

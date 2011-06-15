@@ -1,6 +1,12 @@
 package org.webbitserver.wrapper;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.concurrent.Executor;
 
@@ -29,7 +35,7 @@ public class HttpControlWrapper implements HttpControl {
             return control;
         }
     }
-    
+
     @Override
     public void nextHandler() {
         control.nextHandler();
@@ -56,6 +62,16 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
+    public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+        return control.upgradeToEventSourceConnection(handler);
+    }
+
+    @Override
+    public EventSourceConnection createEventSourceConnection() {
+        return control.createEventSourceConnection();
+    }
+
+    @Override
     public Executor handlerExecutor() {
         return control.handlerExecutor();
     }
@@ -64,5 +80,4 @@ public class HttpControlWrapper implements HttpControl {
     public void execute(Runnable command) {
         control.execute(command);
     }
-
 }

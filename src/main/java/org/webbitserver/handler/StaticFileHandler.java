@@ -36,7 +36,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
     protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
         return new StaticFileHandler.FileWorker(request.uri(), response, control);
     }
-    
+
     protected class FileWorker extends IOWorker {
         private File file;
 

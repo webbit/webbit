@@ -5,7 +5,7 @@
     <name>${project.artifactId}</name>
     <description>A Java event based WebSocket and HTTP server</description>
     <url>http://webbitserver.org/</url>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.14-SNAPSHOT</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -17,13 +17,35 @@
             <name>BSD License</name>
             <url>http://www.opensource.org/licenses/bsd-license</url>
             <distribution>repo</distribution>
-          </license>
+        </license>
     </licenses>
     <scm>
         <connection>scm:git:git://github.com/joewalnes/webbit.git</connection>
         <developerConnection>scm:git:git@github.com:joewalnes/webbit.git</developerConnection>
         <url>git://github.com/joewalnes/webbit.git</url>
     </scm>
+    <developers>
+        <developer>
+            <id>joewalnes</id>
+            <name>Joe Walnes</name>
+            <email>joe@walnes.com</email>
+        </developer>
+        <developer>
+            <id>aslakhellesoy</id>
+            <name>Aslak Hellesøy</name>
+            <email>aslak.hellesoy@gmail.com</email>
+        </developer>
+        <developer>
+            <id>KushalP</id>
+            <name>Kushal Pisavadia</name>
+            <email>kushi.p@gmail.com</email>
+        </developer>
+        <developer>
+            <id>hellige</id>
+            <name>Matt Hellige</name>
+            <email>mhellige@drw.com</email>
+        </developer>
+    </developers>
     <repositories>
         <repository>
             <id>repository.jboss.org</id>
@@ -57,6 +79,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>1.6</version>
@@ -81,6 +109,15 @@
                 <configuration>
                     <useAgent>true</useAgent>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

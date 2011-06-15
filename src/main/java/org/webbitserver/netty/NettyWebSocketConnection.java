@@ -26,13 +26,13 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     }
 
     @Override
-    public WebSocketConnection send(String message) {
+    public NettyWebSocketConnection send(String message) {
         ctx.getChannel().write(new DefaultWebSocketFrame(message));
         return this;
     }
 
     @Override
-    public WebSocketConnection close() {
+    public NettyWebSocketConnection close() {
         ctx.getChannel().close();
         return this;
     }

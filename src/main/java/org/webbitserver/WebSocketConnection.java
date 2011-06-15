@@ -4,7 +4,9 @@ import java.util.concurrent.Executor;
 
 public interface WebSocketConnection extends Executor, DataHolder {
     HttpRequest httpRequest();
+
     WebSocketConnection send(String message);
+
     WebSocketConnection close();
 
     @Override

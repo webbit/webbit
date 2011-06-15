@@ -5,10 +5,10 @@ import java.nio.charset.Charset;
 
 /**
  * Writes a response back to the client.
- *
+ * <p/>
  * IMPORTANT: The connection will remain open until {@link #end()} or {@link #error(Throwable)} is called. Don't
  * forget these!
- * 
+ *
  * @author Joe Walnes
  */
 public interface HttpResponse {
@@ -16,7 +16,7 @@ public interface HttpResponse {
 
     /**
      * For text based responses, sets the Charset to encode the response as.
-     *
+     * <p/>
      * If not set, defaults to UTF8.
      */
     HttpResponse charset(Charset charset);
@@ -30,7 +30,7 @@ public interface HttpResponse {
 
     /**
      * Sets the HTTP status code.
-     *
+     * <p/>
      * Defaults to 200 (OK).
      */
     HttpResponse status(int status);
@@ -54,7 +54,7 @@ public interface HttpResponse {
 
     /**
      * Adds a cookie
-     * 
+     *
      * @param httpCookie the cookie
      */
     HttpResponse cookie(HttpCookie httpCookie);
@@ -68,6 +68,16 @@ public interface HttpResponse {
     HttpResponse content(String content);
 
     /**
+     * Writes immediately to the client without closing the connection.
+     * (The {@link #content(String)} method caches content until {@link #end()} is called()
+     * <p/>
+     * TODO: Make content write immediately instead and remove this method?
+     *
+     * @param content what to write
+     */
+    HttpResponse write(String content);
+
+    /**
      * Write binary based content back to the client.
      *
      * @see #content(String)
@@ -77,7 +87,7 @@ public interface HttpResponse {
     /**
      * Marks the response as erroneous. The error shall be displayed to the user (500 SERVER ERROR)
      * and the connection closed.
-     *
+     * <p/>
      * Every response should have either {@link #end()} or {@link #error(Throwable)} called. No more
      * operations should be performed on a response after these.
      */
@@ -86,7 +96,7 @@ public interface HttpResponse {
     /**
      * Marks the response as ended. At this point any remaining data shall be flushed and
      * the connection closed.
-     *
+     * <p/>
      * Every response should have either {@link #end()} or {@link #error(Throwable)} called. No more
      * operations should be performed on a response after these.
      */

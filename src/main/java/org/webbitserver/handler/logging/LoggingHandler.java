@@ -1,9 +1,15 @@
 package org.webbitserver.handler.logging;
 
-import org.webbitserver.*;
+import org.webbitserver.EventSourceConnection;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.WebSocketHandler;
 import org.webbitserver.wrapper.HttpControlWrapper;
 import org.webbitserver.wrapper.HttpResponseWrapper;
-import org.webbitserver.wrapper.WebSocketConnectionWrapper;
 
 public class LoggingHandler implements HttpHandler {
 
@@ -39,6 +45,7 @@ public class LoggingHandler implements HttpHandler {
         HttpControlWrapper controlWrapper = new HttpControlWrapper(control) {
 
             private LoggingWebSocketConnection loggingWebSocketConnection;
+            private LoggingEventSourceConnection loggingEventSourceConnection;
 
             @Override
             public WebSocketConnection createWebSocketConnection() {
@@ -47,58 +54,23 @@ public class LoggingHandler implements HttpHandler {
 
             @Override
             public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-                loggingWebSocketConnection = new LoggingWebSocketConnection(super.createWebSocketConnection());
-                return super.upgradeToWebSocketConnection(
-                        new LoggingWebSocketHandler(loggingWebSocketConnection, handler));
+                loggingWebSocketConnection = new LoggingWebSocketConnection(logSink, super.createWebSocketConnection());
+                return super.upgradeToWebSocketConnection(new LoggingWebSocketHandler(logSink, loggingWebSocketConnection, handler));
+            }
+
+            @Override
+            public EventSourceConnection createEventSourceConnection() {
+                return loggingEventSourceConnection;
+            }
+
+            @Override
+            public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+                loggingEventSourceConnection = new LoggingEventSourceConnection(logSink, super.createEventSourceConnection());
+                return super.upgradeToEventSourceConnection(new LoggingEventSourceHandler(logSink, loggingEventSourceConnection, handler));
             }
         };
         control.nextHandler(request, responseWrapper, controlWrapper);
     }
 
-
-    private class LoggingWebSocketConnection extends WebSocketConnectionWrapper {
-
-        LoggingWebSocketConnection(WebSocketConnection connection) {
-            super(connection);
-        }
-
-        @Override
-        public WebSocketConnectionWrapper send(String message) {
-            logSink.webSocketOutboundData(this, message);
-            return super.send(message);
-        }
-
-    }
-
-    private class LoggingWebSocketHandler implements WebSocketHandler {
-
-        private final WebSocketConnection loggingConnection;
-        private final WebSocketHandler handler;
-
-        LoggingWebSocketHandler(WebSocketConnection loggingConnection, WebSocketHandler handler) {
-            this.loggingConnection = loggingConnection;
-            this.handler = handler;
-        }
-
-        @Override
-        public void onOpen(WebSocketConnection connection) throws Exception {
-            logSink.webSocketOpen(connection);
-            handler.onOpen(loggingConnection);
-        }
-
-        @Override
-        public void onMessage(WebSocketConnection connection, String message) throws Exception {
-            logSink.webSocketInboundData(connection, message);
-            handler.onMessage(loggingConnection, message);
-        }
-
-        @Override
-        public void onClose(WebSocketConnection connection) throws Exception {
-            logSink.webSocketClose(connection);
-            logSink.httpEnd(connection.httpRequest());
-            handler.onClose(loggingConnection);
-        }
-
-    }
 
 }

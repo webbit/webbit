@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <div id="log"></div>
+        <script>
+            var logElement = document.getElementById('log');
+            new WebSocket('ws://' + document.location.host + '/whoami-ws').onmessage = function(e) {
+                logElement.appendChild(document.createTextNode(e.data));
+                logElement.appendChild(document.createElement('br'));
+            };
+        </script>
+    </body>
+</html>

@@ -9,10 +9,9 @@ import java.util.Set;
 /**
  * Retrieves information about inbound HTTP request.
  *
+ * @author Joe Walnes
  * @see HttpHandler
  * @see HttpResponse
- *
- * @author Joe Walnes
  */
 public interface HttpRequest extends DataHolder {
 
@@ -22,15 +21,16 @@ public interface HttpRequest extends DataHolder {
 
     /**
      * Modify uri
+     *
      * @param uri new uri
      */
     HttpRequest uri(String uri);
 
     /**
      * Retrieve the value single HTTP header.
-     *
+     * <p/>
      * If the header is not found, null is returned.
-     *
+     * <p/>
      * If there are multiple headers with the same name, it will return one of them, but it is not
      * defined which one. Instead, use {@link #headers(String)}.
      */
@@ -134,7 +134,7 @@ public interface HttpRequest extends DataHolder {
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
     /**
-     * Remote address of connection (i.e. the host of the client). 
+     * Remote address of connection (i.e. the host of the client).
      */
     SocketAddress remoteAddress();
 

@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -94,6 +95,12 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
+    public NettyHttpResponse write(String content) {
+        write(copiedBuffer(content, CharsetUtil.UTF_8));
+        return this;
+    }
+
+    @Override
     public NettyHttpResponse error(Throwable error) {
         response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
         String message = getStackTrace(error);
@@ -117,11 +124,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse end() {
-        // Generate an error page if response status code is not OK (200).
-        if (response.getStatus().getCode() != 200) {
-            response.setContent(copiedBuffer(response.getStatus().toString(), CharsetUtil.UTF_8));
-            header("Content-Length", response.getContent().readableBytes());
-        }
         flushResponse();
         return this;
     }
@@ -129,12 +131,16 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private void flushResponse() {
         // Send the response and close the connection.
         try {
-            response.setContent(responseBuffer);
-            ctx.getChannel().write(response)
-                    .addListener(ChannelFutureListener.CLOSE);
+            ChannelFuture future = write(responseBuffer);
+            future.addListener(ChannelFutureListener.CLOSE);
         } catch (Exception e) {
             ioExceptionHandler.uncaughtException(Thread.currentThread(), e);
         }
+    }
+
+    private ChannelFuture write(ChannelBuffer responseBuffer) {
+        response.setContent(responseBuffer);
+        return ctx.getChannel().write(response);
     }
 
 }

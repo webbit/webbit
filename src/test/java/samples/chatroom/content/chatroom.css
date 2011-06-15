@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 #chatlog, #entry {
     width: 100%;
     height: 100%;
@@ -15,12 +16,14 @@ body {
     font-family: monospace;
     font-size: 14px;
 }
+
 #chatlog {
     height: 400px;;
     color: #ffff99;
     margin: auto;
     border-bottom: 5px solid #555555;
 }
+
 #entry {
     color: #ffffff;
 }

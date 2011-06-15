@@ -78,6 +78,12 @@ public class HttpResponseWrapper implements HttpResponse {
     }
 
     @Override
+    public HttpResponseWrapper write(String content) {
+        response.write(content);
+        return this;
+    }
+
+    @Override
     public HttpResponseWrapper content(byte[] content) {
         response.content(content);
         return this;

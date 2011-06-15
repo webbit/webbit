@@ -1,5 +1,6 @@
 package org.webbitserver.handler.logging;
 
+import org.webbitserver.EventSourceConnection;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 
@@ -47,23 +48,23 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void webSocketOpen(WebSocketConnection connection) {
-        custom(connection.httpRequest(), "WEBSOCKET-OPEN", null);
+    public void webSocketConnectionOpen(WebSocketConnection connection) {
+        custom(connection.httpRequest(), "WEB-SOCKET-OPEN", null);
     }
 
     @Override
-    public void webSocketClose(WebSocketConnection connection) {
-        custom(connection.httpRequest(), "WEBSOCKET-CLOSE", null);
+    public void webSocketConnectionClose(WebSocketConnection connection) {
+        custom(connection.httpRequest(), "WEB-SOCKET-CLOSE", null);
     }
 
     @Override
     public void webSocketInboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), "WEBSOCKET-IN", data);
+        custom(connection.httpRequest(), "WEB-SOCKET-IN", data);
     }
 
     @Override
     public void webSocketOutboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), "WEBSOCKET-OUT", data);
+        custom(connection.httpRequest(), "WEB-SOCKET-OUT", data);
     }
 
     @Override
@@ -85,6 +86,21 @@ public class SimpleLogSink implements LogSink {
         }
     }
 
+    @Override
+    public void eventSourceConnectionOpen(EventSourceConnection connection) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-OPEN", null);
+    }
+
+    @Override
+    public void eventSourceConnectionClose(EventSourceConnection connection) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-CLOSE", null);
+    }
+
+    @Override
+    public void eventSourceOutboundData(EventSourceConnection connection, String data) {
+        custom(connection.httpRequest(), "EVENT-SOURCE-OUT", data);
+    }
+
     protected void flush() throws IOException {
         if (out instanceof Flushable) {
             Flushable flushable = (Flushable) out;
@@ -99,8 +115,9 @@ public class SimpleLogSink implements LogSink {
 
     protected Appendable formatLogEntry(Appendable out, HttpRequest request, String action, String data) throws IOException {
         long cumulativeTimeOfRequest = cumulativeTimeOfRequest(request);
-        formatValue(out, new Date(request.timestamp()));
-        formatValue(out, request.timestamp());
+        Date now = new Date();
+        formatValue(out, now);
+        formatValue(out, now.getTime());
         formatValue(out, cumulativeTimeOfRequest);
         formatValue(out, request.id());
         formatValue(out, address(request.remoteAddress()));
