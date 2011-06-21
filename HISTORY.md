@@ -1,3 +1,10 @@
+0.1.17 (2011-06-21)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.16...v0.1.17)
+
+* Fixed spurious ClassCastException. ([#32](https://github.com/joewalnes/webbit/issues/32) Aslak Hellesøy)
+
 0.1.16 (2011-06-21)
 ==================
 

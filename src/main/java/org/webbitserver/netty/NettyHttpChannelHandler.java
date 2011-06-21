@@ -41,7 +41,14 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent messageEvent) throws Exception {
-        final HttpRequest httpRequest = (HttpRequest) messageEvent.getMessage();
+        if(messageEvent.getMessage() instanceof HttpRequest) {
+            handleHttpRequest(ctx, messageEvent, (HttpRequest) messageEvent.getMessage());
+        } else {
+            super.messageReceived(ctx, messageEvent);
+        }
+    }
+
+    private void handleHttpRequest(ChannelHandlerContext ctx, MessageEvent messageEvent, HttpRequest httpRequest) {
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
         final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(
                 ctx, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler, ioExceptionHandler);
