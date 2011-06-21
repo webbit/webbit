@@ -74,6 +74,9 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         private InputStream getResource(File file) throws IOException {
             String resourcePath = file.getPath();
+            if('/' != File.separatorChar){
+                resourcePath = resourcePath.replace(File.separatorChar, '/');
+            }
             return getClass().getClassLoader().getResourceAsStream(resourcePath);
         }
     }

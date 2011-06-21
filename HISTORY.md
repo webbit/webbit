@@ -1,8 +1,9 @@
-0.1.14 (Not yet released)
+0.1.16 (2011-06-21)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.13...v0.1.14)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.1.13...v0.1.16)
 
+* Fix for EmbeddedResourceHandler for windows. ([#33](https://github.com/joewalnes/webbit/pull/33) James Estes)
 * Fixed illegal error content on non-error pages. (Joe Walnes)
 * Added StubConnection, which can be used for stubbing both EventSource and WebSocket connections. (Aslak Hellesøy)
 
