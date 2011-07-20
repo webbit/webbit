@@ -77,10 +77,10 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     protected void prepareConnection(HttpRequest request, HttpResponse response) {
         // Support both commonly used versions of the WebSocket spec.
-        if (isNewSkoolWebSocketRequest(request)) {
-            upgradeResponseNewSkool(request, response);
+        if (isHixie76WebSocketRequest(request)) {
+            upgradeResponseHixie76(request, response);
         } else {
-            upgradeResponseOldSkool(request, response);
+            upgradeResponseHixie75(request, response);
         }
     }
 
@@ -126,11 +126,11 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private boolean isNewSkoolWebSocketRequest(HttpRequest req) {
+    private boolean isHixie76WebSocketRequest(HttpRequest req) {
         return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
     }
 
-    private void upgradeResponseNewSkool(HttpRequest req, HttpResponse res) {
+    private void upgradeResponseHixie76(HttpRequest req, HttpResponse res) {
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
         res.addHeader(UPGRADE, WEBSOCKET);
         res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
@@ -160,7 +160,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private void upgradeResponseOldSkool(HttpRequest req, HttpResponse res) {
+    private void upgradeResponseHixie75(HttpRequest req, HttpResponse res) {
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
         res.addHeader(UPGRADE, WEBSOCKET);
         res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
