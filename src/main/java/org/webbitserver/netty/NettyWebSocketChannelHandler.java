@@ -16,9 +16,11 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.helpers.Base64;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
@@ -43,6 +45,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     protected final Thread.UncaughtExceptionHandler exceptionHandler;
     protected final Thread.UncaughtExceptionHandler ioExceptionHandler;
     protected final WebSocketHandler handler;
+    private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     public NettyWebSocketChannelHandler(
             Executor executor,
@@ -62,10 +65,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         this.ioExceptionHandler = ioExceptionHandler;
         this.webSocketConnection = webSocketConnection;
 
-        prepareConnection(req, res);
-        ctx.getChannel().write(res);
-
-        adjustPipeline(ctx);
+        prepareConnection(req, res, ctx);
 
         try {
             handler.onOpen(this.webSocketConnection);
@@ -75,21 +75,37 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    protected void prepareConnection(HttpRequest request, HttpResponse response) {
-        // Support both commonly used versions of the WebSocket spec.
-        if (isHixie76WebSocketRequest(request)) {
-            upgradeResponseHixie76(request, response);
+    protected void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx) {
+        if (isHybi10WebSocketRequest(req)) {
+            System.out.println("HYBI");
+            upgradeResponseHybi10(req, res);
+            ctx.getChannel().write(res);
+            adjustPipelineToHybi(ctx);
+        } else if (isHixie76WebSocketRequest(req)) {
+            upgradeResponseHixie76(req, res);
+            ctx.getChannel().write(res);
+            adjustPipelineToHixie(ctx);
         } else {
-            upgradeResponseHixie75(request, response);
+            upgradeResponseHixie75(req, res);
+            ctx.getChannel().write(res);
+            adjustPipelineToHixie(ctx);
         }
     }
 
-    protected void adjustPipeline(ChannelHandlerContext ctx) {
+    protected void adjustPipelineToHixie(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
         p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
         p.replace("handler", "wshandler", this);
         p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
+    }
+
+    protected void adjustPipelineToHybi(ChannelHandlerContext ctx) {
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        p.remove("aggregator");
+        p.replace("decoder", "wsdecoder", new HybiWebSocketFrameDecoder());
+        p.replace("handler", "wshandler", this);
+        p.replace("encoder", "wsencoder", new HybiWebSocketFrameEncoder());
     }
 
     @Override
@@ -126,14 +142,48 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
+    private boolean isHybi10WebSocketRequest(HttpRequest req) {
+        return req.containsHeader("Sec-WebSocket-Version");
+    }
+
     private boolean isHixie76WebSocketRequest(HttpRequest req) {
         return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
+    }
+
+    private void upgradeResponseHybi10(HttpRequest req, HttpResponse res) {
+        String version = req.getHeader("Sec-WebSocket-Version");
+        if(!"8".equals(version)) {
+            res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
+            res.setHeader("Sec-WebSocket-Version", "8");
+            return;
+        }
+
+        String key = req.getHeader("Sec-WebSocket-Key");
+        if(key == null) {
+            res.setStatus(HttpResponseStatus.BAD_REQUEST);
+            return;
+        }
+
+        String accept = Base64.encode(sha1(key + ACCEPT_GUID));
+
+        res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
+        res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
+        res.addHeader(CONNECTION, UPGRADE);
+        res.addHeader("Sec-WebSocket-Accept", accept);
+    }
+
+    private byte[] sha1(String s) {
+        try {
+            return MessageDigest.getInstance("SHA1").digest(s.getBytes(Charset.forName("UTF-8")));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void upgradeResponseHixie76(HttpRequest req, HttpResponse res) {
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
         res.addHeader(UPGRADE, WEBSOCKET);
-        res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
+        res.addHeader(CONNECTION, UPGRADE);
         res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
         res.addHeader(SEC_WEBSOCKET_LOCATION, getWebSocketLocation(req));
         String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
