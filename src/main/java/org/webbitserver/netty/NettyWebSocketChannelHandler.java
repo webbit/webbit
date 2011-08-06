@@ -77,7 +77,6 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     protected void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx) {
         if (isHybi10WebSocketRequest(req)) {
-            System.out.println("HYBI");
             upgradeResponseHybi10(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHybi(ctx);

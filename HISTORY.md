@@ -1,3 +1,8 @@
+In Git
+==================
+
+* Implemented support for hybi-10 WebSockets, which is what Chromium 14 and higher speaks. ([#34](https://github.com/joewalnes/webbit/issues/34) Aslak Hellesøy)
+
 0.1.17 (2011-06-21)
 ==================
 
