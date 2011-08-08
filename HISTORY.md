@@ -1,7 +1,9 @@
-In Git
+0.2.0 (2011-08-08)
 ==================
 
 * Implemented support for hybi-10 WebSockets, which is what Chromium 14 and higher speaks. ([#34](https://github.com/joewalnes/webbit/issues/34) Aslak Hellesøy)
+* Added support for sending and receiving binary data as byte[] (Aslak Hellesøy)
+* WebSocketHandler has two new methods: onPong(WebSocketConnection connection, String msg) and onMessage(WebSocketConnection connection, byte[] msg) (Aslak Hellesøy)
 
 0.1.17 (2011-06-21)
 ==================

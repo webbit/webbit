@@ -42,6 +42,12 @@ Now let's build a WebSocketHandler.
         connection.send(message.toUpperCase()); // echo back message in upper case
       }
     
+      public void onMessage(WebSocketConnection connection, byte[] message) {
+      }
+
+      public void onPong(WebSocketConnection connection, String message) {
+      }
+
       public static void main(String[] args) {
         WebServer webServer = WebServers.createWebServer(8080)
           .add("/hellowebsocket", new HelloWebSockets())
