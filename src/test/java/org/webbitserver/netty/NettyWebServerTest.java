@@ -22,7 +22,7 @@ public class NettyWebServerTest {
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();
-        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 8080).start();
+        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
         assertEquals(threadCountStart+1, getCurrentThreadCount());
         server.stop().join();
         assertEquals(threadCountStart, getCurrentThreadCount());
@@ -33,7 +33,7 @@ public class NettyWebServerTest {
     @Ignore
     public void stopsServerCleanlyAlsoWhenClientsAreConnected() throws Exception {
         final CountDownLatch stopper = new CountDownLatch(1);
-        final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 8080).start();
+        final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
         server.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -43,7 +43,7 @@ public class NettyWebServerTest {
                 stopper.countDown();
             }
         });
-        Socket client = new Socket(InetAddress.getLocalHost(), 8080);
+        Socket client = new Socket(InetAddress.getLocalHost(), 9080);
         OutputStream http = client.getOutputStream();
         http.write(("" +
                 "GET /index.html HTTP/1.1\r\n" +
