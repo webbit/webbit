@@ -39,4 +39,14 @@ public class WhoAmIWebSocketHandler implements WebSocketHandler {
     public void onMessage(WebSocketConnection connection, String msg) throws Exception {
         // Do nothing
     }
+
+    @Override
+    public void onMessage(WebSocketConnection connection, byte[] msg) {
+        // Do nothing
+    }
+
+    @Override
+    public void onPong(WebSocketConnection connection, String msg) {
+        // Do nothing
+    }
 }

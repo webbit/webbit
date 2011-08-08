@@ -16,7 +16,15 @@ public interface LogSink {
 
     void webSocketInboundData(WebSocketConnection connection, String data);
 
+    void webSocketInboundData(WebSocketConnection connection, byte[] message);
+
+    void webSocketInboundPong(WebSocketConnection connection, String message);
+
     void webSocketOutboundData(WebSocketConnection connection, String data);
+
+    void webSocketOutboundData(WebSocketConnection connection, byte[] data);
+
+    void webSocketOutboundPing(WebSocketConnection connection, String message);
 
     void error(HttpRequest request, Throwable error);
 

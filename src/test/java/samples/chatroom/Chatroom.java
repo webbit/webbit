@@ -49,6 +49,14 @@ public class Chatroom implements WebSocketHandler {
         }
     }
 
+    @Override
+    public void onMessage(WebSocketConnection connection, byte[] msg) {
+    }
+
+    @Override
+    public void onPong(WebSocketConnection connection, String msg) {
+    }
+
     private void login(WebSocketConnection connection, String username) {
         connection.data(USERNAME_KEY, username); // associate username with connection
 
@@ -89,5 +97,4 @@ public class Chatroom implements WebSocketHandler {
         }
         connections.remove(connection);
     }
-
 }

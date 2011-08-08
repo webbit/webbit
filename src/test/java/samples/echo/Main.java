@@ -33,6 +33,17 @@ public class Main {
                       connection.send(msg);
                       log('.');
                     }
+
+                    @Override
+                    public void onMessage(WebSocketConnection connection, byte[] msg) {
+                        connection.send(msg);
+                        log('.');
+                    }
+
+                    @Override
+                    public void onPong(WebSocketConnection connection, String msg) {
+                        log('P');
+                    }
                 })
                 .start();
 

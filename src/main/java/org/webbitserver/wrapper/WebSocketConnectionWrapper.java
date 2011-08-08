@@ -45,6 +45,18 @@ public class WebSocketConnectionWrapper implements WebSocketConnection {
     }
 
     @Override
+    public WebSocketConnectionWrapper send(byte[] message) {
+        connection.send(message);
+        return this;
+    }
+
+    @Override
+    public WebSocketConnectionWrapper ping(String message) {
+        connection.ping(message);
+        return this;
+    }
+
+    @Override
     public WebSocketConnectionWrapper close() {
         connection.close();
         return this;

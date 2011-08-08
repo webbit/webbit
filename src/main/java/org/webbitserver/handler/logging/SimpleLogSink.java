@@ -10,6 +10,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Date;
 
+import static org.webbitserver.helpers.Hex.toHex;
+
 public class SimpleLogSink implements LogSink {
 
     // TODO: Offload filesystem IO to another thread
@@ -63,8 +65,28 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
+    public void webSocketInboundData(WebSocketConnection connection, byte[] data) {
+        custom(connection.httpRequest(), "WEB-SOCKET-IN", toHex(data));
+    }
+
+    @Override
+    public void webSocketInboundPong(WebSocketConnection connection, String message) {
+        custom(connection.httpRequest(), "WEB-SOCKET-IN-PONG", message);
+    }
+
+    @Override
     public void webSocketOutboundData(WebSocketConnection connection, String data) {
         custom(connection.httpRequest(), "WEB-SOCKET-OUT", data);
+    }
+
+    @Override
+    public void webSocketOutboundData(WebSocketConnection connection, byte[] data) {
+        custom(connection.httpRequest(), "WEB-SOCKET-OUT", toHex(data));
+    }
+
+    @Override
+    public void webSocketOutboundPing(WebSocketConnection connection, String message) {
+        custom(connection.httpRequest(), "WEB-SOCKET-OUT-PING", message);
     }
 
     @Override

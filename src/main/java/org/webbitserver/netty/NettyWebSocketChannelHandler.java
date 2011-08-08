@@ -39,6 +39,15 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PRO
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
+    private static final MessageDigest SHA_1;
+    static {
+        try {
+            SHA_1 = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("SHA-1 not supported on this platform");
+        }
+    } 
+    private static final Charset ASCII = Charset.forName("ASCII");
     protected final Executor executor;
     protected final NettyHttpRequest nettyHttpRequest;
     protected final NettyWebSocketConnection webSocketConnection;
@@ -102,9 +111,9 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     protected void adjustPipelineToHybi(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new HybiWebSocketFrameDecoder());
+        p.replace("decoder", "wsdecoder", new Hybi10WebSocketFrameDecoder());
         p.replace("handler", "wshandler", this);
-        p.replace("encoder", "wsencoder", new HybiWebSocketFrameEncoder());
+        p.replace("encoder", "wsencoder", new Hybi10WebSocketFrameEncoder());
     }
 
     @Override
@@ -172,11 +181,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     private byte[] sha1(String s) {
-        try {
-            return MessageDigest.getInstance("SHA1").digest(s.getBytes(Charset.forName("UTF-8")));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        return SHA_1.digest(s.getBytes(ASCII));
     }
 
     private void upgradeResponseHixie76(HttpRequest req, HttpResponse res) {
@@ -231,7 +236,16 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    handler.onMessage(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
+                    if(e.getMessage() instanceof Pong) {
+                        handler.onPong(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
+                    } else {
+                        WebSocketFrame frame = (WebSocketFrame) e.getMessage();
+                        if(frame.isText()) {
+                            handler.onMessage(webSocketConnection, frame.getTextData());
+                        } else {
+                            handler.onMessage(webSocketConnection, frame.getBinaryData().array());
+                        }
+                    }
                 } catch (Throwable t) {
                     // TODO
                     t.printStackTrace();

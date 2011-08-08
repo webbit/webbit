@@ -1,7 +1,9 @@
 package org.webbitserver.netty;
 
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
+import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.webbitserver.WebSocketConnection;
 
 import java.util.Map;
@@ -27,7 +29,21 @@ public class NettyWebSocketConnection implements WebSocketConnection {
 
     @Override
     public NettyWebSocketConnection send(String message) {
-        ctx.getChannel().write(new DefaultWebSocketFrame(message));
+        return send(new DefaultWebSocketFrame(message));
+    }
+
+    @Override
+    public NettyWebSocketConnection send(byte[] message) {
+        return send(new DefaultWebSocketFrame(0xFF, ChannelBuffers.wrappedBuffer(message)));
+    }
+
+    @Override
+    public NettyWebSocketConnection ping(String message) {
+        return send(new Ping(message));
+    }
+
+    private NettyWebSocketConnection send(WebSocketFrame frame) {
+        ctx.getChannel().write(frame);
         return this;
     }
 

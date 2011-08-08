@@ -11,7 +11,7 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFrameDecoder.State> {
+public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocketFrameDecoder.State> {
     private static final byte OPCODE_CONT = 0x0;
     private static final byte OPCODE_TEXT = 0x1;
     private static final byte OPCODE_BINARY = 0x2;
@@ -36,7 +36,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
         PAYLOAD
     }
 
-    public HybiWebSocketFrameDecoder() {
+    public Hybi10WebSocketFrameDecoder() {
         super(State.FRAME_START);
     }
 
@@ -133,9 +133,13 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 } else if (this.opcode == OPCODE_BINARY) {
                     return new DefaultWebSocketFrame(0xFF, frame);
                 } else if (this.opcode == OPCODE_PING) {
-                    throw new UnsupportedOperationException("TODO: Send a pong");
+                    channel.write(new Pong(0x00, frame));
+                    return null;
                 } else if (this.opcode == OPCODE_PONG) {
-                    throw new UnsupportedOperationException("TODO: Return a pong so handle can get a pong event");
+                    return new Pong(0x00, frame);
+                } else if (this.opcode == OPCODE_CLOSE) {
+                    // TODO
+                    return null;
                 }
             default:
                 throw new Error("Shouldn't reach here.");

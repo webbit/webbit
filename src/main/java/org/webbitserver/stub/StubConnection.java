@@ -16,6 +16,8 @@ import java.util.concurrent.Executor;
 public class StubConnection extends StubDataHolder implements EventSourceConnection, WebSocketConnection {
 
     private final List<String> sentMessages = new LinkedList<String>();
+    private final List<byte[]> sentBinaryMessages = new LinkedList<byte[]>();
+    private final List<String> sentPings = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;
 
@@ -49,6 +51,18 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
     }
 
     @Override
+    public StubConnection send(byte[] message) {
+        sentBinaryMessages.add(message);
+        return this;
+    }
+
+    @Override
+    public StubConnection ping(String message) {
+        sentPings.add(message);
+        return this;
+    }
+
+    @Override
     public StubConnection close() {
         closed = true;
         return this;
@@ -60,6 +74,14 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
 
     public List<String> sentMessages() {
         return sentMessages;
+    }
+
+    public List<byte[]> sentBinaryMessages() {
+        return sentBinaryMessages;
+    }
+
+    public List<String> sentPings() {
+        return sentPings;
     }
 
     @Override
