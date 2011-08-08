@@ -28,22 +28,22 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
     private List<ChannelBuffer> frames = new ArrayList<ChannelBuffer>();
 
     public static enum State {
-        HYBI_FRAME_START,
-        HYBI_PARSING_LENGTH,
-        HYBI_MASKING_KEY,
-        HYBI_PARSING_LENGTH_2,
-        HYBI_PARSING_LENGTH_3,
-        HYBI_PAYLOAD
+        FRAME_START,
+        PARSING_LENGTH,
+        MASKING_KEY,
+        PARSING_LENGTH_2,
+        PARSING_LENGTH_3,
+        PAYLOAD
     }
 
     public HybiWebSocketFrameDecoder() {
-        super(State.HYBI_FRAME_START);
+        super(State.FRAME_START);
     }
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
-            case HYBI_FRAME_START:
+            case FRAME_START:
                 byte b = buffer.readByte();
                 byte fin = (byte) (b & 0x80);
                 byte reserved = (byte) (b & 0x70);
@@ -76,8 +76,8 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     this.opcode = opcode;
                 }
 
-                checkpoint(State.HYBI_PARSING_LENGTH);
-            case HYBI_PARSING_LENGTH:
+                checkpoint(State.PARSING_LENGTH);
+            case PARSING_LENGTH:
                 b = buffer.readByte();
                 byte masked = (byte) (b & 0x80);
                 if (masked == 0) {
@@ -88,26 +88,26 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
 
                 if (length < 126) {
                     currentFrameLength = length;
-                    checkpoint(State.HYBI_MASKING_KEY);
+                    checkpoint(State.MASKING_KEY);
                 } else if (length == 126) {
-                    checkpoint(State.HYBI_PARSING_LENGTH_2);
+                    checkpoint(State.PARSING_LENGTH_2);
                 } else if (length == 127) {
-                    checkpoint(State.HYBI_PARSING_LENGTH_3);
+                    checkpoint(State.PARSING_LENGTH_3);
                 }
                 return null;
-            case HYBI_PARSING_LENGTH_2:
+            case PARSING_LENGTH_2:
                 currentFrameLength = buffer.readShort();
-                checkpoint(State.HYBI_MASKING_KEY);
+                checkpoint(State.MASKING_KEY);
                 return null;
-            case HYBI_PARSING_LENGTH_3:
+            case PARSING_LENGTH_3:
                 currentFrameLength = buffer.readInt();
-                checkpoint(State.HYBI_MASKING_KEY);
+                checkpoint(State.MASKING_KEY);
                 return null;
-            case HYBI_MASKING_KEY:
+            case MASKING_KEY:
                 maskingKey = buffer.readBytes(4);
-                checkpoint(State.HYBI_PAYLOAD);
-            case HYBI_PAYLOAD:
-                checkpoint(State.HYBI_FRAME_START);
+                checkpoint(State.PAYLOAD);
+            case PAYLOAD:
+                checkpoint(State.FRAME_START);
                 ChannelBuffer frame = buffer.readBytes(currentFrameLength);
                 unmask(frame);
 
