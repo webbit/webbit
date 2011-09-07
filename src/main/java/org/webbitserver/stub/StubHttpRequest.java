@@ -139,6 +139,11 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
         return body;
     }
 
+    @Override
+    public byte[] bodyAsBytes() {
+        return body.getBytes();
+    }
+
     public StubHttpRequest body(String body) {
         this.body = body;
         return this;

@@ -6,6 +6,7 @@ import org.webbitserver.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -60,5 +61,18 @@ public class PostTest {
         }).start();
         String result = contents(httpPost(webServer, "/", "b=foo&a=hello%20world&c=d&b=duplicate"));
         assertEquals("keys=[a, b, c]", result);
+    }
+
+    @Test
+    public void exposesPostBodyAsBytes() throws IOException {
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                response.content(Arrays.toString(request.bodyAsBytes())).end();
+            }
+        }).start();
+        byte[] byteArray = new byte[] {87, 79, 87, 46, 46, 46};
+        String result = contents(httpPost(webServer, "/", new String(byteArray)));
+        assertEquals(Arrays.toString(byteArray), result);
     }
 }

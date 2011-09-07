@@ -130,6 +130,11 @@ public interface HttpRequest extends DataHolder {
      */
     String body();
 
+     /**
+     * The body's byte array
+     */
+    byte[] bodyAsBytes();
+
     @Override
     HttpRequest data(String key, Object value); // Override DataHolder to provide more specific return type.
 
