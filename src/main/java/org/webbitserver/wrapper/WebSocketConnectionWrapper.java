@@ -89,6 +89,11 @@ public class WebSocketConnectionWrapper implements WebSocketConnection {
     }
 
     @Override
+    public Version version() {
+        return connection.version();
+    }
+
+    @Override
     public void execute(Runnable command) {
         connection.execute(command);
     }

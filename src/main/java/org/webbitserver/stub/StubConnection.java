@@ -20,6 +20,7 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
     private final List<String> sentPings = new LinkedList<String>();
     private boolean closed = false;
     private HttpRequest httpRequest;
+    private Version version = Version.HYBI_10;
 
     public StubConnection(HttpRequest httpRequest) {
         this.httpRequest = httpRequest;
@@ -92,6 +93,16 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
 
     @Override
     public Executor handlerExecutor() {
+        return this;
+    }
+
+    @Override
+    public Version version() {
+        return version;
+    }
+
+    public StubConnection version(Version version) {
+        this.version = version;
         return this;
     }
 

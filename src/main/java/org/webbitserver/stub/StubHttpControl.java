@@ -75,7 +75,7 @@ public class StubHttpControl implements HttpControl {
     }
 
     @Override
-    public WebSocketConnection createWebSocketConnection() {
+    public WebSocketConnection webSocketConnection() {
         return this.webSocketConnection;
     }
 
@@ -87,13 +87,9 @@ public class StubHttpControl implements HttpControl {
     }
 
     @Override
-    public EventSourceConnection createEventSourceConnection() {
+    public EventSourceConnection eventSourceConnection() {
         throw new UnsupportedOperationException();
 //        return this.webSocketConnection;
-    }
-
-    public WebSocketConnection webSocketConnection() {
-        return this.webSocketConnection;
     }
 
     public StubHttpControl webSocketConnection(WebSocketConnection connection) {

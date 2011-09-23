@@ -48,24 +48,24 @@ public class LoggingHandler implements HttpHandler {
             private LoggingEventSourceConnection loggingEventSourceConnection;
 
             @Override
-            public WebSocketConnection createWebSocketConnection() {
+            public WebSocketConnection webSocketConnection() {
                 return loggingWebSocketConnection;
             }
 
             @Override
             public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
-                loggingWebSocketConnection = new LoggingWebSocketConnection(logSink, super.createWebSocketConnection());
+                loggingWebSocketConnection = new LoggingWebSocketConnection(logSink, super.webSocketConnection());
                 return super.upgradeToWebSocketConnection(new LoggingWebSocketHandler(logSink, loggingWebSocketConnection, handler));
             }
 
             @Override
-            public EventSourceConnection createEventSourceConnection() {
+            public EventSourceConnection eventSourceConnection() {
                 return loggingEventSourceConnection;
             }
 
             @Override
             public EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
-                loggingEventSourceConnection = new LoggingEventSourceConnection(logSink, super.createEventSourceConnection());
+                loggingEventSourceConnection = new LoggingEventSourceConnection(logSink, super.eventSourceConnection());
                 return super.upgradeToEventSourceConnection(new LoggingEventSourceHandler(logSink, loggingEventSourceConnection, handler));
             }
         };
