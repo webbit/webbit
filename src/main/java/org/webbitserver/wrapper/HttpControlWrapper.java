@@ -57,8 +57,8 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public WebSocketConnection createWebSocketConnection() {
-        return control.createWebSocketConnection();
+    public WebSocketConnection webSocketConnection() {
+        return control.webSocketConnection();
     }
 
     @Override
@@ -67,8 +67,8 @@ public class HttpControlWrapper implements HttpControl {
     }
 
     @Override
-    public EventSourceConnection createEventSourceConnection() {
-        return control.createEventSourceConnection();
+    public EventSourceConnection eventSourceConnection() {
+        return control.eventSourceConnection();
     }
 
     @Override

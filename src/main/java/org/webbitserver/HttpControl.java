@@ -12,11 +12,11 @@ public interface HttpControl extends Executor {
 
     WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler);
 
-    WebSocketConnection createWebSocketConnection();
+    WebSocketConnection webSocketConnection();
 
     EventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler);
 
-    EventSourceConnection createEventSourceConnection();
+    EventSourceConnection eventSourceConnection();
 
     Executor handlerExecutor();
 }

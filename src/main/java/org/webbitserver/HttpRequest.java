@@ -16,6 +16,7 @@ import java.util.Set;
 public interface HttpRequest extends DataHolder {
 
     String COOKIE_HEADER = "Cookie";
+    String WEBSOCKET_VERSION = "WEBSOCKET_VERSION";
 
     String uri();
 
