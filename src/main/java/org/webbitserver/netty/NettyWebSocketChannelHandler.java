@@ -15,6 +15,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
+import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.helpers.Base64;
 
@@ -86,14 +87,17 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     protected void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx) {
         if (isHybi10WebSocketRequest(req)) {
+            this.webSocketConnection.setVersion(WebSocketConnection.Version.HYBI_10);
             upgradeResponseHybi10(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHybi(ctx);
         } else if (isHixie76WebSocketRequest(req)) {
+            this.webSocketConnection.setVersion(WebSocketConnection.Version.HIXIE_76);
             upgradeResponseHixie76(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHixie(ctx);
         } else {
+            this.webSocketConnection.setVersion(WebSocketConnection.Version.HIXIE_75);
             upgradeResponseHixie75(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHixie(ctx);

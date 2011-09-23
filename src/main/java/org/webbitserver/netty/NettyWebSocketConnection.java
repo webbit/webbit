@@ -15,6 +15,7 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     private final Executor executor;
     private final NettyHttpRequest nettyHttpRequest;
     private final ChannelHandlerContext ctx;
+    private Version version;
 
     public NettyWebSocketConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx) {
         this.executor = executor;
@@ -84,4 +85,12 @@ public class NettyWebSocketConnection implements WebSocketConnection {
         handlerExecutor().execute(command);
     }
 
+    void setVersion(Version version) {
+        this.version = version;
+    }
+
+    @Override
+    public Version version() {
+        return version;
+    }
 }

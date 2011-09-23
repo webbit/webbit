@@ -3,6 +3,12 @@ package org.webbitserver;
 import java.util.concurrent.Executor;
 
 public interface WebSocketConnection extends Executor, DataHolder {
+    enum Version {
+        HIXIE_75,
+        HIXIE_76,
+        HYBI_10
+    }
+
     HttpRequest httpRequest();
 
     /**
@@ -35,4 +41,6 @@ public interface WebSocketConnection extends Executor, DataHolder {
     WebSocketConnection data(String key, Object value); // Override DataHolder to provide more specific return type.
 
     Executor handlerExecutor();
+
+    Version version();
 }
