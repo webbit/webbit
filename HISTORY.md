@@ -1,3 +1,10 @@
+0.2.1 (Not released)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.0...v0.2.1)
+
+* Fixed incorrect decoding of large messages. (Aslak Hellesøy)
+
 0.2.0 (2011-08-08)
 ==================
 

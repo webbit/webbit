@@ -96,19 +96,19 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 }
                 return null;
             case PARSING_LENGTH_2:
-                currentFrameLength = buffer.readShort();
+                currentFrameLength = buffer.readShort() & 0xFFFF;
                 checkpoint(State.MASKING_KEY);
                 return null;
             case PARSING_LENGTH_3:
-                currentFrameLength = buffer.readInt();
+                currentFrameLength = buffer.readInt() & 0xFFFFFFFF;
                 checkpoint(State.MASKING_KEY);
                 return null;
             case MASKING_KEY:
                 maskingKey = buffer.readBytes(4);
                 checkpoint(State.PAYLOAD);
             case PAYLOAD:
-                checkpoint(State.FRAME_START);
                 ChannelBuffer frame = buffer.readBytes(currentFrameLength);
+                checkpoint(State.FRAME_START);
                 unmask(frame);
 
                 if (this.opcode == OPCODE_CONT) {
