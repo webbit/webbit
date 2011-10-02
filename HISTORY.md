@@ -4,6 +4,8 @@
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.0...v0.2.1)
 
 * Fixed incorrect decoding of large messages. (Aslak Hellesøy)
+* Support compressed requests and send compressed responses where supported. ([#13](https://github.com/joewalnes/webbit/issues/13) James Abley)
+* Added support for getting request body as a byte array. ([#35](https://github.com/joewalnes/webbit/pull/35) Peter Gillard-Moss)
 
 0.2.0 (2011-08-08)
 ==================
