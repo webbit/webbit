@@ -6,8 +6,10 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
+import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
@@ -86,7 +88,9 @@ public class NettyWebServer implements WebServer {
                 ChannelPipeline pipeline = pipeline();
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
+                pipeline.addLast("decompressor", new HttpContentDecompressor());
                 pipeline.addLast("encoder", new HttpResponseEncoder());
+                pipeline.addLast("compressor", new HttpContentCompressor());
                 pipeline.addLast("handler", new NettyHttpChannelHandler(
                         executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
                 return pipeline;
