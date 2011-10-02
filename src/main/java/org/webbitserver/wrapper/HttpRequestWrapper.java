@@ -121,6 +121,11 @@ public class HttpRequestWrapper implements HttpRequest {
     }
 
     @Override
+    public byte[] bodyAsBytes() {
+        return request.bodyAsBytes();
+    }
+
+    @Override
     public Map<String, Object> data() {
         return request.data();
     }

@@ -139,6 +139,11 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     }
 
     @Override
+    public byte[] bodyAsBytes() {
+        return httpRequest.getContent().array();
+    }
+
+    @Override
     public Map<String, Object> data() {
         return data;
     }
