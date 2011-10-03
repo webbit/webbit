@@ -1,4 +1,4 @@
-0.2.1 (Not released)
+0.2.1 (2011-10-02)
 ==================
 
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.0...v0.2.1)
