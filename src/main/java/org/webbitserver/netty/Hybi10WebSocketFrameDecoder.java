@@ -50,10 +50,10 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 byte opcode = (byte) (b & 0x0F);
 
                 if (reserved != 0) {
-                    throw new CorruptedFrameException("Reserved bits set: " + bits(reserved));
+                    throw new CorruptedFrameException("Reserved bits set: " + hex(b));
                 }
                 if (!isOpcode(opcode)) {
-                    throw new CorruptedFrameException("Invalid opcode " + hex(opcode));
+                    throw new CorruptedFrameException("Invalid opcode " + hex(b));
                 }
 
                 if (fin == 0) {
@@ -151,10 +151,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
         for (int i = 0; i < bytes.length; i++) {
             frame.setByte(i, frame.getByte(i) ^ maskingKey.getByte(i % 4));
         }
-    }
-
-    private String bits(byte b) {
-        return Integer.toBinaryString(b).substring(24);
     }
 
     private String hex(byte b) {
