@@ -11,6 +11,8 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Integer.toHexString;
+
 public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocketFrameDecoder.State> {
     private static final byte OPCODE_CONT = 0x0;
     private static final byte OPCODE_TEXT = 0x1;
@@ -50,28 +52,28 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 byte opcode = (byte) (b & 0x0F);
 
                 if (reserved != 0) {
-                    throw new CorruptedFrameException("Reserved bits set: " + hex(b));
+                    throw new CorruptedFrameException("Reserved bits set: " + toZeroPaddedBinaryString(b));
                 }
                 if (!isOpcode(opcode)) {
-                    throw new CorruptedFrameException("Invalid opcode " + hex(b));
+                    throw new CorruptedFrameException("Invalid opcode " + toHexString(b));
                 }
 
                 if (fin == 0) {
                     if (fragmentOpcode == null) {
                         if (!isDataOpcode(opcode)) {
-                            throw new CorruptedFrameException("Fragmented frame with invalid opcode " + hex(opcode));
+                            throw new CorruptedFrameException("Fragmented frame with invalid opcode " + toHexString(opcode));
                         }
                         fragmentOpcode = opcode;
                     } else if (opcode != OPCODE_CONT) {
-                        throw new CorruptedFrameException("Continuation frame with invalid opcode " + hex(opcode));
+                        throw new CorruptedFrameException("Continuation frame with invalid opcode " + toHexString(opcode));
                     }
                 } else {
                     if (fragmentOpcode != null) {
                         if (!isControlOpcode(opcode) && opcode != OPCODE_CONT) {
-                            throw new CorruptedFrameException("Final frame with invalid opcode " + hex(opcode));
+                            throw new CorruptedFrameException("Final frame with invalid opcode " + toHexString(opcode));
                         }
                     } else if (opcode == OPCODE_CONT) {
-                        throw new CorruptedFrameException("Final frame with invalid opcode " + hex(opcode));
+                        throw new CorruptedFrameException("Final frame with invalid opcode " + toHexString(opcode));
                     }
                     this.opcode = opcode;
                 }
@@ -153,8 +155,8 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
         }
     }
 
-    private String hex(byte b) {
-        return Integer.toHexString(b);
+    private String toZeroPaddedBinaryString(byte b) {
+        return String.format("%8s", Integer.toBinaryString(b)).replace(" ", "0");
     }
 
     private boolean isOpcode(int opcode) {

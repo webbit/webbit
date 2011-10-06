@@ -15,12 +15,12 @@ test: build/.tests-pass
 .PHONY: all jar test
 
 # Run sample chatroom
-chatroom: test
+chatroom: test dist/$(LIBRARY)-all-in-one.jar
 	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
 .PHONY: chatroom
 
 # Run sample echo server
-echo: test
+echo: test dist/$(LIBRARY)-all-in-one.jar
 	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.echo.Main
 .PHONY: echo
 
@@ -50,16 +50,16 @@ dist/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
 	jar cf $@ -C src/main/java .
 
 # Compile tests
-build/$(LIBRARY)-tests.jar: dist/$(LIBRARY)-all-in-one.jar $(call find,src/test/java,java)
+build/$(LIBRARY)-tests.jar: dist/$(LIBRARY).jar $(call find,src/test/java,java)
 	@mkdir -p build/test/classes
 	cp -R src/test/resources/* build/test/classes
-	javac -g -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar -d build/test/classes $(call find,src/test/java,java)
+	javac -g -cp $(CLASSPATH):dist/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
 	jar cf $@ -C build/test/classes .
 
 # Run tests, and create .tests-pass if they succeed
 build/.tests-pass: build/$(LIBRARY)-tests.jar
 	@rm -f $@
-	java -cp dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar:$(CLASSPATH) org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
+	java -cp dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar:$(CLASSPATH) org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
 	@touch $@
 
 # Clean up
