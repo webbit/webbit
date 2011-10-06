@@ -83,6 +83,32 @@ And a page that uses the WebSocket (web/index.html)
       </body>
     </html>
 
+Running Autobahn tests
+----------------------
+
+[Autobahn](http://www.tavendo.de/autobahn) is a WebSocket server implemented in Python that comes with an extensive 
+[test suite](http://www.tavendo.de/autobahn/testsuite.html) that can be used to test other WebSocket servers as well.
+
+We're using it to test Webbit.
+
+Installing Autobahn
+
+    git submodule update --init
+    pushd src/test/Autobahn/lib/python
+    easy_install twisted
+    python setup.py install
+    popd
+
+Running Autobahn tests
+
+In shell A:
+
+    make echo
+
+In shell B:
+
+    cd src/test/Autobahn/testsuite/websockets
+    python fuzzing_client.py
 
 More
 -----------
