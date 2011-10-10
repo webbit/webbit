@@ -62,9 +62,14 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 	java -cp dist/$(LIBRARY).jar:build/$(LIBRARY)-tests.jar:$(CLASSPATH) org.junit.runner.JUnitCore $(call extracttests,build/$(LIBRARY)-tests.jar)
 	@touch $@
 
+# Run Autobahn tests
+autobahn:
+	PYTHONPATH=src/test/Autobahn/lib/python python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
+
 # Clean up
 clean:
 	rm -rf build dist out
+
 .PHONY: clean
 
 again: clean all

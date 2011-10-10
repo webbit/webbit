@@ -2,10 +2,9 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.webbitserver.WebSocketConnection;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -30,20 +29,20 @@ public class NettyWebSocketConnection implements WebSocketConnection {
 
     @Override
     public NettyWebSocketConnection send(String message) {
-        return send(new DefaultWebSocketFrame(message));
+        return send(new HybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
     }
 
     @Override
     public NettyWebSocketConnection send(byte[] message) {
-        return send(new DefaultWebSocketFrame(0xFF, ChannelBuffers.wrappedBuffer(message)));
+        return send(new HybiFrame(Opcodes.OPCODE_BINARY, true, 0, ChannelBuffers.wrappedBuffer(message)));
     }
 
     @Override
     public NettyWebSocketConnection ping(String message) {
-        return send(new Ping(message));
+        return send(new HybiFrame(Opcodes.OPCODE_PING, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
     }
 
-    private NettyWebSocketConnection send(WebSocketFrame frame) {
+    private NettyWebSocketConnection send(HybiFrame frame) {
         ctx.getChannel().write(frame);
         return this;
     }

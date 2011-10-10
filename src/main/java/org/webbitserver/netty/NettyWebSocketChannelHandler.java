@@ -2,17 +2,11 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.WebSocketConnection;
@@ -26,28 +20,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY1;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY2;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_LOCATION;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_ORIGIN;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_LOCATION;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_ORIGIN;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PROTOCOL;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     private static final MessageDigest SHA_1;
+
     static {
         try {
             SHA_1 = MessageDigest.getInstance("SHA1");
         } catch (NoSuchAlgorithmException e) {
             throw new InternalError("SHA-1 not supported on this platform");
         }
-    } 
+    }
+
     private static final Charset ASCII = Charset.forName("ASCII");
     protected final Executor executor;
     protected final NettyHttpRequest nettyHttpRequest;
@@ -56,6 +42,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     protected final Thread.UncaughtExceptionHandler ioExceptionHandler;
     protected final WebSocketHandler handler;
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    private static final int MIN_HYBI_VERSION = 8;
 
     public NettyWebSocketChannelHandler(
             Executor executor,
@@ -163,15 +150,15 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     private void upgradeResponseHybi10(HttpRequest req, HttpResponse res) {
-        String version = req.getHeader("Sec-WebSocket-Version");
-        if(!"8".equals(version)) {
+        int version = Integer.parseInt(req.getHeader("Sec-WebSocket-Version").trim());
+        if (version < MIN_HYBI_VERSION) {
             res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
-            res.setHeader("Sec-WebSocket-Version", "8");
+            res.setHeader("Sec-WebSocket-Version", String.valueOf(MIN_HYBI_VERSION));
             return;
         }
 
         String key = req.getHeader("Sec-WebSocket-Key");
-        if(key == null) {
+        if (key == null) {
             res.setStatus(HttpResponseStatus.BAD_REQUEST);
             return;
         }
@@ -240,19 +227,10 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    if(e.getMessage() instanceof Pong) {
-                        handler.onPong(webSocketConnection, ((WebSocketFrame) e.getMessage()).getTextData());
-                    } else {
-                        WebSocketFrame frame = (WebSocketFrame) e.getMessage();
-                        if(frame.isText()) {
-                            handler.onMessage(webSocketConnection, frame.getTextData());
-                        } else {
-                            handler.onMessage(webSocketConnection, frame.getBinaryData().array());
-                        }
-                    }
+                    HybiFrame frame = (HybiFrame) e.getMessage();
+                    frame.dispatch(handler, webSocketConnection);
                 } catch (Throwable t) {
-                    // TODO
-                    t.printStackTrace();
+                    exceptionHandler.uncaughtException(Thread.currentThread(), t);
                 }
             }
         });

@@ -94,10 +94,7 @@ We're using it to test Webbit.
 Installing Autobahn
 
     git submodule update --init
-    pushd src/test/Autobahn/lib/python
     easy_install twisted
-    python setup.py install
-    popd
 
 Running Autobahn tests
 
@@ -107,8 +104,7 @@ In shell A:
 
 In shell B:
 
-    cd src/test/Autobahn/testsuite/websockets
-    python fuzzing_client.py
+    make autobahn
 
 More
 -----------
