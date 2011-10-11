@@ -4,7 +4,7 @@
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...master)
 
 * Stop blocking SimpleLogSink with InetSocketAddress.getHostName(). ([#39](https://github.com/joewalnes/webbit/issues/39) Kushal Pisavadia)
-* Fixed bug involving proper string representation of hex/binary values in error reporting. (Asla Hellesøy)
+* Fixed bug involving proper string representation of hex/binary values in error reporting. (Aslak Hellesøy)
 
 0.2.1 (2011-10-02)
 ==================
