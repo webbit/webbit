@@ -189,11 +189,6 @@ public class SimpleLogSink implements LogSink {
     }
 
     protected String address(SocketAddress address) {
-        if (address instanceof InetSocketAddress) {
-            InetSocketAddress inetAddress = (InetSocketAddress) address;
-            return inetAddress.getHostName();
-        } else {
-            return address.toString();
-        }
+        return address.toString();
     }
 }
