@@ -108,6 +108,7 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.1</version>
                 <configuration>
+                    <skip>true</skip>
                     <useAgent>true</useAgent>
                 </configuration>
                 <executions>
