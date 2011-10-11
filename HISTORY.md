@@ -1,4 +1,18 @@
-0.2.2 (In Progress)
+0.2.4 (In Progress)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.3...0.2.4)
+
+* ...
+
+0.2.3 (2011-10-11)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.2...0.2.3)
+
+* WebServer.close() will now force all connections to be closed. rather than waiting for browsers to close them. ([#29](https://github.com/joewalnes/webbit/issues/29) Joe Walnes)
+
+0.2.2 (2011-10-11)
 ==================
 
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...0.2.2)
@@ -7,7 +21,6 @@
 * Integrated [Autobahn test suite](http://www.tavendo.de/autobahn/testsuite.html) to make the WebSocket implementation a lot more robust. ([#38](https://github.com/joewalnes/webbit/issues/38) Aslak Hellesøy)
 * Stop blocking SimpleLogSink with InetSocketAddress.getHostName(). ([#39](https://github.com/joewalnes/webbit/issues/39) Kushal Pisavadia)
 * Fixed bug involving proper string representation of hex/binary values in error reporting. (Aslak Hellesøy)
-* WebServer.close() will now force all connections to be closed. rather than waiting for browsers to close them. ([#29](https://github.com/joewalnes/webbit/issues/29) Joe Walnes)
 
 0.2.1 (2011-10-02)
 ==================
