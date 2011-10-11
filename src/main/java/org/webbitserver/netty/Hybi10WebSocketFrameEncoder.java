@@ -9,7 +9,7 @@ public class Hybi10WebSocketFrameEncoder extends OneToOneEncoder {
     protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
         if (msg instanceof HybiFrame) {
             HybiFrame frame = (HybiFrame) msg;
-            return frame.encode(channel);
+            return frame.encode();
         }
         return msg;
     }

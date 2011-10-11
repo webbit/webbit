@@ -1,11 +1,13 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
+import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.webbitserver.WebSocketHandler;
 
 import java.nio.charset.Charset;
+
+import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
 
 public class HybiFrame {
 
@@ -19,9 +21,13 @@ public class HybiFrame {
     private final int opcode;
     private final boolean fin;
     private final int rsv;
-    private final ChannelBuffer data;
+    private ChannelBuffer data;
 
-    public ChannelBuffer encode(Channel channel) throws TooLongFrameException {
+    public void append(ChannelBuffer frame) {
+        data = wrappedBuffer(data, frame);
+    }
+
+    public ChannelBuffer encode() throws TooLongFrameException {
         int b0 = 0;
         if (fin) {
             b0 |= (1 << 7);
@@ -32,22 +38,22 @@ public class HybiFrame {
         ChannelBuffer buffer;
         int length = data.readableBytes();
 
-        if(opcode == Opcodes.OPCODE_PING && length > 125) {
-            throw new TooLongFrameException("invalid payload for PING (payload length must be <= 125, was " + length);            
+        if (opcode == Opcodes.OPCODE_PING && length > 125) {
+            throw new TooLongFrameException("invalid payload for PING (payload length must be <= 125, was " + length);
         }
 
         if (length <= 125) {
-            buffer = createBuffer(channel, data, 2);
+            buffer = createBuffer(data, 2);
             buffer.writeByte(b0);
             buffer.writeByte(length);
         } else if (length <= 0xFFFF) {
-            buffer = createBuffer(channel, data, 4);
+            buffer = createBuffer(data, 4);
             buffer.writeByte(b0);
             buffer.writeByte(126);
             buffer.writeByte((length >>> 8) & 0xFF);
             buffer.writeByte((length) & 0xFF);
         } else {
-            buffer = createBuffer(channel, data, 10);
+            buffer = createBuffer(data, 10);
             buffer.writeByte(b0);
             buffer.writeByte(127);
             buffer.writeLong(length);
@@ -57,12 +63,12 @@ public class HybiFrame {
         return buffer;
     }
 
-    private ChannelBuffer createBuffer(Channel channel, ChannelBuffer data, int headerLength) {
-        return channel.getConfig().getBufferFactory().getBuffer(data.order(), data.readableBytes() + headerLength);
+    private ChannelBuffer createBuffer(ChannelBuffer data, int headerLength) {
+        return new DynamicChannelBuffer(data.order(), data.readableBytes() + headerLength);
     }
 
     public void dispatch(WebSocketHandler handler, NettyWebSocketConnection connection) throws Throwable {
-        switch(opcode) {
+        switch (opcode) {
             case Opcodes.OPCODE_TEXT:
                 handler.onMessage(connection, data.toString(Charset.forName("UTF-8")));
                 return;

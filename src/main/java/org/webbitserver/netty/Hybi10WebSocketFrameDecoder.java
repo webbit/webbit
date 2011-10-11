@@ -23,6 +23,7 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
     private Byte fragmentOpcode;
     private boolean frameFin;
     private int frameRsv;
+    private HybiFrame currentFrame;
 
     public static enum State {
         FRAME_START,
@@ -131,34 +132,30 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
             case PAYLOAD:
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
                 unmask(frame);
-
+                checkpoint(State.FRAME_START);
                 if (frameOpcode == Opcodes.OPCODE_CONT) {
-                    frameOpcode = fragmentOpcode;
-                    frames.add(frame);
-
-                    frame = channel.getConfig().getBufferFactory().getBuffer(0);
-                    for (ChannelBuffer channelBuffer : frames) {
-                        frame.ensureWritableBytes(channelBuffer.readableBytes());
-                        frame.writeBytes(channelBuffer);
-                    }
-
-                    this.fragmentOpcode = null;
-                    frames.clear();
-                } else {
-                    checkpoint(State.FRAME_START);
-                    if (frameOpcode == Opcodes.OPCODE_TEXT || frameOpcode == Opcodes.OPCODE_BINARY || frameOpcode == Opcodes.OPCODE_PONG) {
-                        return new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
-                    } else if (frameOpcode == Opcodes.OPCODE_PING) {
-                        channel.write(new HybiFrame(Opcodes.OPCODE_PONG, true, 0, frame));
-                        return null;
-                    } else if (frameOpcode == Opcodes.OPCODE_CLOSE) {
-                        channel.write(new HybiFrame(Opcodes.OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
-                        channel.close();
-                        return null;
-                    }
+                    currentFrame.append(frame);
+                    return frameFin ? currentFrame : null;
+                } else if (frameOpcode == Opcodes.OPCODE_TEXT || frameOpcode == Opcodes.OPCODE_BINARY || frameOpcode == Opcodes.OPCODE_PONG) {
+                    currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
+                    return frameFin ? currentFrame : null;
+                } else if (frameOpcode == Opcodes.OPCODE_PING) {
+                    channel.write(new HybiFrame(Opcodes.OPCODE_PONG, true, 0, frame));
+                    return null;
+                } else if (frameOpcode == Opcodes.OPCODE_CLOSE) {
+                    channel.write(new HybiFrame(Opcodes.OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
+                    channel.close();
+                    return null;
                 }
             default:
                 throw new Error("Shouldn't reach here.");
+        }
+    }
+
+    private void unmask(ChannelBuffer data) {
+        byte[] bytes = data.array();
+        for (int i = 0; i < bytes.length; i++) {
+            data.setByte(i, data.getByte(i) ^ maskingKey.getByte(i % 4));
         }
     }
 
@@ -172,13 +169,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
             throw new TooLongFrameException("Length:" + l);
         } else {
             return (int) l;
-        }
-    }
-
-    private void unmask(ChannelBuffer frame) {
-        byte[] bytes = frame.array();
-        for (int i = 0; i < bytes.length; i++) {
-            frame.setByte(i, frame.getByte(i) ^ maskingKey.getByte(i % 4));
         }
     }
 }
