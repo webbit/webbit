@@ -39,7 +39,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
             case CORRUPT:
-                System.out.print(" CORRUPT:");
                 return null;
             case FRAME_START:
                 // FIN, RSV, OPCODE
