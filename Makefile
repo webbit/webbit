@@ -64,7 +64,7 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 
 # Run Autobahn tests
 autobahn:
-	PYTHONPATH=src/test/Autobahn/lib/python python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
+	PYTHONPATH=src/test/Autobahn/lib/python bin/python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
 
 # Clean up
 clean:
