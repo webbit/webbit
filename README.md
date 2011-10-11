@@ -94,7 +94,7 @@ We're using it to test Webbit.
 Installing Autobahn
 
     git submodule update --init
-    easy_install twisted
+    python virtualenv.py --no-site-packages . # create local version of python (installing twisted)
 
 Running Autobahn tests
 
