@@ -3,46 +3,50 @@ package org.webbitserver.netty;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.webbitserver.netty.Hybi10WebSocketFrameDecoder.State.*;
+import static org.webbitserver.netty.Opcodes.*;
 
 public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocketFrameDecoder.State> {
-    private long framePayloadLen;
-    private ChannelBuffer maskingKey;
-    private List<ChannelBuffer> frames = new ArrayList<ChannelBuffer>();
-
     private boolean isServer = true;
     private boolean requireMaskedClientFrames = true;
-    private byte frameOpcode;
-    private Byte fragmentOpcode;
+
     private boolean frameFin;
     private int frameRsv;
+    private int frameOpcode;
+    private long framePayloadLen;
+    private ChannelBuffer maskingKey;
+
     private HybiFrame currentFrame;
 
     public static enum State {
         FRAME_START,
         MASKING_KEY,
-        PAYLOAD
+        PAYLOAD,
+        CORRUPT
     }
 
     public Hybi10WebSocketFrameDecoder() {
-        super(State.FRAME_START);
+        super(FRAME_START);
     }
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
+            case CORRUPT:
+                System.out.print(" CORRUPT:");
+                return null;
             case FRAME_START:
                 // FIN, RSV, OPCODE
-                byte b = buffer.readByte();
+                int b = buffer.readByte();
                 frameFin = (b & 0x80) != 0;
                 frameRsv = (b & 0x70) >> 4;
-                frameOpcode = (byte) (b & 0x0F);
+                frameOpcode = (b & 0x0F);
 
                 // MASK, PAYLOAD LEN 1
                 b = buffer.readByte();
@@ -50,7 +54,7 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 int framePayloadLen1 = (b & 0x7F);
 
                 if (frameRsv != 0) {
-                    protocolViolation(channel, "RSV != 0 and no extension negotiated");
+                    protocolViolation(channel, "RSV != 0 and no extension negotiated, RSV:" + frameRsv);
                     return null;
                 }
 
@@ -71,11 +75,10 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                     if (framePayloadLen1 > 125) {
                         protocolViolation(channel, "control frame with payload length > 125 octets");
                         return null;
-
                     }
 
                     // check for reserved control frame opcodes
-                    if (!(frameOpcode == Opcodes.OPCODE_CLOSE || frameOpcode == Opcodes.OPCODE_PING || frameOpcode == Opcodes.OPCODE_PONG)) {
+                    if (!(frameOpcode == OPCODE_CLOSE || frameOpcode == OPCODE_PING || frameOpcode == OPCODE_PONG)) {
                         protocolViolation(channel, "control frame using reserved opcode " + frameOpcode);
                         return null;
                     }
@@ -88,19 +91,19 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                     }
                 } else { // data frame
                     // check for reserved data frame opcodes
-                    if (!(frameOpcode == Opcodes.OPCODE_CONT || frameOpcode == Opcodes.OPCODE_TEXT || frameOpcode == Opcodes.OPCODE_BINARY)) {
+                    if (!(frameOpcode == OPCODE_CONT || frameOpcode == OPCODE_TEXT || frameOpcode == OPCODE_BINARY)) {
                         protocolViolation(channel, "data frame using reserved opcode " + frameOpcode);
                         return null;
                     }
 
                     // check opcode vs message fragmentation state 1/2
-                    if (currentFrame == null && frameOpcode == Opcodes.OPCODE_CONT) {
+                    if (currentFrame == null && frameOpcode == OPCODE_CONT) {
                         protocolViolation(channel, "received continuation data frame outside fragmented message");
                         return null;
                     }
 
                     // check opcode vs message fragmentation state 2/2
-                    if (currentFrame != null && frameOpcode != Opcodes.OPCODE_CONT) {
+                    if (currentFrame != null && frameOpcode != OPCODE_CONT) {
                         protocolViolation(channel, "received non-continuation data frame while inside fragmented message");
                         return null;
                     }
@@ -125,23 +128,22 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 } else {
                     framePayloadLen = framePayloadLen1;
                 }
-                checkpoint(State.MASKING_KEY);
-                return null;
+                checkpoint(MASKING_KEY);
             case MASKING_KEY:
                 maskingKey = buffer.readBytes(4);
                 checkpoint(State.PAYLOAD);
             case PAYLOAD:
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
                 unmask(frame);
-                checkpoint(State.FRAME_START);
-                if (frameOpcode == Opcodes.OPCODE_PING) {
-                    channel.write(new HybiFrame(Opcodes.OPCODE_PONG, true, 0, frame));
+                checkpoint(FRAME_START);
+                if (frameOpcode == OPCODE_PING) {
+                    channel.write(new HybiFrame(OPCODE_PONG, true, 0, frame));
                     return null;
-                } else if (frameOpcode == Opcodes.OPCODE_CLOSE) {
-                    channel.write(new HybiFrame(Opcodes.OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
+                } else if (frameOpcode == OPCODE_CLOSE) {
+                    channel.write(new HybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
                     channel.close();
                     return null;
-                } else if (frameOpcode == Opcodes.OPCODE_CONT) {
+                } else if (frameOpcode == OPCODE_CONT) {
                     currentFrame.append(frame);
                 } else {
                     currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
@@ -167,7 +169,10 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
     }
 
     private void protocolViolation(Channel channel, String reason) throws CorruptedFrameException {
-        channel.close();
+        checkpoint(CORRUPT);
+        if (channel.isConnected()) {
+            channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        }
         throw new CorruptedFrameException(reason);
     }
 

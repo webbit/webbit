@@ -24,6 +24,7 @@ public class HybiFrame {
     private ChannelBuffer data;
 
     public void append(ChannelBuffer frame) {
+        // Creates CompositeChannelBuffer
         data = wrappedBuffer(data, frame);
     }
 

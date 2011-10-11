@@ -16,29 +16,24 @@ public class Main {
         WebServer webServer = createWebServer(9000).add(new HttpToWebSocketHandler(new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
-                System.out.print("OPEN");
             }
 
             @Override
             public void onClose(WebSocketConnection connection) throws Exception {
-                System.out.println(" CLOSE");
             }
 
             @Override
             public void onMessage(WebSocketConnection connection, String msg) throws Exception {
-                System.out.print(" STRING LENGTH:" + msg.length());
                 connection.send(msg);
             }
 
             @Override
             public void onMessage(WebSocketConnection connection, byte[] msg) {
-                System.out.print(" BINARY LENGTH:" + msg.length);
                 connection.send(msg);
             }
 
             @Override
             public void onPong(WebSocketConnection connection, String msg) {
-                System.out.print(" PONG");
                 connection.ping(msg);
             }
         })).start();
