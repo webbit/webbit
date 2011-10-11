@@ -108,8 +108,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                     }
                 }
 
-                int maskLen = frameMasked ? 4 : 0;
-
                 if (framePayloadLen1 == 126) {
                     framePayloadLen = buffer.readUnsignedShort();
                     if (framePayloadLen < 126) {
