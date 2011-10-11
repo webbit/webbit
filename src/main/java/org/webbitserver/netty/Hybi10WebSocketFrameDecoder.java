@@ -18,7 +18,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
 
     private boolean isServer = true;
     private boolean requireMaskedClientFrames = true;
-    private boolean insideMessage;
     private byte frameOpcode;
     private Byte fragmentOpcode;
     private boolean frameFin;
@@ -94,15 +93,17 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                         return null;
                     }
 
-//                    // check opcode vs message fragmentation state 1/2
-//                    if (!insideMessage && frameOpcode == OPCODE_CONT) {
-//                        return protocolViolation("received continuation data frame outside fragmented message");
-//                    }
-//
-//                    // check opcode vs message fragmentation state 2/2
-//                    if (insideMessage && frameOpcode != OPCODE_CONT) {
-//                        return protocolViolation("received non-continuation data frame while inside fragmented message");
-//                    }
+                    // check opcode vs message fragmentation state 1/2
+                    if (currentFrame == null && frameOpcode == Opcodes.OPCODE_CONT) {
+                        protocolViolation(channel, "received continuation data frame outside fragmented message");
+                        return null;
+                    }
+
+                    // check opcode vs message fragmentation state 2/2
+                    if (currentFrame != null && frameOpcode != Opcodes.OPCODE_CONT) {
+                        protocolViolation(channel, "received non-continuation data frame while inside fragmented message");
+                        return null;
+                    }
                 }
 
                 int maskLen = frameMasked ? 4 : 0;
@@ -133,18 +134,24 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
                 unmask(frame);
                 checkpoint(State.FRAME_START);
-                if (frameOpcode == Opcodes.OPCODE_CONT) {
-                    currentFrame.append(frame);
-                    return frameFin ? currentFrame : null;
-                } else if (frameOpcode == Opcodes.OPCODE_TEXT || frameOpcode == Opcodes.OPCODE_BINARY || frameOpcode == Opcodes.OPCODE_PONG) {
-                    currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
-                    return frameFin ? currentFrame : null;
-                } else if (frameOpcode == Opcodes.OPCODE_PING) {
+                if (frameOpcode == Opcodes.OPCODE_PING) {
                     channel.write(new HybiFrame(Opcodes.OPCODE_PONG, true, 0, frame));
                     return null;
                 } else if (frameOpcode == Opcodes.OPCODE_CLOSE) {
                     channel.write(new HybiFrame(Opcodes.OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
                     channel.close();
+                    return null;
+                } else if (frameOpcode == Opcodes.OPCODE_CONT) {
+                    currentFrame.append(frame);
+                } else {
+                    currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
+                }
+
+                if (frameFin) {
+                    HybiFrame result = currentFrame;
+                    currentFrame = null;
+                    return result;
+                } else {
                     return null;
                 }
             default:
