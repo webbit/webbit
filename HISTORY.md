@@ -1,8 +1,9 @@
 0.2.2 (In Progress)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...master)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...0.2.2)
 
+* Fixed several WebSocket bugs related to big messages, fragmented frames and closing handshakes (Aslak Hellesøy).
 * Integrated [Autobahn test suite](http://www.tavendo.de/autobahn/testsuite.html) to make the WebSocket implementation a lot more robust. ([#38](https://github.com/joewalnes/webbit/issues/38) Aslak Hellesøy)
 * Stop blocking SimpleLogSink with InetSocketAddress.getHostName(). ([#39](https://github.com/joewalnes/webbit/issues/39) Kushal Pisavadia)
 * Fixed bug involving proper string representation of hex/binary values in error reporting. (Aslak Hellesøy)
