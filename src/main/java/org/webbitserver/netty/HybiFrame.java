@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.webbitserver.WebSocketHandler;
 
 import java.nio.charset.Charset;
@@ -20,7 +21,7 @@ public class HybiFrame {
     private final int rsv;
     private final ChannelBuffer data;
 
-    public ChannelBuffer encode(Channel channel) {
+    public ChannelBuffer encode(Channel channel) throws TooLongFrameException {
         int b0 = 0;
         if (fin) {
             b0 |= (1 << 7);
@@ -30,6 +31,11 @@ public class HybiFrame {
 
         ChannelBuffer buffer;
         int length = data.readableBytes();
+
+        if(opcode == Opcodes.OPCODE_PING && length > 125) {
+            throw new TooLongFrameException("invalid payload for PING (payload length must be <= 125, was " + length);            
+        }
+
         if (length <= 125) {
             buffer = createBuffer(channel, data, 2);
             buffer.writeByte(b0);
