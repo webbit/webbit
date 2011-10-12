@@ -1,3 +1,10 @@
+0.2.6 (2011-10-12)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.5...0.2.6)
+
+* More Maven/Sonatype Yak Shaving (Aslak Hellesøy)
+
 0.2.5 (2011-10-12)
 ==================
 

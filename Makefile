@@ -19,9 +19,9 @@ chatroom: test dist/$(LIBRARY)-all-in-one.jar
 	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
 .PHONY: chatroom
 
-# Run sample echo server
+# Run echo server - used by Autobahn
 echo: test dist/$(LIBRARY)-all-in-one.jar
-	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.echo.Main
+	java -Xmx256m -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.echo.Main
 .PHONY: echo
 
 # Function to find files in directory with suffix. $(call find,dir,ext)
