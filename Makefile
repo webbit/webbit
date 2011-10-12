@@ -79,7 +79,7 @@ release:
 	git checkout HEAD~1
 	make clean
 	make
-	mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -DpomFile=pom.xml -Dfile=dist/webbit-all-in-one.jar -Dclassifier=full
+	mvn -P release-sign-artifacts gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -DpomFile=pom.xml -Dfile=dist/webbit-all-in-one.jar -Dclassifier=full
 	git checkout master
 
 .PHONY: clean
