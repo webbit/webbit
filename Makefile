@@ -64,7 +64,7 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 
 # Run Autobahn tests
 autobahn:
-	PYTHONPATH=src/test/Autobahn/lib/python python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
+	PYTHONPATH=src/test/Autobahn/lib/python bin/python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
 
 # Clean up
 clean:
@@ -82,7 +82,7 @@ release:
 	mvn -P release-sign-artifacts gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/ -DrepositoryId=sonatype-nexus-staging -DpomFile=pom.xml -Dfile=dist/webbit-all-in-one.jar -Dclassifier=full
 	git checkout master
 
-.PHONY: clean
+.PHONY: release
 
 again: clean all
 .PHONY: again
