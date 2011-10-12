@@ -14,3 +14,10 @@ pom.xml.releaseBackup
 pom.xml.asc
 package.fig
 reports
+
+# for python/virtualenv
+*.pyc
+.Python
+bin
+include
+lib/python2.6/

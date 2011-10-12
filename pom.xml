@@ -5,7 +5,7 @@
     <name>${project.artifactId}</name>
     <description>A Java event based WebSocket and HTTP server</description>
     <url>http://webbitserver.org/</url>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.2.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -108,6 +108,7 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.1</version>
                 <configuration>
+                    <skip>true</skip>
                     <useAgent>true</useAgent>
                 </configuration>
                 <executions>

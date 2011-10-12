@@ -1,6 +1,5 @@
 package org.webbitserver.netty;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
@@ -28,18 +27,14 @@ public class NettyWebServerTest {
         assertEquals(threadCountStart, getCurrentThreadCount());
     }
 
-    // Failing test for https://github.com/joewalnes/webbit/issues/29
     @Test
-    @Ignore
     public void stopsServerCleanlyAlsoWhenClientsAreConnected() throws Exception {
         final CountDownLatch stopper = new CountDownLatch(1);
         final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
         server.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                System.out.println("We got here");
                 server.stop().join();
-                System.out.println("But never here");
                 stopper.countDown();
             }
         });

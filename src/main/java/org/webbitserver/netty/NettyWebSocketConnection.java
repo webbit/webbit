@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.webbitserver.WebSocketConnection;
 
 import java.nio.charset.Charset;
@@ -14,7 +15,8 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     private final Executor executor;
     private final NettyHttpRequest nettyHttpRequest;
     private final ChannelHandlerContext ctx;
-    private Version version;
+    private String version;
+    private boolean hybi;
 
     public NettyWebSocketConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx) {
         this.executor = executor;
@@ -29,7 +31,12 @@ public class NettyWebSocketConnection implements WebSocketConnection {
 
     @Override
     public NettyWebSocketConnection send(String message) {
-        return send(new HybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
+        if (hybi) {
+            return send(new HybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
+        } else {
+            ctx.getChannel().write(new DefaultWebSocketFrame(message));
+            return this;
+        }
     }
 
     @Override
@@ -84,12 +91,17 @@ public class NettyWebSocketConnection implements WebSocketConnection {
         handlerExecutor().execute(command);
     }
 
-    void setVersion(Version version) {
+    @Override
+    public String version() {
+        return version;
+    }
+
+    void setVersion(String version) {
         this.version = version;
     }
 
-    @Override
-    public Version version() {
-        return version;
+    void setHybiWebSocketVersion(int webSocketVersion) {
+        setVersion("Sec-WebSocket-Version-" + webSocketVersion);
+        hybi = true;
     }
 }

@@ -10,10 +10,10 @@ import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.webbitserver.helpers.UTF8Exception;
 
-import static org.webbitserver.netty.Hybi10WebSocketFrameDecoder.State.*;
+import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.*;
 import static org.webbitserver.netty.Opcodes.*;
 
-public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocketFrameDecoder.State> {
+public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFrameDecoder.State> {
     private boolean isServer = true;
     private boolean requireMaskedClientFrames = true;
 
@@ -32,7 +32,7 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
         CORRUPT
     }
 
-    public Hybi10WebSocketFrameDecoder() {
+    public HybiWebSocketFrameDecoder() {
         super(FRAME_START);
     }
 
@@ -106,8 +106,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                         return null;
                     }
                 }
-
-                int maskLen = frameMasked ? 4 : 0;
 
                 if (framePayloadLen1 == 126) {
                     framePayloadLen = buffer.readUnsignedShort();

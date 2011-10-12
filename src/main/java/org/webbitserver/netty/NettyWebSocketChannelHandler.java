@@ -7,9 +7,9 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
-import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.helpers.Base64;
 
@@ -73,18 +73,21 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     protected void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx) {
-        if (isHybi10WebSocketRequest(req)) {
-            this.webSocketConnection.setVersion(WebSocketConnection.Version.HYBI_10);
-            upgradeResponseHybi10(req, res);
+        Integer hybiVersion = getHybiVersion(req);
+        if (hybiVersion != null) {
+            // Instead of indicating what hybi-x spec version x, we indicate the version header number,
+            // which confusingly is different. At the time of this writing it's between 8 and 13.
+            this.webSocketConnection.setHybiWebSocketVersion(hybiVersion);
+            upgradeResponseHybi(req, res, hybiVersion);
             ctx.getChannel().write(res);
             adjustPipelineToHybi(ctx);
         } else if (isHixie76WebSocketRequest(req)) {
-            this.webSocketConnection.setVersion(WebSocketConnection.Version.HIXIE_76);
+            this.webSocketConnection.setVersion("HIXIE-76");
             upgradeResponseHixie76(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHixie(ctx);
         } else {
-            this.webSocketConnection.setVersion(WebSocketConnection.Version.HIXIE_75);
+            this.webSocketConnection.setVersion("HIXIE-75");
             upgradeResponseHixie75(req, res);
             ctx.getChannel().write(res);
             adjustPipelineToHixie(ctx);
@@ -102,9 +105,9 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     protected void adjustPipelineToHybi(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new Hybi10WebSocketFrameDecoder());
+        p.replace("decoder", "wsdecoder", new HybiWebSocketFrameDecoder());
         p.replace("handler", "wshandler", this);
-        p.replace("encoder", "wsencoder", new Hybi10WebSocketFrameEncoder());
+        p.replace("encoder", "wsencoder", new HybiWebSocketFrameEncoder());
     }
 
     @Override
@@ -142,16 +145,15 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private boolean isHybi10WebSocketRequest(HttpRequest req) {
-        return req.containsHeader("Sec-WebSocket-Version");
+    private Integer getHybiVersion(HttpRequest req) {
+        return req.containsHeader("Sec-WebSocket-Version") ? Integer.parseInt(req.getHeader("Sec-WebSocket-Version").trim()) : null;
     }
 
     private boolean isHixie76WebSocketRequest(HttpRequest req) {
         return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
     }
 
-    private void upgradeResponseHybi10(HttpRequest req, HttpResponse res) {
-        int version = Integer.parseInt(req.getHeader("Sec-WebSocket-Version").trim());
+    private void upgradeResponseHybi(HttpRequest req, HttpResponse res, int version) {
         if (version < MIN_HYBI_VERSION) {
             res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
             res.setHeader("Sec-WebSocket-Version", String.valueOf(MIN_HYBI_VERSION));
@@ -228,8 +230,15 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
-                    HybiFrame frame = (HybiFrame) e.getMessage();
-                    frame.dispatch(handler, webSocketConnection);
+                    Object message = e.getMessage();
+                    if(message instanceof HybiFrame) {
+                        HybiFrame frame = (HybiFrame) message;
+                        frame.dispatch(handler, webSocketConnection);
+                    } else {
+                        // Hixie 75/76
+                        WebSocketFrame frame = (WebSocketFrame) message;
+                        handler.onMessage(webSocketConnection, frame.getTextData());
+                    }
                 } catch (Throwable t) {
                     exceptionHandler.uncaughtException(Thread.currentThread(), t);
                 }

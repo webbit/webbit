@@ -48,6 +48,7 @@ public class NettyWebServer implements WebServer {
 
     private Thread.UncaughtExceptionHandler exceptionHandler;
     private Thread.UncaughtExceptionHandler ioExceptionHandler;
+    private ConnectionTrackingHandler connectionTrackingHandler;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
@@ -86,6 +87,7 @@ public class NettyWebServer implements WebServer {
                 long timestamp = timestamp();
                 Object id = nextId();
                 ChannelPipeline pipeline = pipeline();
+                pipeline.addLast("connectiontracker", connectionTrackingHandler);
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
                 pipeline.addLast("decompressor", new HttpContentDecompressor());
@@ -137,6 +139,7 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
+        connectionTrackingHandler = new ConnectionTrackingHandler();
         ExecutorService exec1 = Executors.newSingleThreadExecutor();
         executorServices.add(exec1);
         ExecutorService exec2 = Executors.newSingleThreadExecutor();
@@ -150,6 +153,10 @@ public class NettyWebServer implements WebServer {
     public synchronized NettyWebServer stop() throws IOException {
         if (channel != null) {
             channel.close();
+        }
+        if (connectionTrackingHandler != null) {
+            connectionTrackingHandler.closeAllConnections();
+            connectionTrackingHandler = null;
         }
         if (bootstrap != null) {
             bootstrap.releaseExternalResources();

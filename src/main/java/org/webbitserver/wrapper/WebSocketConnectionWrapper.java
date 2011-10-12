@@ -89,7 +89,7 @@ public class WebSocketConnectionWrapper implements WebSocketConnection {
     }
 
     @Override
-    public Version version() {
+    public String version() {
         return connection.version();
     }
 

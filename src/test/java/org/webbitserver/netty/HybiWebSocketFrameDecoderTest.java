@@ -13,11 +13,11 @@ import java.io.InputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class Hybi10WebSocketFrameDecoderTest {
+public class HybiWebSocketFrameDecoderTest {
     @Ignore
     @Test
     public void decodes_an_86_kb_message() throws Exception {
-        DecoderEmbedder<WebSocketFrame> decoder = new DecoderEmbedder<WebSocketFrame>(new Hybi10WebSocketFrameDecoder());
+        DecoderEmbedder<WebSocketFrame> decoder = new DecoderEmbedder<WebSocketFrame>(new HybiWebSocketFrameDecoder());
         decoder.offer(payloadFromFile("/org/webbitserver/ws-payload-86kb.bin"));
         WebSocketFrame frame = decoder.poll();
         assertNotNull(frame);

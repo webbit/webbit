@@ -6,7 +6,6 @@ import org.webbitserver.WebSocketConnection;
 
 import java.io.Flushable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Date;
 
@@ -51,42 +50,42 @@ public class SimpleLogSink implements LogSink {
 
     @Override
     public void webSocketConnectionOpen(WebSocketConnection connection) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-OPEN", null);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-OPEN", null);
     }
 
     @Override
     public void webSocketConnectionClose(WebSocketConnection connection) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-CLOSE", null);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-CLOSE", null);
     }
 
     @Override
     public void webSocketInboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-IN-STRING", data);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-STRING", data);
     }
 
     @Override
     public void webSocketInboundData(WebSocketConnection connection, byte[] data) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-IN-HEX", toHex(data));
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-HEX", toHex(data));
     }
 
     @Override
     public void webSocketInboundPong(WebSocketConnection connection, String message) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-IN-PONG", message);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-PONG", message);
     }
 
     @Override
     public void webSocketOutboundData(WebSocketConnection connection, String data) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-OUT-STRING", data);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-OUT-STRING", data);
     }
 
     @Override
     public void webSocketOutboundData(WebSocketConnection connection, byte[] data) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-OUT-HEX", toHex(data));
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-OUT-HEX", toHex(data));
     }
 
     @Override
     public void webSocketOutboundPing(WebSocketConnection connection, String message) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version().name() + "-PING", message);
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-PING", message);
     }
 
     @Override

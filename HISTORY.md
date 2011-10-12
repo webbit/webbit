@@ -1,4 +1,19 @@
-0.2.2 (In Progress)
+0.2.4 (In Progress)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.3...0.2.4)
+
+* Added back support for Hixie 75/76 browsers, which broke in a regression in 0.2.2 (Aslak Hellesøy)
+* Changed WebSocket logging slightly so it's easier to see what protocol version a ws connection is using (Aslak Hellesøy) 
+
+0.2.3 (2011-10-11)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.2...0.2.3)
+
+* WebServer.close() will now force all connections to be closed. rather than waiting for browsers to close them. ([#29](https://github.com/joewalnes/webbit/issues/29) Joe Walnes)
+
+0.2.2 (2011-10-11)
 ==================
 
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...0.2.2)
