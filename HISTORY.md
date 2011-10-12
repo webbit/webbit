@@ -1,4 +1,4 @@
-0.2.4 (In Progress)
+0.2.4 (2011-10-12)
 ==================
 
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.3...0.2.4)
