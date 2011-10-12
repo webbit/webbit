@@ -16,7 +16,6 @@ import java.util.Set;
 public interface HttpRequest extends DataHolder {
 
     String COOKIE_HEADER = "Cookie";
-    String WEBSOCKET_VERSION = "WEBSOCKET_VERSION";
 
     String uri();
 
@@ -65,7 +64,7 @@ public interface HttpRequest extends DataHolder {
      *
      * @param key parameter name
      * @return the value of the parameter
-     * @see {@link #queryParams(String)}
+     * @see #queryParams(String)
      */
     String queryParam(String key);
 
@@ -74,13 +73,14 @@ public interface HttpRequest extends DataHolder {
      *
      * @param key parameter name
      * @return the values of the parameter
-     * @see {@link #queryParam(String)}
+     * @see #queryParam(String)
      */
     List<String> queryParams(String key);
 
     /**
      * List all query parameter keys.
-     * @see {@link #queryParam(String)}
+     *
+     * @see #queryParam(String)
      */
     Set<String> queryParamKeys();
 
@@ -89,7 +89,7 @@ public interface HttpRequest extends DataHolder {
      *
      * @param key parameter name
      * @return the value of the parameter
-     * @see {@link #postParams(String)}
+     * @see #postParams(String)
      */
     String postParam(String key);
 
@@ -98,13 +98,14 @@ public interface HttpRequest extends DataHolder {
      *
      * @param key parameter name
      * @return the values of the parameter
-     * @see {@link #postParam(String)}
+     * @see #postParam(String)
      */
     List<String> postParams(String key);
 
     /**
      * List all post parameter keys.
-     * @see {@link #postParam(String)}
+     *
+     * @see #postParam(String)
      */
     Set<String> postParamKeys();
 
@@ -131,7 +132,7 @@ public interface HttpRequest extends DataHolder {
      */
     String body();
 
-     /**
+    /**
      * The body's byte array
      */
     byte[] bodyAsBytes();

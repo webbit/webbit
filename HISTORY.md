@@ -1,3 +1,10 @@
+0.2.5 (2011-10-12)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.4...0.2.5)
+
+* Made Maven upload artifact signatures again, so we can deploy jars (0.2.4 release failed). (Aslak Hellesøy)
+
 0.2.4 (2011-10-12)
 ==================
 
