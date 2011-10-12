@@ -1,3 +1,10 @@
+0.2.9 (2011-10-12)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.8...0.2.9)
+
+* Removed pom.xml parts that *should* work according to docs, but don't. Checking if make release still works. (Aslak Hellesøy)
+
 0.2.8 (2011-10-12)
 ==================
 
