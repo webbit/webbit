@@ -72,5 +72,12 @@ clean:
 
 .PHONY: clean
 
+release:
+	mvn release:clean
+	mvn --batch-mode -P release-sign-artifacts release:prepare
+	mvn --batch-mode -P release-sign-artifacts release:perform
+
+.PHONY: clean
+
 again: clean all
 .PHONY: again
