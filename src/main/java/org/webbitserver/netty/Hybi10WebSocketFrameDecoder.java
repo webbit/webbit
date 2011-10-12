@@ -8,6 +8,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
+import org.webbitserver.helpers.UTF8Exception;
 
 import static org.webbitserver.netty.Hybi10WebSocketFrameDecoder.State.*;
 import static org.webbitserver.netty.Opcodes.*;
@@ -38,8 +39,6 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
-            case CORRUPT:
-                return null;
             case FRAME_START:
                 // FIN, RSV, OPCODE
                 int b = buffer.readByte();
@@ -136,16 +135,30 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 unmask(frame);
                 checkpoint(FRAME_START);
                 if (frameOpcode == OPCODE_PING) {
-                    channel.write(new HybiFrame(OPCODE_PONG, true, 0, frame));
+                    try {
+                        HybiFrame pong = new HybiFrame(OPCODE_PONG, true, 0, frame);
+                        channel.write(pong);
+                    } catch (UTF8Exception e) {
+                        protocolViolation(channel, "invalid UTF-8 bytes in pong");
+                    }
                     return null;
                 } else if (frameOpcode == OPCODE_CLOSE) {
-                    channel.write(new HybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0)));
+                    HybiFrame close = new HybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0));
+                    channel.write(close);
                     channel.close();
                     return null;
                 } else if (frameOpcode == OPCODE_CONT) {
-                    currentFrame.append(frame);
+                    try {
+                        currentFrame.append(frame);
+                    } catch (UTF8Exception e) {
+                        protocolViolation(channel, "invalid UTF-8 bytes");
+                    }
                 } else {
-                    currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
+                    try {
+                        currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
+                    } catch (UTF8Exception e) {
+                        protocolViolation(channel, "invalid UTF-8 bytes");
+                    }
                 }
 
                 if (frameFin) {
@@ -155,6 +168,11 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
                 } else {
                     return null;
                 }
+            case CORRUPT:
+                // If we don't keep reading Netty will throw an exception saying
+                // we can't return null if no bytes read and state not changed.
+                buffer.readByte();
+                return null;
             default:
                 throw new Error("Shouldn't reach here.");
         }
@@ -171,6 +189,7 @@ public class Hybi10WebSocketFrameDecoder extends ReplayingDecoder<Hybi10WebSocke
         checkpoint(CORRUPT);
         if (channel.isConnected()) {
             channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            channel.close().awaitUninterruptibly();
         }
         throw new CorruptedFrameException(reason);
     }

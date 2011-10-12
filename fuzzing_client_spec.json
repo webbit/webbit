@@ -1,6 +1,6 @@
 {
    "servers": [
-       {"agent": "Webbit", "hostname": "localhost", "port": 9000, "version": 13},
+       {"agent": "Webbit", "hostname": "localhost", "port": 9001, "version": 13},
        {"agent": "Jetty", "hostname": "localhost", "port": 8080, "version": 13}
    ],
    "cases": [

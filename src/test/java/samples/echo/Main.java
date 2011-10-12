@@ -4,6 +4,7 @@ import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
+import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 
 import static org.webbitserver.WebServers.createWebServer;
 
@@ -13,7 +14,7 @@ import static org.webbitserver.WebServers.createWebServer;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        WebServer webServer = createWebServer(9000).add(new HttpToWebSocketHandler(new WebSocketHandler() {
+        WebServer webServer = createWebServer(9001).add(new HttpToWebSocketHandler(new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
             }
@@ -36,7 +37,7 @@ public class Main {
             public void onPong(WebSocketConnection connection, String msg) {
                 connection.ping(msg);
             }
-        })).start();
+        })).connectionExceptionHandler(new PrintStackTraceExceptionHandler()).start();
 
         System.out.println("Echo server running on: " + webServer.getUri());
     }

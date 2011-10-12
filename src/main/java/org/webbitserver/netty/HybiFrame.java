@@ -4,28 +4,37 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.helpers.UTF8Output;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HybiFrame {
 
     private final int opcode;
-
     private final boolean fin;
     private final int rsv;
+
     private List<ChannelBuffer> fragments = new ArrayList<ChannelBuffer>();
+    private int length;
+    private UTF8Output utf8Output;
 
     public HybiFrame(int opcode, boolean fin, int rsv, ChannelBuffer fragment) {
         this.opcode = opcode;
         this.fin = fin;
         this.rsv = rsv;
-        fragments.add(fragment);
+        append(fragment);
     }
 
     public void append(ChannelBuffer fragment) {
         fragments.add(fragment);
+        length += fragment.readableBytes();
+        if (opcode == Opcodes.OPCODE_TEXT) {
+            if (utf8Output == null) {
+                utf8Output = new UTF8Output();
+            }
+            utf8Output.write(fragment.array());
+        }
     }
 
     public ChannelBuffer encode() throws TooLongFrameException {
@@ -37,7 +46,6 @@ public class HybiFrame {
         b0 |= opcode % 128;
 
         ChannelBuffer buffer;
-        int length = messageLength();
 
         if (opcode == Opcodes.OPCODE_PING && length > 125) {
             throw new TooLongFrameException("invalid payload for PING (payload length must be <= 125, was " + length);
@@ -66,16 +74,8 @@ public class HybiFrame {
         return buffer;
     }
 
-    private int messageLength() {
-        int n = 0;
-        for (ChannelBuffer fragment : fragments) {
-            n += fragment.readableBytes();
-        }
-        return n;
-    }
-
     private byte[] messageBytes() {
-        byte[] result = new byte[messageLength()];
+        byte[] result = new byte[length];
         int offset = 0;
         for (ChannelBuffer fragment : fragments) {
             byte[] array = fragment.array();
@@ -85,10 +85,6 @@ public class HybiFrame {
         return result;
     }
 
-    private String messageString() throws UnsupportedEncodingException {
-        return new String(messageBytes(), "UTF-8");
-    }
-
     private ChannelBuffer createBuffer(int length) {
         return ChannelBuffers.buffer(length);
     }
@@ -96,13 +92,13 @@ public class HybiFrame {
     public void dispatch(WebSocketHandler handler, NettyWebSocketConnection connection) throws Throwable {
         switch (opcode) {
             case Opcodes.OPCODE_TEXT:
-                handler.onMessage(connection, messageString());
+                handler.onMessage(connection, utf8Output.toString());
                 return;
             case Opcodes.OPCODE_BINARY:
                 handler.onMessage(connection, messageBytes());
                 return;
             case Opcodes.OPCODE_PONG:
-                handler.onPong(connection, messageString());
+                handler.onPong(connection, utf8Output.toString());
                 return;
             default:
                 throw new IllegalStateException("Unexpected opcode:" + opcode);

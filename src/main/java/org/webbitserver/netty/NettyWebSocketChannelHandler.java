@@ -109,13 +109,14 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        final Thread thread = Thread.currentThread();
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     handler.onClose(webSocketConnection);
                 } catch (Exception e1) {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), e1);
+                    exceptionHandler.uncaughtException(thread, e1);
                 }
             }
         });
