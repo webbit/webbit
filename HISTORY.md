@@ -1,3 +1,10 @@
+0.2.8 (2011-10-12)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.7...0.2.8)
+
+* Attempt a *fully* automated release (Aslak Hellesøy)
+
 0.2.7 (2011-10-12)
 ==================
 
