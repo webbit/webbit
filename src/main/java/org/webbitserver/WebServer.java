@@ -84,7 +84,6 @@ public interface WebServer {
      * <p/>
      * This is shortcut for {@code add(new PathMatchHandler(path, newHttpToEventSourceHandler(handler)))}.
      *
-     * @see org.webbitserver.eventsource.EventSourceClientHandler
      * @see HttpHandler
      * @see #add(HttpHandler)
      * @see org.webbitserver.handler.HttpToEventSourceHandler
