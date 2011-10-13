@@ -45,7 +45,12 @@ public class UTF8Output {
     private int state = UTF8_ACCEPT;
     private int codep = 0;
 
-    private final StringBuilder stringBuilder = new StringBuilder();
+    private final StringBuilder stringBuilder;
+
+    public UTF8Output(byte[] bytes) {
+        stringBuilder = new StringBuilder(bytes.length);
+        write(bytes);
+    }
 
     public void write(byte[] bytes) {
         for (byte b : bytes) {

@@ -67,8 +67,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         try {
             handler.onOpen(this.webSocketConnection);
         } catch (Exception e) {
-            // TODO
-            e.printStackTrace();
+            exceptionHandler.uncaughtException(Thread.currentThread(), e);
         }
     }
 
@@ -231,8 +230,8 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             public void run() {
                 try {
                     Object message = e.getMessage();
-                    if(message instanceof HybiFrame) {
-                        HybiFrame frame = (HybiFrame) message;
+                    if(message instanceof DecodingHybiFrame) {
+                        DecodingHybiFrame frame = (DecodingHybiFrame) message;
                         frame.dispatch(handler, webSocketConnection);
                     } else {
                         // Hixie 75/76

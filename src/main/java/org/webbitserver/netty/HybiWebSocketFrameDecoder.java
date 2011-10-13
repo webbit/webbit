@@ -8,7 +8,9 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
+import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.helpers.UTF8Exception;
+import org.webbitserver.helpers.UTF8Output;
 
 import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.*;
 import static org.webbitserver.netty.Opcodes.*;
@@ -23,7 +25,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
     private long framePayloadLen;
     private ChannelBuffer maskingKey;
 
-    private HybiFrame currentFrame;
+    private DecodingHybiFrame currentFrame;
 
     public static enum State {
         FRAME_START,
@@ -133,15 +135,12 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 unmask(frame);
                 checkpoint(FRAME_START);
                 if (frameOpcode == OPCODE_PING) {
-                    try {
-                        HybiFrame pong = new HybiFrame(OPCODE_PONG, true, 0, frame);
-                        channel.write(pong);
-                    } catch (UTF8Exception e) {
-                        protocolViolation(channel, "invalid UTF-8 bytes in pong");
-                    }
+                    EncodingHybiFrame pong =
+                            new EncodingHybiFrame(OPCODE_PONG, true, 0, frame);
+                    channel.write(pong);
                     return null;
                 } else if (frameOpcode == OPCODE_CLOSE) {
-                    HybiFrame close = new HybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0));
+                    EncodingHybiFrame close = new EncodingHybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0));
                     channel.write(close);
                     channel.close();
                     return null;
@@ -153,14 +152,14 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     }
                 } else {
                     try {
-                        currentFrame = new HybiFrame(frameOpcode, frameFin, frameRsv, frame);
+                        currentFrame = new DecodingHybiFrame(frameOpcode, frame);
                     } catch (UTF8Exception e) {
                         protocolViolation(channel, "invalid UTF-8 bytes");
                     }
                 }
 
                 if (frameFin) {
-                    HybiFrame result = currentFrame;
+                    DecodingHybiFrame result = currentFrame;
                     currentFrame = null;
                     return result;
                 } else {
