@@ -23,7 +23,7 @@ public class UTF8OutputTest {
         int[] bad = new int[]{
                 0xCE, 0xBA, 0xE1, 0xBD, 0xB9, 0xCF, 0x83, 0xCE, 0xBC, 0xCE, 0xB5, 0xED, 0xA0, 0x80, 0x65, 0x64, 0x69, 0x74, 0x65, 0x64
         };
-        UTF8Output utf8Output = new UTF8Output();
+        UTF8Output utf8Output = new UTF8Output(new byte[0]);
         for (int i : bad) {
             utf8Output.write(i);
         }
@@ -31,8 +31,7 @@ public class UTF8OutputTest {
 
 
     private void assertUtf8(String s) throws IOException {
-        UTF8Output utf8Output = new UTF8Output();
-        utf8Output.write(s.getBytes("UTF-8"));
+        UTF8Output utf8Output = new UTF8Output(s.getBytes("UTF-8"));
         assertEquals(s, utf8Output.toString());
     }
 }
