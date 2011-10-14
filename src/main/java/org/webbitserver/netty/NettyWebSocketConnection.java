@@ -3,6 +3,7 @@ package org.webbitserver.netty;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
+import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebSocketConnection;
 
 import java.nio.charset.Charset;
@@ -32,24 +33,23 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     @Override
     public NettyWebSocketConnection send(String message) {
         if (hybi) {
-            return send(new HybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
+            return write(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
         } else {
-            ctx.getChannel().write(new DefaultWebSocketFrame(message));
-            return this;
+            return write(new DefaultWebSocketFrame(message));
         }
     }
 
     @Override
     public NettyWebSocketConnection send(byte[] message) {
-        return send(new HybiFrame(Opcodes.OPCODE_BINARY, true, 0, ChannelBuffers.wrappedBuffer(message)));
+        return write(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, ChannelBuffers.wrappedBuffer(message)));
     }
 
     @Override
     public NettyWebSocketConnection ping(String message) {
-        return send(new HybiFrame(Opcodes.OPCODE_PING, true, 0, ChannelBuffers.wrappedBuffer(message.getBytes(Charset.forName("UTF-8")))));
+        return write(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
     }
 
-    private NettyWebSocketConnection send(HybiFrame frame) {
+    private NettyWebSocketConnection write(Object frame) {
         ctx.getChannel().write(frame);
         return this;
     }
