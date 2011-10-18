@@ -1,8 +1,6 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.helpers.UTF8Output;
 
@@ -12,13 +10,14 @@ import java.util.List;
 public class DecodingHybiFrame {
 
     private final int opcode;
+    private final UTF8Output utf8Output;
 
     private List<ChannelBuffer> fragments = new ArrayList<ChannelBuffer>();
     private int length;
-    private UTF8Output utf8Output;
 
-    public DecodingHybiFrame(int opcode, ChannelBuffer fragment) {
+    public DecodingHybiFrame(int opcode, UTF8Output utf8Output, ChannelBuffer fragment) {
         this.opcode = opcode;
+        this.utf8Output = utf8Output;
         append(fragment);
     }
 
@@ -26,11 +25,7 @@ public class DecodingHybiFrame {
         fragments.add(fragment);
         length += fragment.readableBytes();
         if (opcode == Opcodes.OPCODE_TEXT) {
-            if (utf8Output == null) {
-                utf8Output = new UTF8Output(fragment.array());
-            } else {
-                utf8Output.write(fragment.array());
-            }
+            utf8Output.write(fragment.array());
         }
     }
 
@@ -48,13 +43,13 @@ public class DecodingHybiFrame {
     public void dispatch(WebSocketHandler handler, NettyWebSocketConnection connection) throws Throwable {
         switch (opcode) {
             case Opcodes.OPCODE_TEXT:
-                handler.onMessage(connection, utf8Output.toString());
+                handler.onMessage(connection, utf8Output.getStringAndRecycle());
                 return;
             case Opcodes.OPCODE_BINARY:
                 handler.onMessage(connection, messageBytes());
                 return;
             case Opcodes.OPCODE_PONG:
-                handler.onPong(connection, utf8Output.toString());
+                handler.onPong(connection, utf8Output.getStringAndRecycle());
                 return;
             default:
                 throw new IllegalStateException("Unexpected opcode:" + opcode);

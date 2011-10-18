@@ -3,9 +3,6 @@ package org.webbitserver.netty;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
-import org.webbitserver.helpers.UTF8Output;
-
-import java.util.ArrayList;
 
 public class EncodingHybiFrame {
 
