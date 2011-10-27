@@ -84,13 +84,17 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse content(String content) {
-        responseBuffer.writeBytes(copiedBuffer(content, charset()));
-        return this;
+        return content(copiedBuffer(content, charset()));
     }
 
     @Override
     public NettyHttpResponse content(byte[] content) {
-        responseBuffer.writeBytes(copiedBuffer(content));
+        return content(copiedBuffer(content));
+    }
+
+    private NettyHttpResponse content(ChannelBuffer content) {
+        responseBuffer.writeBytes(content);
+        header("Content-Length", responseBuffer.readableBytes());
         return this;
     }
 
@@ -105,7 +109,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
         String message = getStackTrace(error);
         header("Content-Type", "text/plain");
-        header("Content-Length", message.length());
         content(message);
         flushResponse();
 
@@ -129,10 +132,9 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     private void flushResponse() {
-        // Send the response and close the connection.
+        // Send the response and keep the connection open (keep-alive).
         try {
-            ChannelFuture future = write(responseBuffer);
-            future.addListener(ChannelFutureListener.CLOSE);
+            write(responseBuffer);
         } catch (Exception e) {
             ioExceptionHandler.uncaughtException(Thread.currentThread(), e);
         }

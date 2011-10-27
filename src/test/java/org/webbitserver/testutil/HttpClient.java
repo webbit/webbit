@@ -67,6 +67,7 @@ public class HttpClient {
                 read += more;
             }
         }
+        urlConnection.getInputStream().close();
 
         if (length != -1 && length != read) {
             throw new IOException("Content-Length header (" + length + ") did not match actual length (" + read + ")");
