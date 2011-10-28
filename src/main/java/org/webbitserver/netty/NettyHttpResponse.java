@@ -135,7 +135,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     private void flushResponse() {
-        // Send the response and keep the connection open (keep-alive).
         try {
             ChannelFuture future = write(responseBuffer);
             if(!isKeepAlive) {
