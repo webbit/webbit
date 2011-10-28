@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -24,6 +25,7 @@ public class NettyWebServerTest {
         WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
         assertEquals(threadCountStart + 2, getCurrentThreadCount());
         server.stop().join();
+        sleep(100);
         assertEquals(threadCountStart, getCurrentThreadCount());
     }
 
