@@ -32,30 +32,36 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
 public class NettyWebServer implements WebServer {
+    private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
+
     private final ServerBootstrap bootstrap;
     private final SocketAddress socketAddress;
     private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final List<ExecutorService> executorServices = new ArrayList<ExecutorService>();
     private final Executor executor;
+
     private Channel channel;
 
     protected long nextId = 1;
-
     private Thread.UncaughtExceptionHandler exceptionHandler;
     private Thread.UncaughtExceptionHandler ioExceptionHandler;
     private ConnectionTrackingHandler connectionTrackingHandler;
+    private StaleConnectionTrackingHandler staleConnectionTrackingHandler;
+    private long staleConnectionTimeout = DEFAULT_STALE_CONNECTION_TIMEOUT;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
     }
 
     private NettyWebServer(ExecutorService executorService, int port) {
-        this((Executor)executorService, port);
+        this((Executor) executorService, port);
         // If we created the executor, we have to be responsible for tearing it down.
         executorServices.add(executorService);
     }
@@ -87,6 +93,7 @@ public class NettyWebServer implements WebServer {
                 long timestamp = timestamp();
                 Object id = nextId();
                 ChannelPipeline pipeline = pipeline();
+                pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
                 pipeline.addLast("decoder", new HttpRequestDecoder());
                 pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
@@ -117,6 +124,12 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
+    public WebServer staleConnectionTimeout(long millis) {
+        staleConnectionTimeout = millis;
+        return this;
+    }
+
+    @Override
     public NettyWebServer add(HttpHandler handler) {
         handlers.add(handler);
         return this;
@@ -139,12 +152,22 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
+        staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout);
+        ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+        staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                staleConnectionTrackingHandler.closeStaleConnections();
+            }
+        }, staleConnectionTimeout / 2, staleConnectionTimeout / 2, TimeUnit.MILLISECONDS);
+        executorServices.add(staleCheckExecutor);
+
         connectionTrackingHandler = new ConnectionTrackingHandler();
-        ExecutorService exec1 = Executors.newSingleThreadExecutor();
-        executorServices.add(exec1);
-        ExecutorService exec2 = Executors.newSingleThreadExecutor();
-        executorServices.add(exec2);
-        bootstrap.setFactory(new NioServerSocketChannelFactory(exec1, exec2, 1));
+        ExecutorService bossExecutor = Executors.newSingleThreadExecutor();
+        executorServices.add(bossExecutor);
+        ExecutorService workerExecutor = Executors.newSingleThreadExecutor();
+        executorServices.add(workerExecutor);
+        bootstrap.setFactory(new NioServerSocketChannelFactory(bossExecutor, workerExecutor, 1));
         channel = bootstrap.bind(socketAddress);
         return this;
     }

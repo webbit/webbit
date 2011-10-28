@@ -136,4 +136,10 @@ public interface WebServer {
      * Get main work executor that all handlers will execute on.
      */
     Executor getExecutor();
+
+    /**
+     * Number of milliseconds before a stale HTTP keep-alive connection is closed by the server. A HTTP connection
+     * is considered stale if it remains open without sending more data within the timeout window.
+     */
+    WebServer staleConnectionTimeout(long millis);
 }
