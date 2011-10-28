@@ -50,8 +50,9 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     private void handleHttpRequest(ChannelHandlerContext ctx, MessageEvent messageEvent, HttpRequest httpRequest) {
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
+        boolean closeAfterEnd = "close".equalsIgnoreCase(httpRequest.getHeader("Connection"));
         final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(
-                ctx, new DefaultHttpResponse(HTTP_1_1, OK), exceptionHandler, ioExceptionHandler);
+                ctx, new DefaultHttpResponse(HTTP_1_1, OK), closeAfterEnd, exceptionHandler, ioExceptionHandler);
         final HttpControl control = new NettyHttpControl(httpHandlers.iterator(), executor, ctx,
                 nettyHttpRequest, nettyHttpResponse, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK),
                 exceptionHandler, ioExceptionHandler);

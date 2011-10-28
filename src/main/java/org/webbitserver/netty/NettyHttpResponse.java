@@ -22,6 +22,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private final ChannelHandlerContext ctx;
     private final HttpResponse response;
+    private final boolean closeAfterEnd;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
     private final Thread.UncaughtExceptionHandler ioExceptionHandler;
     private final ChannelBuffer responseBuffer;
@@ -29,10 +30,12 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     public NettyHttpResponse(ChannelHandlerContext ctx,
                              HttpResponse response,
+                             boolean closeAfterEnd,
                              Thread.UncaughtExceptionHandler exceptionHandler,
                              Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.ctx = ctx;
         this.response = response;
+        this.closeAfterEnd = closeAfterEnd;
         this.exceptionHandler = exceptionHandler;
         this.ioExceptionHandler = ioExceptionHandler;
         this.charset = DEFAULT_CHARSET;
@@ -134,7 +137,10 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private void flushResponse() {
         // Send the response and keep the connection open (keep-alive).
         try {
-            write(responseBuffer);
+            ChannelFuture future = write(responseBuffer);
+            if(closeAfterEnd) {
+                future.addListener(ChannelFutureListener.CLOSE);
+            }
         } catch (Exception e) {
             ioExceptionHandler.uncaughtException(Thread.currentThread(), e);
         }
