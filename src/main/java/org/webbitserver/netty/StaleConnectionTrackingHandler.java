@@ -33,11 +33,11 @@ public class StaleConnectionTrackingHandler extends SimpleChannelHandler {
         super.messageReceived(ctx, e);
     }
 
-    private void stamp(Channel channel) {
+    private synchronized void stamp(Channel channel) {
         stamps.put(channel, System.currentTimeMillis());
     }
 
-    public void closeStaleConnections() {
+    public synchronized void closeStaleConnections() {
         Iterator<Map.Entry<Channel, Long>> entries = stamps.entrySet().iterator();
         while (entries.hasNext()) {
             Map.Entry<Channel, Long> entry = entries.next();
