@@ -1,3 +1,18 @@
+0.2.11 (In Git)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...0.2.11)
+
+* HTTP Connections are persistent unless the client sends Connection: close. (Aslak Hellesøy)
+* Stale persistent HTTP connections are closed automatically after a configurable timeout (defaults to 5000ms). (Aslak Hellesøy)
+
+0.2.10 (2011-10-12)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.9...0.2.10)
+
+* No changes - just mucking around with Maven
+
 0.2.9 (2011-10-12)
 ==================
 
