@@ -97,7 +97,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private NettyHttpResponse content(ChannelBuffer content) {
         responseBuffer.writeBytes(content);
-        header("Content-Length", responseBuffer.readableBytes());
         return this;
     }
 
@@ -136,6 +135,8 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private void flushResponse() {
         try {
+            header("Content-Length", null);
+            header("Content-Length", responseBuffer.readableBytes());
             ChannelFuture future = write(responseBuffer);
             if(!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
