@@ -3,7 +3,7 @@
 
 (There is no 0.2.11 release)
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...0.2.12)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...v0.2.12)
 
 * HTTP Connections are persistent unless the client sends Connection: close. (Aslak Hellesøy)
 * Stale persistent HTTP connections are closed automatically after a configurable timeout (defaults to 5000ms). (Aslak Hellesøy)
@@ -13,49 +13,49 @@
 0.2.10 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.9...0.2.10)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.9...v0.2.10)
 
 * No changes - just mucking around with Maven
 
 0.2.9 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.8...0.2.9)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.8...v0.2.9)
 
 * Removed pom.xml parts that *should* work according to docs, but don't. Checking if make release still works. (Aslak Hellesøy)
 
 0.2.8 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.7...0.2.8)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.7...v0.2.8)
 
 * Attempt a *fully* automated release (Aslak Hellesøy)
 
 0.2.7 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.6...0.2.7)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.6...v0.2.7)
 
 * EVEN More Maven/Sonatype Yak Shaving (Aslak Hellesøy)
 
 0.2.6 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.5...0.2.6)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.5...v0.2.6)
 
 * More Maven/Sonatype Yak Shaving (Aslak Hellesøy)
 
 0.2.5 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.4...0.2.5)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.4...v0.2.5)
 
 * Made Maven upload artifact signatures again, so we can deploy jars (0.2.4 release failed). (Aslak Hellesøy)
 
 0.2.4 (2011-10-12)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.3...0.2.4)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.3...v0.2.4)
 
 * Added back support for Hixie 75/76 browsers, which broke in a regression in 0.2.2 (Aslak Hellesøy)
 * Changed WebSocket logging slightly so it's easier to see what protocol version a ws connection is using (Aslak Hellesøy) 
@@ -63,14 +63,14 @@
 0.2.3 (2011-10-11)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.2...0.2.3)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.2...v0.2.3)
 
 * WebServer.close() will now force all connections to be closed. rather than waiting for browsers to close them. ([#29](https://github.com/joewalnes/webbit/issues/29) Joe Walnes)
 
 0.2.2 (2011-10-11)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...0.2.2)
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.1...v0.2.2)
 
 * Fixed several WebSocket bugs related to big messages, fragmented frames and closing handshakes (Aslak Hellesøy).
 * Integrated [Autobahn test suite](http://www.tavendo.de/autobahn/testsuite.html) to make the WebSocket implementation a lot more robust. ([#38](https://github.com/joewalnes/webbit/issues/38) Aslak Hellesøy)
