@@ -1,4 +1,4 @@
-0.2.11 (In Git)
+0.2.11 (2011-10-31)
 ==================
 
 [Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...0.2.11)
