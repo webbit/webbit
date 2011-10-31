@@ -152,7 +152,7 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
-        staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout);
+        staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout, executor);
         ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
         staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
