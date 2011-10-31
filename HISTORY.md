@@ -1,7 +1,9 @@
-0.2.11 (2011-10-31)
+0.2.12 (2011-10-31)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...0.2.11)
+(There is no 0.2.11 release)
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.10...0.2.12)
 
 * HTTP Connections are persistent unless the client sends Connection: close. (Aslak Hellesøy)
 * Stale persistent HTTP connections are closed automatically after a configurable timeout (defaults to 5000ms). (Aslak Hellesøy)
