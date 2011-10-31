@@ -135,6 +135,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private void flushResponse() {
         try {
+            // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", null);
             header("Content-Length", responseBuffer.readableBytes());
             ChannelFuture future = write(responseBuffer);
