@@ -37,11 +37,10 @@ public class StaleConnectionTrackingHandler extends SimpleChannelHandler {
     }
 
     private void stamp(final Channel channel) {
-        final long now = System.currentTimeMillis();
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                stamps.put(channel, now);
+                stamps.put(channel, System.currentTimeMillis());
             }
         });
     }
