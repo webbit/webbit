@@ -5,6 +5,8 @@
 
 * HTTP Connections are persistent unless the client sends Connection: close. (Aslak Hellesøy)
 * Stale persistent HTTP connections are closed automatically after a configurable timeout (defaults to 5000ms). (Aslak Hellesøy)
+* Upgraded Netty to 3.2.6.Final. (Aslak Hellesøy)
+* Upgraded Mockito to 1.9.0-rc1. (Aslak Hellesøy)
 
 0.2.10 (2011-10-12)
 ==================
