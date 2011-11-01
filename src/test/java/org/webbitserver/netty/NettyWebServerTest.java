@@ -49,6 +49,15 @@ public class NettyWebServerTest {
 
         assertTrue("Server should have stopped by now", stopper.await(1000, TimeUnit.MILLISECONDS));
     }
+    
+    @Test
+    public void restartServer() throws Exception {
+        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
+        server.start();
+        server.stop();
+        server.start();
+        server.stop();
+    }
 
     private int getCurrentThreadCount() {
         return Thread.getAllStackTraces().keySet().size();
