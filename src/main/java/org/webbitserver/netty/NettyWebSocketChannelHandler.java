@@ -219,23 +219,23 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Object message = e.getMessage();
-                    if(message instanceof DecodingHybiFrame) {
-                        DecodingHybiFrame frame = (DecodingHybiFrame) message;
-                        frame.dispatch(handler, webSocketConnection);
-                    } else {
-                        // Hixie 75/76
-                        WebSocketFrame frame = (WebSocketFrame) message;
+        Object message = e.getMessage();
+        if (message instanceof DecodingHybiFrame) {
+            DecodingHybiFrame frame = (DecodingHybiFrame) message;
+            frame.dispatchMessage(handler, webSocketConnection, executor, exceptionHandler);
+        } else {
+            // Hixie 75/76
+            final WebSocketFrame frame = (WebSocketFrame) message;
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
                         handler.onMessage(webSocketConnection, frame.getTextData());
+                    } catch (Throwable throwable) {
+                        exceptionHandler.uncaughtException(Thread.currentThread(), throwable);
                     }
-                } catch (Throwable t) {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), t);
                 }
-            }
-        });
+            });
+        }
     }
 }

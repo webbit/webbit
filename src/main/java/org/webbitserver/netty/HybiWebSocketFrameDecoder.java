@@ -42,7 +42,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
-            case FRAME_START:
+            case FRAME_START: {
                 // FIN, RSV, OPCODE
                 int b = buffer.readByte();
                 frameFin = (b & 0x80) != 0;
@@ -128,10 +128,12 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     framePayloadLen = framePayloadLen1;
                 }
                 checkpoint(MASKING_KEY);
-            case MASKING_KEY:
+            }
+            case MASKING_KEY: {
                 maskingKey = buffer.readBytes(4);
                 checkpoint(State.PAYLOAD);
-            case PAYLOAD:
+            }
+            case PAYLOAD: {
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
                 unmask(frame);
                 checkpoint(FRAME_START);
@@ -166,11 +168,13 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 } else {
                     return null;
                 }
-            case CORRUPT:
+            }
+            case CORRUPT: {
                 // If we don't keep reading Netty will throw an exception saying
                 // we can't return null if no bytes read and state not changed.
                 buffer.readByte();
                 return null;
+            }
             default:
                 throw new Error("Shouldn't reach here.");
         }

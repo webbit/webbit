@@ -1,3 +1,10 @@
+0.2.14 (2011-11-01)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.13...v0.2.14)
+
+* Fixed a regression in 0.2.12 where inbound WebSocket messages were sometimes improperly read, because 2 threads used the UTF8Output. (Neil Dunn, Aslak Hellesøy)
+
 0.2.13 (2011-11-01)
 ==================
 

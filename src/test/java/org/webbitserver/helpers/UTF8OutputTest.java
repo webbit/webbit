@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 public class UTF8OutputTest {
     private static UTF8Output utf8Output = new UTF8Output();
 
-
     @Test
     public void decodes_latin() throws IOException {
         assertUtf8("Hellesøy");
@@ -17,6 +16,13 @@ public class UTF8OutputTest {
 
     @Test
     public void decodes_chinese() throws IOException {
+        assertUtf8("我希望有人告诉我数字相加的结果");
+    }
+
+    @Test
+    public void decodes_many_times() throws IOException {
+        assertUtf8("Hellesøy 我希望有人告诉我数字相加的结果");
+        assertUtf8("Hellesøy");
         assertUtf8("我希望有人告诉我数字相加的结果");
     }
 

@@ -6,6 +6,7 @@ import org.webbitserver.helpers.UTF8Output;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 public class DecodingHybiFrame {
 
@@ -40,19 +41,60 @@ public class DecodingHybiFrame {
         return result;
     }
 
-    public void dispatch(WebSocketHandler handler, NettyWebSocketConnection connection) throws Throwable {
+    public void dispatchMessage(final WebSocketHandler handler, final NettyWebSocketConnection connection, Executor executor, Thread.UncaughtExceptionHandler exceptionHandler) {
         switch (opcode) {
-            case Opcodes.OPCODE_TEXT:
-                handler.onMessage(connection, utf8Output.getStringAndRecycle());
+            case Opcodes.OPCODE_TEXT: {
+                final String messageValue = utf8Output.getStringAndRecycle();
+                executor.execute(new CatchingRunnable(exceptionHandler) {
+                    @Override
+                    protected void go() throws Throwable {
+                        handler.onMessage(connection, messageValue);
+                    }
+                });
                 return;
-            case Opcodes.OPCODE_BINARY:
-                handler.onMessage(connection, messageBytes());
+            }
+            case Opcodes.OPCODE_BINARY: {
+                final byte[] bytes = messageBytes();
+                executor.execute(new CatchingRunnable(exceptionHandler) {
+                    @Override
+                    public void go() throws Throwable {
+                        handler.onMessage(connection, bytes);
+                    }
+                });
                 return;
-            case Opcodes.OPCODE_PONG:
-                handler.onPong(connection, utf8Output.getStringAndRecycle());
+            }
+            case Opcodes.OPCODE_PONG: {
+                final String pongValue = utf8Output.getStringAndRecycle();
+                executor.execute(new CatchingRunnable(exceptionHandler) {
+                    @Override
+                    protected void go() throws Throwable {
+                        handler.onPong(connection, pongValue);
+                    }
+                });
                 return;
+            }
             default:
                 throw new IllegalStateException("Unexpected opcode:" + opcode);
         }
+    }
+
+
+    private abstract class CatchingRunnable implements Runnable {
+        private final Thread.UncaughtExceptionHandler exceptionHandler;
+
+        public CatchingRunnable(Thread.UncaughtExceptionHandler exceptionHandler) {
+            this.exceptionHandler = exceptionHandler;
+        }
+
+        @Override
+        public void run() {
+            try {
+                go();
+            } catch (Throwable t) {
+                exceptionHandler.uncaughtException(Thread.currentThread(), t);
+            }
+        }
+
+        protected abstract void go() throws Throwable;
     }
 }
