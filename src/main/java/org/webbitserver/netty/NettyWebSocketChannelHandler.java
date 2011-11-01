@@ -79,34 +79,28 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             this.webSocketConnection.setHybiWebSocketVersion(hybiVersion);
             upgradeResponseHybi(req, res, hybiVersion);
             ctx.getChannel().write(res);
-            adjustPipelineToHybi(ctx);
+            adjustPipelineToWebSocket(ctx, new HybiWebSocketFrameDecoder(), new HybiWebSocketFrameEncoder());
         } else if (isHixie76WebSocketRequest(req)) {
             this.webSocketConnection.setVersion("HIXIE-76");
             upgradeResponseHixie76(req, res);
             ctx.getChannel().write(res);
-            adjustPipelineToHixie(ctx);
+            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder());
         } else {
             this.webSocketConnection.setVersion("HIXIE-75");
             upgradeResponseHixie75(req, res);
             ctx.getChannel().write(res);
-            adjustPipelineToHixie(ctx);
+            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder());
         }
     }
 
-    protected void adjustPipelineToHixie(ChannelHandlerContext ctx) {
+    private void adjustPipelineToWebSocket(ChannelHandlerContext ctx, ChannelHandler webSocketFrameDecoder, ChannelHandler webSocketFrameEncoder) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
+        StaleConnectionTrackingHandler staleConnectionTracker = (StaleConnectionTrackingHandler) p.remove("staleconnectiontracker");
+        staleConnectionTracker.stopTracking(ctx.getChannel());
         p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
+        p.replace("decoder", "wsdecoder", webSocketFrameDecoder);
         p.replace("handler", "wshandler", this);
-        p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
-    }
-
-    protected void adjustPipelineToHybi(ChannelHandlerContext ctx) {
-        ChannelPipeline p = ctx.getChannel().getPipeline();
-        p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new HybiWebSocketFrameDecoder());
-        p.replace("handler", "wshandler", this);
-        p.replace("encoder", "wsencoder", new HybiWebSocketFrameEncoder());
+        p.replace("encoder", "wsencoder", webSocketFrameEncoder);
     }
 
     @Override

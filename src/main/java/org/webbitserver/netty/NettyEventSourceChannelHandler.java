@@ -64,9 +64,10 @@ public class NettyEventSourceChannelHandler extends SimpleChannelUpstreamHandler
 
     protected void adjustPipeline(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
+        StaleConnectionTrackingHandler staleConnectionTracker = (StaleConnectionTrackingHandler) p.remove("staleconnectiontracker");
+        staleConnectionTracker.stopTracking(ctx.getChannel());
         p.remove("aggregator");
         p.replace("handler", "ssehandler", this);
-//        ctx.getChannel().write("");
     }
 
     @Override

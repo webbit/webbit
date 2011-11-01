@@ -1,3 +1,10 @@
+0.2.13 (2011-11-01)
+==================
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.12...v0.2.13)
+
+* Fixed a regression in 0.2.12 where WebSocket and EventSource connections would be closed after the stale connection timeout. Now they stay open. (Aslak Hellesøy)
+
 0.2.12 (2011-10-31)
 ==================
 

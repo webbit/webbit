@@ -61,8 +61,20 @@ public class StaleConnectionTrackingHandler extends SimpleChannelHandler {
         });
     }
 
+    /**
+     * Stops tracking this channel for staleness. This happens for WebSockets and EventSource connections.
+     * @param channel
+     */
+    public void stopTracking(final Channel channel) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                stamps.remove(channel);
+            }
+        });
+    }
+
     private boolean isStale(Long timeStamp) {
         return System.currentTimeMillis() - timeStamp > timeout;
     }
-
 }
