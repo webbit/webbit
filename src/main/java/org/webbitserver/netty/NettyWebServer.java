@@ -129,6 +129,9 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
+        if (isRunning())
+            throw new IllegalStateException("Server already started.");
+        
         // Configure the server.
         bootstrap = new ServerBootstrap();
 
@@ -170,6 +173,10 @@ public class NettyWebServer implements WebServer {
         bootstrap.setFactory(new NioServerSocketChannelFactory(bossExecutor, workerExecutor, 1));
         channel = bootstrap.bind(socketAddress);
         return this;
+    }
+    
+    public boolean isRunning() {
+        return channel != null && channel.isBound();
     }
 
     @Override

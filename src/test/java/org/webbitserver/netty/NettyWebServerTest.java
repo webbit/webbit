@@ -54,9 +54,21 @@ public class NettyWebServerTest {
     public void restartServer() throws Exception {
         WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
         server.start();
-        server.stop();
+        server.stop().join();
         server.start();
-        server.stop();
+        server.stop().join();
+    }
+    
+    @Test
+    public void startServerAndTestIsRunning() throws Exception {
+        NettyWebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
+        server.start();
+        boolean isRunning = server.isRunning();
+        server.stop().join();        
+        boolean isStopped = !server.isRunning();
+        
+        assertTrue("Server should be running", isRunning);
+        assertTrue("Server should not be running", isStopped);
     }
 
     private int getCurrentThreadCount() {
