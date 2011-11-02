@@ -63,6 +63,11 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
             InputStream resourceStream = getResource(new File(file, welcomeFileName));
             return resourceStream == null ? null : read(resourceStream);
         }
+        
+        @Override
+        protected boolean isModified() {
+            return true;
+        }
 
         private byte[] read(InputStream content) throws IOException {
             try {

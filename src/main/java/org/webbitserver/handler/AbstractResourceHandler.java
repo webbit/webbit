@@ -93,6 +93,17 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 }
             });
         }
+        
+        protected void notModified() {
+            // Switch back from IO thread to web thread
+            control.execute(new Runnable() {
+                @Override
+                public void run() {
+                    response.status(304)
+                            .end();
+                }
+            });
+        }
 
         protected void serve(final String mimeType, final byte[] contents) {
             // Switch back from IO thread to web thread.
@@ -129,6 +140,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 byte[] content = null;
                 if (!exists()) {
                     notFound();
+                } else if (!isModified()) {
+                    notModified();
                 } else if ((content = fileBytes()) != null) {
                     serve(guessMimeType(path), content);
                 } else {
@@ -148,6 +161,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected abstract byte[] fileBytes() throws IOException;
 
         protected abstract byte[] welcomeBytes() throws IOException;
+        
+        protected abstract boolean isModified() throws IOException;        
 
         protected byte[] read(int length, InputStream in) throws IOException {
             byte[] data = new byte[length];

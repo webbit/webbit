@@ -1,5 +1,6 @@
 package org.webbitserver.handler;
 
+import java.net.URLConnection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,6 +148,29 @@ public class StaticFileHandlerTest {
         } finally {
             webServer.stop().join();
         }
+    }
+    
+    /**
+     * Test If-Modified-Since header
+     */
+    @Test
+    public void ifModifiedSince() throws Exception {
+        java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        writeFile("index.html", "Hello Universe");
+        
+        File file = new File(dir, "index.html");
+        
+        StubHttpRequest  request = request("/index.html");
+        StubHttpResponse response = handle(request);
+        
+        String modified = response.header("Last-Modified");
+        assertTrue(modified != null);        
+        assertTrue(modified.equals(format.format(new java.util.Date(file.lastModified()))));
+        
+        request = request("/index.html");
+        request.header("If-Modified-Since", modified);
+        
+        assertReturnedWithStatus(304, handle(request));        
     }
 
     // --- Test helpers
