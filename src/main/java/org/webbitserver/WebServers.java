@@ -8,6 +8,10 @@ import java.util.concurrent.Executor;
 
 public class WebServers {
 
+    public static WebServer createWebServer() {
+        return new NettyWebServer();
+    }
+    
     public static WebServer createWebServer(int port) {
         return new NettyWebServer(port);
     }

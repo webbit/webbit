@@ -12,6 +12,16 @@ import java.util.concurrent.Executor;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class StaticFileHandler extends AbstractResourceHandler {
+    // A formatter of HTTP Date / Times which set locale explicitly to 
+    // english and TZ to GMT.
+    private static class HttpDateFormat extends java.text.SimpleDateFormat {
+        public HttpDateFormat() {
+            super("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.ENGLISH);
+            setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+        }
+    }
+    
+    private static java.text.SimpleDateFormat format = new HttpDateFormat();
 
     private final File dir;
 
@@ -34,14 +44,16 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
     @Override
     protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
-        return new StaticFileHandler.FileWorker(request.uri(), response, control);
+        return new StaticFileHandler.FileWorker(request, response, control);
     }
 
     protected class FileWorker extends IOWorker {
         private File file;
+        private HttpRequest request;
 
-        private FileWorker(String path, HttpResponse response, HttpControl control) {
-            super(path, response, control);
+        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+            super(request.uri(), response, control);
+            this.request = request;
         }
 
         @Override
@@ -60,7 +72,37 @@ public class StaticFileHandler extends AbstractResourceHandler {
             File welcome = new File(file, welcomeFileName);
             return welcome.isFile() ? read(welcome) : null;
         }
+        
+        @Override
+        protected boolean isModified() throws IOException {
+            if (file == null || !file.exists())
+                return true;
 
+            // Get the "If-Modified-Since" header from the request, if any
+            String modified = request.header("If-Modified-Since");
+            if (modified == null)
+                return true;
+            
+            // Parse modified string
+            try {
+                java.util.Date date = format.parse(modified);
+                
+                // Time form header is accurate to seconds only, but lastModified to milliseconds
+                return (date.getTime() / 1000) < (file.lastModified() / 1000);
+                
+            } catch (java.text.ParseException e) {
+                return false;
+            }
+        }
+
+        @Override
+        protected void serve(final String mimeType, final byte[] contents) {
+            // Add "Last-Modified" header to the response
+            response.header("Last-Modified", format.format(new java.util.Date(file.lastModified())));
+            
+            super.serve(mimeType, contents);
+        }
+        
         private byte[] read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }

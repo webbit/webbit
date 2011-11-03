@@ -40,13 +40,13 @@ import static org.jboss.netty.channel.Channels.pipeline;
 public class NettyWebServer implements WebServer {
     private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
 
-    private final ServerBootstrap bootstrap;
-    private final SocketAddress socketAddress;
-    private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final List<ExecutorService> executorServices = new ArrayList<ExecutorService>();
     private final Executor executor;
 
+    private SocketAddress socketAddress;
+    private URI publicUri;
+    private ServerBootstrap bootstrap;
     private Channel channel;
 
     protected long nextId = 1;
@@ -55,6 +55,10 @@ public class NettyWebServer implements WebServer {
     private ConnectionTrackingHandler connectionTrackingHandler;
     private StaleConnectionTrackingHandler staleConnectionTrackingHandler;
     private long staleConnectionTimeout = DEFAULT_STALE_CONNECTION_TIMEOUT;
+    
+    public NettyWebServer() {
+        this(Executors.newSingleThreadScheduledExecutor(), null, null);        
+    }
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
@@ -73,7 +77,7 @@ public class NettyWebServer implements WebServer {
     public NettyWebServer(final Executor executor, SocketAddress socketAddress, URI publicUri) {
         this.executor = executor;
         this.socketAddress = socketAddress;
-        this.publicUri = publicUri;
+        this.publicUri = publicUri;            
 
         // Uncaught exceptions from handlers get dumped to console by default.
         // To change, call uncaughtExceptionHandler()
@@ -82,29 +86,6 @@ public class NettyWebServer implements WebServer {
         // Default behavior is to silently discard any exceptions caused
         // when reading/writing to the client. The Internet is flaky - it happens.
         connectionExceptionHandler(new SilentExceptionHandler());
-
-        // Configure the server.
-        bootstrap = new ServerBootstrap();
-
-        // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            @Override
-            public ChannelPipeline getPipeline() throws Exception {
-                long timestamp = timestamp();
-                Object id = nextId();
-                ChannelPipeline pipeline = pipeline();
-                pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
-                pipeline.addLast("connectiontracker", connectionTrackingHandler);
-                pipeline.addLast("decoder", new HttpRequestDecoder());
-                pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
-                pipeline.addLast("decompressor", new HttpContentDecompressor());
-                pipeline.addLast("encoder", new HttpResponseEncoder());
-                pipeline.addLast("compressor", new HttpContentCompressor());
-                pipeline.addLast("handler", new NettyHttpChannelHandler(
-                        executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
-                return pipeline;
-            }
-        });
 
         setupDefaultHandlers();
     }
@@ -152,6 +133,36 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
+        if (isRunning())
+            throw new IllegalStateException("Server already started.");
+        
+        // No port and no socketAddress were given
+        if (publicUri == null || socketAddress == null)
+            throw new IllegalStateException("No port specified.");
+        
+        // Configure the server.
+        bootstrap = new ServerBootstrap();
+
+        // Set up the event pipeline factory.
+        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+            @Override
+            public ChannelPipeline getPipeline() throws Exception {
+                long timestamp = timestamp();
+                Object id = nextId();
+                ChannelPipeline pipeline = pipeline();
+                pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
+                pipeline.addLast("connectiontracker", connectionTrackingHandler);
+                pipeline.addLast("decoder", new HttpRequestDecoder());
+                pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
+                pipeline.addLast("decompressor", new HttpContentDecompressor());
+                pipeline.addLast("encoder", new HttpResponseEncoder());
+                pipeline.addLast("compressor", new HttpContentCompressor());
+                pipeline.addLast("handler", new NettyHttpChannelHandler(
+                        executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
+                return pipeline;
+            }
+        });
+
         staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout, executor);
         ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
         staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
@@ -171,6 +182,22 @@ public class NettyWebServer implements WebServer {
         channel = bootstrap.bind(socketAddress);
         return this;
     }
+    
+    @Override
+    public WebServer start(int port) {
+        if (isRunning()) 
+            throw new IllegalStateException("Server already started.");            
+
+        // (Re)create uri and local address
+        publicUri = localUri(port);
+        socketAddress = new InetSocketAddress(port);
+                
+        return start();
+    }
+    
+    public boolean isRunning() {
+        return channel != null && channel.isBound();
+    }
 
     @Override
     public synchronized NettyWebServer stop() throws IOException {
@@ -187,6 +214,9 @@ public class NettyWebServer implements WebServer {
         for (ExecutorService executorService : executorServices) {
             executorService.shutdown();
         }
+        
+        bootstrap = null;
+        
         return this;
     }
 

@@ -95,6 +95,11 @@ public interface WebServer {
      * Start web server in background.
      */
     WebServer start() throws IOException;
+    
+    /**
+     * Start web server listening at the specified port in background.
+     */
+    WebServer start(int port) throws IOException;
 
     /**
      * Stop web server background thread. This returns immediately, but the
