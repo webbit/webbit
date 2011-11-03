@@ -155,7 +155,9 @@ public class StaticFileHandlerTest {
      */
     @Test
     public void ifModifiedSince() throws Exception {
-        java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.ENGLISH);
+        format.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+        
         writeFile("index.html", "Hello Universe");
         
         File file = new File(dir, "index.html");
