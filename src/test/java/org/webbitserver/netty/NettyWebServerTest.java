@@ -70,6 +70,18 @@ public class NettyWebServerTest {
         assertTrue("Server should be running", isRunning);
         assertTrue("Server should not be running", isStopped);
     }
+    
+    @Test
+    public void startServerWithPort() throws Exception {
+        NettyWebServer server = new NettyWebServer();
+        server.start(9080);
+        boolean isRunning = server.isRunning();
+        int port = server.getUri().getPort();
+        server.stop().join();
+        
+        assertTrue(isRunning);
+        assertEquals(port, 9080);
+    }
 
     private int getCurrentThreadCount() {
         return Thread.getAllStackTraces().keySet().size();
