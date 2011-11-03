@@ -7,13 +7,21 @@ import org.webbitserver.HttpResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class StaticFileHandler extends AbstractResourceHandler {
-    private static java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+    // A formatter of HTTP Date / Times which set locale explicitly to 
+    // english and TZ to GMT.
+    private static class HttpDateFormat extends java.text.SimpleDateFormat {
+        public HttpDateFormat() {
+            super("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.ENGLISH);
+            setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+        }
+    }
+    
+    private static java.text.SimpleDateFormat format = new HttpDateFormat();
 
     private final File dir;
 
