@@ -151,6 +151,7 @@ public class NettyWebServer implements WebServer {
                 ChannelPipeline pipeline = pipeline();
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
+                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder());
                 pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
                 pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
                 pipeline.addLast("decompressor", new HttpContentDecompressor());
