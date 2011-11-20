@@ -1,7 +1,9 @@
-0.2.15 (2011-11-20)
+0.2.16 (2011-11-20)
 ==================
 
-[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.14...v0.2.15)
+(There is no 0.2.15 release due to Maven hiccups)
+
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.14...v0.2.16)
 
 * Easier dynamic post-processing of static assets by moving inner class' serve method up to AbstractResourceHandler.serve so it can be overridden more easily. (Aslak Hellesøy)
 
