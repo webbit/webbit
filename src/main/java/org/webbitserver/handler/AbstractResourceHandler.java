@@ -67,6 +67,21 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         ioThread.execute(createIOWorker(request, response, control));
     }
 
+    protected void serve(final String mimeType, final byte[] contents, HttpControl control, final HttpResponse response) {
+        // Switch back from IO thread to web thread.
+        control.execute(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Don't read all into memory, instead use zero-copy.
+                // TODO: Check bytes read match expected encoding of mime-type
+                response.header("Content-Type", mimeType)
+                        .header("Content-Length", contents.length)
+                        .content(contents)
+                        .end();
+            }
+        });
+    }
+
     protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control);
 
     /**
@@ -94,21 +109,6 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             });
         }
 
-        protected void serve(final String mimeType, final byte[] contents) {
-            // Switch back from IO thread to web thread.
-            control.execute(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO: Don't read all into memory, instead use zero-copy.
-                    // TODO: Check bytes read match expected encoding of mime-type
-                    response.header("Content-Type", mimeType)
-                            .header("Content-Length", contents.length)
-                            .content(contents)
-                            .end();
-                }
-            });
-        }
-
         protected void error(final IOException exception) {
             // Switch back from IO thread to web thread.
             control.execute(new Runnable() {
@@ -130,10 +130,10 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 if (!exists()) {
                     notFound();
                 } else if ((content = fileBytes()) != null) {
-                    serve(guessMimeType(path), content);
+                    serve(guessMimeType(path), content, control, response);
                 } else {
                     if ((content = welcomeBytes()) != null) {
-                        serve(guessMimeType(welcomeFileName), content);
+                        serve(guessMimeType(welcomeFileName), content, control, response);
                     } else {
                         notFound();
                     }
@@ -155,7 +155,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 int read = 0;
                 while (read < length) {
                     int more = in.read(data, read, data.length - read);
-                    if(more == -1) {
+                    if (more == -1) {
                         break;
                     } else {
                         read += more;
