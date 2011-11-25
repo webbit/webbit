@@ -6,10 +6,10 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
+import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
@@ -131,7 +131,7 @@ public class NettyWebServer implements WebServer {
     public synchronized NettyWebServer start() {
         if (isRunning())
             throw new IllegalStateException("Server already started.");
-        
+
         // Configure the server.
         bootstrap = new ServerBootstrap();
 
@@ -174,7 +174,7 @@ public class NettyWebServer implements WebServer {
         channel = bootstrap.bind(socketAddress);
         return this;
     }
-    
+
     public boolean isRunning() {
         return channel != null && channel.isBound();
     }
@@ -194,9 +194,9 @@ public class NettyWebServer implements WebServer {
         for (ExecutorService executorService : executorServices) {
             executorService.shutdown();
         }
-        
+
         bootstrap = null;
-        
+
         return this;
     }
 

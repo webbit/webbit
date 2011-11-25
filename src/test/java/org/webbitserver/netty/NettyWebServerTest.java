@@ -1,11 +1,7 @@
 package org.webbitserver.netty;
 
 import org.junit.Test;
-import org.webbitserver.HttpControl;
-import org.webbitserver.HttpHandler;
-import org.webbitserver.HttpRequest;
-import org.webbitserver.HttpResponse;
-import org.webbitserver.WebServer;
+import org.webbitserver.*;
 
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -49,26 +45,24 @@ public class NettyWebServerTest {
 
         assertTrue("Server should have stopped by now", stopper.await(1000, TimeUnit.MILLISECONDS));
     }
-    
+
     @Test
-    public void restartServer() throws Exception {
+    public void restartServerDoesNotThrowException() throws Exception {
         WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
         server.start();
         server.stop().join();
         server.start();
         server.stop().join();
     }
-    
+
     @Test
     public void startServerAndTestIsRunning() throws Exception {
         NettyWebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
         server.start();
-        boolean isRunning = server.isRunning();
-        server.stop().join();        
-        boolean isStopped = !server.isRunning();
-        
-        assertTrue("Server should be running", isRunning);
-        assertTrue("Server should not be running", isStopped);
+        assertTrue("Server should be running", server.isRunning());
+
+        server.stop().join();
+        assertTrue("Server should not be running", !server.isRunning());
     }
 
     private int getCurrentThreadCount() {
