@@ -1,12 +1,12 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebSocketConnection;
 
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -103,5 +103,9 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     void setHybiWebSocketVersion(int webSocketVersion) {
         setVersion("Sec-WebSocket-Version-" + webSocketVersion);
         hybi = true;
+    }
+
+    Channel getChannel() {
+        return ctx.getChannel();
     }
 }

@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.WebbitException;
 import org.webbitserver.helpers.UTF8Output;
 
 import java.util.ArrayList;
@@ -41,11 +42,18 @@ public class DecodingHybiFrame {
         return result;
     }
 
-    public void dispatchMessage(final WebSocketHandler handler, final NettyWebSocketConnection connection, Executor executor, Thread.UncaughtExceptionHandler exceptionHandler) {
+    public void dispatchMessage(final WebSocketHandler handler, final NettyWebSocketConnection connection, final Executor executor, final Thread.UncaughtExceptionHandler exceptionHandler) {
+        Thread.UncaughtExceptionHandler exceptionHandlerWithWebbitStackTrace = new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                exceptionHandler.uncaughtException(t, WebbitException.fromException(e, connection.getChannel()));
+            }
+        };
+
         switch (opcode) {
             case Opcodes.OPCODE_TEXT: {
                 final String messageValue = utf8Output.getStringAndRecycle();
-                executor.execute(new CatchingRunnable(exceptionHandler) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
                     @Override
                     protected void go() throws Throwable {
                         handler.onMessage(connection, messageValue);
@@ -55,7 +63,7 @@ public class DecodingHybiFrame {
             }
             case Opcodes.OPCODE_BINARY: {
                 final byte[] bytes = messageBytes();
-                executor.execute(new CatchingRunnable(exceptionHandler) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
                     @Override
                     public void go() throws Throwable {
                         handler.onMessage(connection, bytes);
@@ -65,7 +73,7 @@ public class DecodingHybiFrame {
             }
             case Opcodes.OPCODE_PONG: {
                 final String pongValue = utf8Output.getStringAndRecycle();
-                executor.execute(new CatchingRunnable(exceptionHandler) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
                     @Override
                     protected void go() throws Throwable {
                         handler.onPong(connection, pongValue);

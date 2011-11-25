@@ -11,6 +11,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.WebbitException;
 import org.webbitserver.helpers.Base64;
 
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -67,7 +68,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         try {
             handler.onOpen(this.webSocketConnection);
         } catch (Exception e) {
-            exceptionHandler.uncaughtException(Thread.currentThread(), e);
+            exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
         }
     }
 
@@ -104,7 +105,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    public void channelDisconnected(ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception {
         final Thread thread = Thread.currentThread();
         executor.execute(new Runnable() {
             @Override
@@ -112,7 +113,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                 try {
                     handler.onClose(webSocketConnection);
                 } catch (Exception e1) {
-                    exceptionHandler.uncaughtException(thread, e1);
+                    exceptionHandler.uncaughtException(thread, WebbitException.fromException(e1, e.getChannel()));
                 }
             }
         });
@@ -132,7 +133,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ioExceptionHandler.uncaughtException(thread, e.getCause());
+                    ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
                 }
             });
         }
@@ -197,7 +198,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                     MessageDigest.getInstance("MD5").digest(input.array()));
             res.setContent(output);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new WebbitException(e);
         }
     }
 
@@ -232,7 +233,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
                     try {
                         handler.onMessage(webSocketConnection, frame.getTextData());
                     } catch (Throwable throwable) {
-                        exceptionHandler.uncaughtException(Thread.currentThread(), throwable);
+                        exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(throwable, e.getChannel()));
                     }
                 }
             });

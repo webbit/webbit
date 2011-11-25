@@ -8,6 +8,7 @@ import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
+import org.webbitserver.WebbitException;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
@@ -49,7 +50,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
         }
     }
 
-    private void handleHttpRequest(ChannelHandlerContext ctx, MessageEvent messageEvent, HttpRequest httpRequest) {
+    private void handleHttpRequest(final ChannelHandlerContext ctx, MessageEvent messageEvent, HttpRequest httpRequest) {
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
         final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(
                 ctx, new DefaultHttpResponse(HTTP_1_1, OK), isKeepAlive(httpRequest), exceptionHandler, ioExceptionHandler);
@@ -63,7 +64,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
                 try {
                     control.nextHandler(nettyHttpRequest, nettyHttpResponse);
                 } catch (Exception exception) {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), exception);
+                    exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(exception, ctx.getChannel()));
                 }
             }
         });
@@ -79,7 +80,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ioExceptionHandler.uncaughtException(thread, e.getCause());
+                    ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
                 }
             });
         }
