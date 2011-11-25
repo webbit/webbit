@@ -9,6 +9,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.webbitserver.EventSourceHandler;
+import org.webbitserver.WebbitException;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.channels.ClosedChannelException;
@@ -71,14 +72,14 @@ public class NettyEventSourceChannelHandler extends SimpleChannelUpstreamHandler
     }
 
     @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+    public void channelDisconnected(ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception {
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     handler.onClose(eventSourceConnection);
                 } catch (Exception e1) {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), e1);
+                    exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e1, e.getChannel()));
                 }
             }
         });
@@ -98,7 +99,7 @@ public class NettyEventSourceChannelHandler extends SimpleChannelUpstreamHandler
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ioExceptionHandler.uncaughtException(thread, e.getCause());
+                    ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
                 }
             });
         }

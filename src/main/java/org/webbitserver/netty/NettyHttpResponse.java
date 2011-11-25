@@ -8,6 +8,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
+import org.webbitserver.WebbitException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -114,7 +115,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         content(message);
         flushResponse();
 
-        exceptionHandler.uncaughtException(Thread.currentThread(), error);
+        exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(error, ctx.getChannel()));
 
         return this;
     }
@@ -143,7 +144,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
         } catch (Exception e) {
-            ioExceptionHandler.uncaughtException(Thread.currentThread(), e);
+            exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, ctx.getChannel()));
         }
     }
 
