@@ -1,3 +1,8 @@
+In Git
+======
+
+* Server can be restarted ([#46](https://github.com/joewalnes/webbit/pull/46), [#50](https://github.com/joewalnes/webbit/pull/50) chtheis)
+
 0.2.16 (2011-11-20)
 ==================
 
