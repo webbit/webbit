@@ -43,17 +43,12 @@ public class DecodingHybiFrame {
     }
 
     public void dispatchMessage(final WebSocketHandler handler, final NettyWebSocketConnection connection, final Executor executor, final Thread.UncaughtExceptionHandler exceptionHandler) {
-        Thread.UncaughtExceptionHandler exceptionHandlerWithWebbitStackTrace = new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                exceptionHandler.uncaughtException(t, WebbitException.fromException(e, connection.getChannel()));
-            }
-        };
+        Thread.UncaughtExceptionHandler exceptionHandlerWithWebbitContext = exceptionHandlerWithConnectionForContext(connection, exceptionHandler);
 
         switch (opcode) {
             case Opcodes.OPCODE_TEXT: {
                 final String messageValue = utf8Output.getStringAndRecycle();
-                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitContext) {
                     @Override
                     protected void go() throws Throwable {
                         handler.onMessage(connection, messageValue);
@@ -63,7 +58,7 @@ public class DecodingHybiFrame {
             }
             case Opcodes.OPCODE_BINARY: {
                 final byte[] bytes = messageBytes();
-                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitContext) {
                     @Override
                     public void go() throws Throwable {
                         handler.onMessage(connection, bytes);
@@ -73,7 +68,7 @@ public class DecodingHybiFrame {
             }
             case Opcodes.OPCODE_PONG: {
                 final String pongValue = utf8Output.getStringAndRecycle();
-                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitStackTrace) {
+                executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitContext) {
                     @Override
                     protected void go() throws Throwable {
                         handler.onPong(connection, pongValue);
@@ -84,6 +79,16 @@ public class DecodingHybiFrame {
             default:
                 throw new IllegalStateException("Unexpected opcode:" + opcode);
         }
+    }
+
+    // Uncaught exception handler including the connection for context.
+    private static Thread.UncaughtExceptionHandler exceptionHandlerWithConnectionForContext(final NettyWebSocketConnection connection, final Thread.UncaughtExceptionHandler exceptionHandler) {
+        return new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                exceptionHandler.uncaughtException(t, WebbitException.fromException(e, connection.getChannel()));
+            }
+        };
     }
 
 

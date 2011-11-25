@@ -8,8 +8,8 @@ import org.jboss.netty.channel.ExceptionEvent;
  *
  * This is used to ensure the exceptions we report to {@link Thread.UncaughtExceptionHandler}s are well
  * documented and make it obvious that an error occured in Webbit. This is particularly useful for projects
- * that make heavy use of Netty, since most of our exceptions come out of the Netty stack, and don't include
- * Webbit code in their stack traces.
+ * that make heavy use of Netty in other libraries, since most of our exceptions come out of the Netty stack,
+ * and don't include Webbit code in their stack traces.
  */
 public class WebbitException extends RuntimeException {
     public WebbitException() {
