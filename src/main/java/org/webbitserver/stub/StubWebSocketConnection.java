@@ -4,7 +4,7 @@ import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
 
 /**
- * Implementation of WebSocketConnection that is easy to construct, and inspect results.
+ * Implementation of {@link WebSocketConnection} that is easy to construct, and inspect results.
  * Useful for testing.
  *
  * @deprecated use {@link StubConnection}
