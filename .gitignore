@@ -15,6 +15,12 @@ pom.xml.asc
 package.fig
 reports
 
+# ignore Eclipse
+.classpath
+.project
+.settings/
+
+
 # for python/virtualenv
 *.pyc
 .Python
