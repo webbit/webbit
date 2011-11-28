@@ -3,8 +3,6 @@ In Git
 
 * Server can be restarted ([#46](https://github.com/joewalnes/webbit/pull/46), [#50](https://github.com/joewalnes/webbit/pull/50) chtheis)
 * Wrap exceptions in WebbitException. This makes it easier to identify exceptions from Webbit in environments where Netty is used in other libs ([#52](https://github.com/joewalnes/webbit/pull/52) Neil Dunn)
-* Improved unit test coverage. (KushalP)
-* Various style changes: spelling, unix\_style to camelCase, and added missing doc link. (KushalP)
 * Add serialVersionUID for Serializable Exception classes to track any future backwards-incompatible changes. (KushalP)
 
 0.2.16 (2011-11-20)
