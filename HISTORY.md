@@ -3,7 +3,7 @@ In Git
 
 * Server can be restarted ([#46](https://github.com/joewalnes/webbit/pull/46), [#50](https://github.com/joewalnes/webbit/pull/50) chtheis)
 * Wrap exceptions in WebbitException. This makes it easier to identify exceptions from Webbit in environments where Netty is used in other libs ([#52](https://github.com/joewalnes/webbit/pull/52) Neil Dunn)
-* Added unit tests for EventSourceMessage, Hex, InMemoryPasswords, StubConnection, and StubHttpRequest classes. (KushalP)
+* Added unit tests for EventSourceMessage, Hex, InBoundCookieParser, InMemoryPasswords, StubConnection, and StubHttpRequest classes. (KushalP)
 * Various style changes: spelling, unix\_style to camelCase (QueryParametersTest and UTF8OutputTest), and added missing doc link. (KushalP)
 * Add serialVersionUID for Serializable Exception classes to track any future backwards-incompatible changes. (KushalP)
 
