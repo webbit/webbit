@@ -26,7 +26,7 @@ public class DecodingHybiFrame {
     public void append(ChannelBuffer fragment) {
         fragments.add(fragment);
         length += fragment.readableBytes();
-        if (opcode == Opcodes.OPCODE_TEXT) {
+        if (opcode == Opcodes.OPCODE_TEXT || opcode == Opcodes.OPCODE_PONG) {
             utf8Output.write(fragment.array());
         }
     }
