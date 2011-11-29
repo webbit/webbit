@@ -12,9 +12,9 @@ import org.jboss.netty.channel.ExceptionEvent;
  * and don't include Webbit code in their stack traces.
  */
 public class WebbitException extends RuntimeException {
-	private static final long serialVersionUID = 8212455395690231426L;
+    private static final long serialVersionUID = 8212455395690231426L;
 
-	public WebbitException() {
+    public WebbitException() {
     }
 
     public WebbitException(String message) {
