@@ -105,7 +105,7 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public WebServer staleConnectionTimeout(long millis) {
+    public NettyWebServer staleConnectionTimeout(long millis) {
         staleConnectionTimeout = millis;
         return this;
     }
@@ -127,7 +127,7 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public WebServer add(String path, EventSourceHandler handler) {
+    public NettyWebServer add(String path, EventSourceHandler handler) {
         return add(path, new HttpToEventSourceHandler(handler));
     }
 
@@ -213,13 +213,13 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public WebServer uncaughtExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler) {
+    public NettyWebServer uncaughtExceptionHandler(Thread.UncaughtExceptionHandler exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
         return this;
     }
 
     @Override
-    public WebServer connectionExceptionHandler(Thread.UncaughtExceptionHandler ioExceptionHandler) {
+    public NettyWebServer connectionExceptionHandler(Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.ioExceptionHandler = ioExceptionHandler;
         return this;
     }
