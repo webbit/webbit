@@ -89,7 +89,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse header(String name, Date value) {
         response.addHeader(name, DateHelper.rfc1123Format(value));
-        return null;
+        return this;
     }
 
     @Override
