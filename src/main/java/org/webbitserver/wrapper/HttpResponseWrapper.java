@@ -3,6 +3,7 @@ package org.webbitserver.wrapper;
 import org.webbitserver.HttpResponse;
 
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 
@@ -87,6 +88,12 @@ public class HttpResponseWrapper implements HttpResponse {
     @Override
     public HttpResponseWrapper content(byte[] content) {
         response.content(content);
+        return this;
+    }
+
+    @Override
+    public HttpResponseWrapper content(ByteBuffer buffer) {
+        response.content(buffer);
         return this;
     }
 

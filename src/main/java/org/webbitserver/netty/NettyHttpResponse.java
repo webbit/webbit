@@ -14,10 +14,12 @@ import org.webbitserver.helpers.DateHelper;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
+import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
 
 public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
@@ -108,6 +110,11 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse content(byte[] content) {
         return content(copiedBuffer(content));
+    }
+
+    @Override
+    public NettyHttpResponse content(ByteBuffer buffer) {
+        return content(wrappedBuffer(buffer));
     }
 
     private NettyHttpResponse content(ChannelBuffer content) {

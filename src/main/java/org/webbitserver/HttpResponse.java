@@ -1,6 +1,7 @@
 package org.webbitserver;
 
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Date;
 
@@ -94,6 +95,13 @@ public interface HttpResponse {
      * @see #content(String)
      */
     HttpResponse content(byte[] content);
+
+    /**
+     * Write binary based content back to the client.
+     *
+     * @see #content(String)
+     */
+    HttpResponse content(ByteBuffer buffer);
 
     /**
      * Marks the response as erroneous. The error shall be displayed to the user (500 SERVER ERROR)

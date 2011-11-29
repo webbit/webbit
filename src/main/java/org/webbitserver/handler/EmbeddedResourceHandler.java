@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -28,7 +29,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
     @Override
     protected IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
-        return new ResourceWorker(request.uri(), response, control);
+        return new ResourceWorker(request, response, control);
     }
 
     protected class ResourceWorker extends IOWorker {
@@ -36,8 +37,8 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         private InputStream content;
         private File file;
 
-        protected ResourceWorker(String path, HttpResponse response, HttpControl control) {
-            super(path, response, control);
+        protected ResourceWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+            super(request.uri(), request, response, control);
         }
 
         @Override
@@ -48,7 +49,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected byte[] fileBytes() throws IOException {
+        protected ByteBuffer fileBytes() throws IOException {
             content = resource;
             if (content == null || (content instanceof ByteArrayInputStream)) {
                 // It seems that directory listings are reported as BAOS, while files are not. Seems fragile, but works...
@@ -59,12 +60,12 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected byte[] welcomeBytes() throws IOException {
+        protected ByteBuffer welcomeBytes() throws IOException {
             InputStream resourceStream = getResource(new File(file, welcomeFileName));
             return resourceStream == null ? null : read(resourceStream);
         }
 
-        private byte[] read(InputStream content) throws IOException {
+        private ByteBuffer read(InputStream content) throws IOException {
             try {
                 return read(content.available(), content);
             } catch (NullPointerException happensWhenReadingDirectoryPathInJar) {
@@ -74,7 +75,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         private InputStream getResource(File file) throws IOException {
             String resourcePath = file.getPath();
-            if('/' != File.separatorChar){
+            if ('/' != File.separatorChar) {
                 resourcePath = resourcePath.replace(File.separatorChar, '/');
             }
             return getClass().getClassLoader().getResourceAsStream(resourcePath);

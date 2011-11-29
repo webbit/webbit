@@ -6,6 +6,7 @@ import org.webbitserver.helpers.DateHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
@@ -104,6 +105,14 @@ public class StubHttpResponse implements HttpResponse {
             contents.write(content);
         } catch (IOException e) {
             throw new Error(e);
+        }
+        return this;
+    }
+
+    @Override
+    public StubHttpResponse content(ByteBuffer buffer) {
+        while (buffer.hasRemaining()) {
+            contents.write(buffer.get());
         }
         return this;
     }
