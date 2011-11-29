@@ -8,9 +8,8 @@ import java.io.IOException;
 import static org.webbitserver.WebServers.createWebServer;
 
 /**
- * This example demonstrates restricting access using HTTP BASIC authentication.
- * <p/>
- * Passwords are known in advance and stored in memory.
+ * This example has a simple HTML page with an audio element
+ * With Chrome, the request for the audio file uses a Range header
  */
 public class AudioTagUsesRangesExample {
 
