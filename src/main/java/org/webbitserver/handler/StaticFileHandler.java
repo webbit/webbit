@@ -7,6 +7,7 @@ import org.webbitserver.HttpResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -33,15 +34,18 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     @Override
-    protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
-        return new StaticFileHandler.FileWorker(request.uri(), response, control);
+    protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
+                                                        HttpResponse response,
+                                                        HttpControl control)
+    {
+        return new StaticFileHandler.FileWorker(request, response, control);
     }
 
     protected class FileWorker extends IOWorker {
         private File file;
 
-        private FileWorker(String path, HttpResponse response, HttpControl control) {
-            super(path, response, control);
+        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+            super(request.uri(), request, response, control);
         }
 
         @Override
@@ -51,17 +55,17 @@ public class StaticFileHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected byte[] fileBytes() throws IOException {
+        protected ByteBuffer fileBytes() throws IOException {
             return file.isFile() ? read(file) : null;
         }
 
         @Override
-        protected byte[] welcomeBytes() throws IOException {
+        protected ByteBuffer welcomeBytes() throws IOException {
             File welcome = new File(file, welcomeFileName);
             return welcome.isFile() ? read(welcome) : null;
         }
 
-        private byte[] read(File file) throws IOException {
+        private ByteBuffer read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }
 

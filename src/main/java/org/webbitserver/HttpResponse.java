@@ -1,7 +1,9 @@
 package org.webbitserver;
 
 import java.net.HttpCookie;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Date;
 
 /**
  * Writes a response back to the client.
@@ -53,6 +55,16 @@ public interface HttpResponse {
     HttpResponse header(String name, long value);
 
     /**
+     * Adds a Date (RFC 1123 format) HTTP header. Multiple HTTP headers can be added with the same name.
+     */
+    HttpResponse header(String name, Date value);
+
+    /**
+     * Test to see if this response has a header of the specified name
+     */
+    boolean containsHeader(String name);
+
+    /**
      * Adds a cookie
      *
      * @param httpCookie the cookie
@@ -83,6 +95,13 @@ public interface HttpResponse {
      * @see #content(String)
      */
     HttpResponse content(byte[] content);
+
+    /**
+     * Write binary based content back to the client.
+     *
+     * @see #content(String)
+     */
+    HttpResponse content(ByteBuffer buffer);
 
     /**
      * Marks the response as erroneous. The error shall be displayed to the user (500 SERVER ERROR)
