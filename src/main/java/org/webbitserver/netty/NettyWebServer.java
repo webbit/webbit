@@ -55,6 +55,10 @@ public class NettyWebServer implements WebServer {
     private ConnectionTrackingHandler connectionTrackingHandler;
     private StaleConnectionTrackingHandler staleConnectionTrackingHandler;
     private long staleConnectionTimeout = DEFAULT_STALE_CONNECTION_TIMEOUT;
+    private int maxInitialLineLength = 4096;
+    private int maxHeaderSize = 8192;
+    private int maxChunkSize = 8192;
+    private int maxContentLength = 65536;
 
     public NettyWebServer(int port) {
         this(Executors.newSingleThreadScheduledExecutor(), port);
@@ -144,8 +148,8 @@ public class NettyWebServer implements WebServer {
                 ChannelPipeline pipeline = pipeline();
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
-                pipeline.addLast("decoder", new HttpRequestDecoder());
-                pipeline.addLast("aggregator", new HttpChunkAggregator(65536));
+                pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
+                pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
                 pipeline.addLast("decompressor", new HttpContentDecompressor());
                 pipeline.addLast("encoder", new HttpResponseEncoder());
                 pipeline.addLast("compressor", new HttpContentCompressor());
@@ -217,6 +221,38 @@ public class NettyWebServer implements WebServer {
     @Override
     public WebServer connectionExceptionHandler(Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.ioExceptionHandler = ioExceptionHandler;
+        return this;
+    }
+
+    /**
+     * @see HttpRequestDecoder
+     */
+    public NettyWebServer maxChunkSize(int maxChunkSize) {
+        this.maxChunkSize = maxChunkSize;
+        return this;
+    }
+
+    /**
+     * @see HttpChunkAggregator
+     */
+    public NettyWebServer maxContentLength(int maxContentLength) {
+        this.maxContentLength = maxContentLength;
+        return this;
+    }
+
+    /**
+     * @see HttpRequestDecoder
+     */
+    public NettyWebServer maxHeaderSize(int maxHeaderSize) {
+        this.maxHeaderSize = maxHeaderSize;
+        return this;
+    }
+
+    /**
+     * @see HttpRequestDecoder
+     */
+    public NettyWebServer maxInitialLineLength(int maxInitialLineLength) {
+        this.maxInitialLineLength = maxInitialLineLength;
         return this;
     }
 
