@@ -4,6 +4,7 @@ import org.webbitserver.HttpResponse;
 
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
+import java.util.Date;
 
 public class HttpResponseWrapper implements HttpResponse {
 
@@ -99,5 +100,16 @@ public class HttpResponseWrapper implements HttpResponse {
     public HttpResponseWrapper end() {
         response.end();
         return this;
+    }
+
+    @Override
+    public HttpResponseWrapper header(String name, Date value) {
+        response.header(name, value);
+        return this;
+    }
+
+    @Override
+    public boolean containsHeader(String name) {
+        return response.containsHeader(name);
     }
 }

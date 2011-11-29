@@ -1,12 +1,14 @@
 package org.webbitserver.stub;
 
 import org.webbitserver.HttpResponse;
+import org.webbitserver.helpers.DateHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,11 @@ public class StubHttpResponse implements HttpResponse {
     }
 
     @Override
+    public StubHttpResponse header(String name, Date value) {
+        return header(name, DateHelper.rfc1123Format(value));
+    }
+
+    @Override
     public StubHttpResponse cookie(HttpCookie httpCookie) {
         cookies.add(httpCookie);
         return this;
@@ -76,7 +83,8 @@ public class StubHttpResponse implements HttpResponse {
         return headers.get(name);
     }
 
-    public boolean hasHeader(String name) {
+    @Override
+    public boolean containsHeader(String name) {
         return headers.containsKey(name);
     }
 
@@ -141,12 +149,12 @@ public class StubHttpResponse implements HttpResponse {
     @Override
     public String toString() {
         return "StubHttpResponse{" +
-                "charset=" + charset +
-                ", status=" + status +
-                ", headers=" + headers +
-                ", error=" + error +
-                ", ended=" + ended +
-                ", contents=" + contentsString() +
-                '}';
+               "charset=" + charset +
+               ", status=" + status +
+               ", headers=" + headers +
+               ", error=" + error +
+               ", ended=" + ended +
+               ", contents=" + contentsString() +
+               '}';
     }
 }

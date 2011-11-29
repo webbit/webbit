@@ -2,6 +2,7 @@ package org.webbitserver;
 
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
+import java.util.Date;
 
 /**
  * Writes a response back to the client.
@@ -51,6 +52,16 @@ public interface HttpResponse {
      * Adds a numeric HTTP header. Multiple HTTP headers can be added with the same name.
      */
     HttpResponse header(String name, long value);
+
+    /**
+     * Adds a Date (RFC 1123 format) HTTP header. Multiple HTTP headers can be added with the same name.
+     */
+    HttpResponse header(String name, Date value);
+
+    /**
+     * Test to see if this response has a header of the specified name
+     */
+    boolean containsHeader(String name);
 
     /**
      * Adds a cookie

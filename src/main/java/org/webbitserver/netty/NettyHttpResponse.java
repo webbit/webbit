@@ -9,11 +9,13 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebbitException;
+import org.webbitserver.helpers.DateHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
+import java.util.Date;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 
@@ -33,7 +35,8 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
                              HttpResponse response,
                              boolean isKeepAlive,
                              Thread.UncaughtExceptionHandler exceptionHandler,
-                             Thread.UncaughtExceptionHandler ioExceptionHandler) {
+                             Thread.UncaughtExceptionHandler ioExceptionHandler)
+    {
         this.ctx = ctx;
         this.response = response;
         this.isKeepAlive = isKeepAlive;
@@ -82,6 +85,17 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
+    public NettyHttpResponse header(String name, Date value) {
+        response.addHeader(name, DateHelper.rfc1123Format(value));
+        return null;
+    }
+
+    @Override
+    public boolean containsHeader(String name) {
+        return response.containsHeader(name);
+    }
+
+    @Override
     public NettyHttpResponse cookie(HttpCookie httpCookie) {
         return header(SET_COOKIE_HEADER, httpCookie.toString());
     }
@@ -115,7 +129,8 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         content(message);
         flushResponse();
 
-        exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(error, ctx.getChannel()));
+        exceptionHandler.uncaughtException(Thread.currentThread(),
+                                           WebbitException.fromException(error, ctx.getChannel()));
 
         return this;
     }
@@ -137,14 +152,15 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private void flushResponse() {
         try {
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
-            header("Content-Length", null);
+            header("Content-Length", (String) null);
             header("Content-Length", responseBuffer.readableBytes());
             ChannelFuture future = write(responseBuffer);
-            if(!isKeepAlive) {
+            if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
         } catch (Exception e) {
-            exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, ctx.getChannel()));
+            exceptionHandler.uncaughtException(Thread.currentThread(),
+                                               WebbitException.fromException(e, ctx.getChannel()));
         }
     }
 
