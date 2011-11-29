@@ -7,10 +7,13 @@ import org.webbitserver.HttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractResourceHandler implements HttpHandler {
     static {
@@ -22,7 +25,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         mimeTypes.put("htm", "text/html");
         mimeTypes.put("html", "text/html");
         mimeTypes.put("xml", "text/xml");
-        mimeTypes.put("js", "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
+        mimeTypes.put("js",
+                      "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
         mimeTypes.put("xhtml", "application/xhtml+xml");
         mimeTypes.put("json", "application/json");
         mimeTypes.put("pdf", "application/pdf");
@@ -39,6 +43,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         DEFAULT_MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
     }
 
+    private static final Pattern SINGLE_BYTE_RANGE = Pattern.compile("bytes=(\\d+)?-(\\d+)?");
     public static final Map<String, String> DEFAULT_MIME_TYPES;
     protected static final String DEFAULT_WELCOME_FILE_NAME = "index.html";
     protected final Executor ioThread;
@@ -62,27 +67,101 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control) throws Exception {
+    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control)
+            throws Exception
+    {
         // Switch from web thead to IO thread, so we don't block web server when we access the filesystem.
         ioThread.execute(createIOWorker(request, response, control));
     }
 
-    protected void serve(final String mimeType, final byte[] contents, HttpControl control, final HttpResponse response) {
+    protected void serve(final String mimeType,
+                         final ByteBuffer contents,
+                         HttpControl control,
+                         final HttpResponse response,
+                         final HttpRequest request)
+    {
         // Switch back from IO thread to web thread.
         control.execute(new Runnable() {
             @Override
             public void run() {
-                // TODO: Don't read all into memory, instead use zero-copy.
                 // TODO: Check bytes read match expected encoding of mime-type
-                response.header("Content-Type", mimeType)
-                        .header("Content-Length", contents.length)
+                response.header("Content-Type", mimeType);
+
+                if (maybeServeRange(request, contents, response)) {
+                    return;
+                }
+
+
+                // TODO: Don't read all into memory, instead use zero-copy.
+                response.header("Content-Length", contents.remaining())
                         .content(contents)
                         .end();
             }
         });
     }
 
-    protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control);
+    private boolean maybeServeRange(HttpRequest request, ByteBuffer contents, HttpResponse response) {
+        String range = request.header("Range");
+        if (null == range) {
+            return false;
+        }
+
+        Matcher matcher = SINGLE_BYTE_RANGE.matcher(range);
+        if (!matcher.matches()) {
+            return false;
+        }
+
+        String startString = matcher.group(1);
+        String endString = matcher.group(2);
+
+        if (null != startString && null != endString) {
+            int start = Integer.parseInt(startString);
+            int end = Integer.parseInt(endString);
+            if (start <= end) {
+                serveRange(start,
+                           Math.min(contents.remaining() - 1, end),
+                           contents,
+                           response);
+                return true;
+            }
+        } else if (null != startString) {
+            serveRange(Integer.parseInt(startString),
+                       contents.remaining() - 1,
+                       contents,
+                       response);
+            return true;
+        } else if (null != endString) {
+            int end = Integer.parseInt(endString);
+            serveRange(contents.remaining() - end,
+                       contents.remaining() - 1,
+                       contents,
+                       response);
+            return true;
+        }
+
+        return false;
+    }
+
+    protected void serveRange(int start, int end, ByteBuffer contents, HttpResponse response) {
+        if (start > contents.remaining()) {
+            response.status(416).header("Content-Range", "bytes */" + contents.remaining()).end();
+            return;
+        }
+
+
+        response.status(206)
+                .header("Content-Length", end - start + 1) // since its inclusive
+                .header("Content-Range",
+                        "bytes " + start + "-" + end + "/" + contents.remaining());
+
+        contents.limit(contents.position() + end + 1)
+                .position(contents.position() + start);
+        response.content(contents).end();
+    }
+
+    protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
+                                                                 HttpResponse response,
+                                                                 HttpControl control);
 
     /**
      * All IO is performed by this worker on a separate thread, so we never block the HttpHandler.
@@ -90,11 +169,13 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     protected abstract class IOWorker implements Runnable {
 
         protected String path;
+        private final HttpRequest request;
         protected final HttpResponse response;
         protected final HttpControl control;
 
-        protected IOWorker(String path, HttpResponse response, HttpControl control) {
+        protected IOWorker(String path, HttpRequest request, HttpResponse response, HttpControl control) {
             this.path = path;
+            this.request = request;
             this.response = response;
             this.control = control;
         }
@@ -126,14 +207,14 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             // TODO: Cache
             // TODO: If serving directory and trailing slash omitted, perform redirect
             try {
-                byte[] content = null;
+                ByteBuffer content = null;
                 if (!exists()) {
                     notFound();
                 } else if ((content = fileBytes()) != null) {
-                    serve(guessMimeType(path), content, control, response);
+                    serve(guessMimeType(path), content, control, response, request);
                 } else {
                     if ((content = welcomeBytes()) != null) {
-                        serve(guessMimeType(welcomeFileName), content, control, response);
+                        serve(guessMimeType(welcomeFileName), content, control, response, request);
                     } else {
                         notFound();
                     }
@@ -145,11 +226,11 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         protected abstract boolean exists() throws IOException;
 
-        protected abstract byte[] fileBytes() throws IOException;
+        protected abstract ByteBuffer fileBytes() throws IOException;
 
-        protected abstract byte[] welcomeBytes() throws IOException;
+        protected abstract ByteBuffer welcomeBytes() throws IOException;
 
-        protected byte[] read(int length, InputStream in) throws IOException {
+        protected ByteBuffer read(int length, InputStream in) throws IOException {
             byte[] data = new byte[length];
             try {
                 int read = 0;
@@ -164,7 +245,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             } finally {
                 in.close();
             }
-            return data;
+            return ByteBuffer.wrap(data);
         }
 
         // TODO: Don't respond with a mime type that violates the request's Accept header

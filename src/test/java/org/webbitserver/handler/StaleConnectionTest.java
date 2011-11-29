@@ -30,9 +30,12 @@ public class StaleConnectionTest {
                 .staleConnectionTimeout(100)
                 .add(new HttpHandler() {
                     @Override
-                    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                    public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control)
+                            throws Exception
+                    {
                         response.content("Body = {" + request.body() + "}");
-                        response.header("Content-Length", null); // This makes the client hang until the server closes the connection.
+                        response.header("Content-Length",
+                                        (String) null); // This makes the client hang until the server closes the connection.
                         response.end();
                     }
                 }).start();

@@ -14,6 +14,7 @@ import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.handler.DateHeaderHandler;
 import org.webbitserver.handler.HttpToEventSourceHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.PathMatchHandler;
@@ -92,6 +93,7 @@ public class NettyWebServer implements WebServer {
 
     protected void setupDefaultHandlers() {
         add(new ServerHeaderHandler("Webbit"));
+        add(new DateHeaderHandler());
     }
 
     @Override
@@ -133,8 +135,9 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public synchronized NettyWebServer start() {
-        if (isRunning())
+        if (isRunning()) {
             throw new IllegalStateException("Server already started.");
+        }
 
         // Configure the server.
         bootstrap = new ServerBootstrap();
@@ -258,7 +261,8 @@ public class NettyWebServer implements WebServer {
 
     private static URI localUri(int port) {
         try {
-            return URI.create("http://" + InetAddress.getLocalHost().getHostName() + (port == 80 ? "" : (":" + port)) + "/");
+            return URI.create("http://" + InetAddress.getLocalHost()
+                    .getHostName() + (port == 80 ? "" : (":" + port)) + "/");
         } catch (UnknownHostException e) {
             return null;
         }

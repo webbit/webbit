@@ -59,6 +59,56 @@ public class StaticFileHandlerTest {
     }
 
     @Test
+    public void shouldSupportUnboundedEndRangeRequests() throws Exception {
+        String contents = "the yellow fox jumped over the blue log";
+        writeFile("some_file", contents);
+        StubHttpRequest request = request("/some_file");
+        request.header("Range", "bytes=0-");
+        StubHttpResponse response = handle(request);
+        assertReturnedWithStatus(206, response);
+        assertEquals(String.valueOf(contents.length()), response.header("Content-Length"));
+        assertEquals("bytes 0-" + (contents.length() - 1) + "/" + contents.length(), response.header("Content-Range"));
+        assertEquals(contents, response.contentsString());
+    }
+
+    @Test
+    public void shouldSupportUnboundedStartRangeRequests() throws Exception {
+        String contents = "the yellow fox jumped over the blue log";
+        writeFile("some_file", contents);
+        StubHttpRequest request = request("/some_file");
+        request.header("Range", "bytes=-8");
+        StubHttpResponse response = handle(request);
+        assertReturnedWithStatus(206, response);
+        assertEquals(String.valueOf(8), response.header("Content-Length"));
+        assertEquals("bytes 31-" + (contents.length() - 1) + "/" + contents.length(), response.header("Content-Range"));
+        assertEquals("blue log", response.contentsString());
+    }
+
+    @Test
+    public void shouldSupportBoundedRangeRequests() throws Exception {
+        String contents = "the yellow fox jumped over the blue log";
+        writeFile("some_file", contents);
+        StubHttpRequest request = request("/some_file");
+        request.header("Range", "bytes=4-9");
+        StubHttpResponse response = handle(request);
+        assertReturnedWithStatus(206, response);
+        assertEquals("bytes 4-9" + "/" + contents.length(), response.header("Content-Range"));
+        assertEquals("yellow", response.contentsString());
+        assertEquals(String.valueOf(6), response.header("Content-Length"));
+    }
+
+    @Test
+    public void shouldReturnInvalidRangeIfBeyondSizeOfContent() throws Exception {
+        String contents = "the yellow fox jumped over the blue log";
+        writeFile("some_file", contents);
+        StubHttpRequest request = request("/some_file");
+        request.header("Range", "bytes=1000-5000");
+        StubHttpResponse response = handle(request);
+        assertReturnedWithStatus(416, response);
+        assertEquals("bytes *" + "/" + contents.length(), response.header("Content-Range"));
+    }
+
+    @Test
     public void shouldServesWelcomePagesForDirectories() throws Exception {
         assertReturnedWithStatus(404, handle(request("/")));
         assertReturnedWithStatus(404, handle(request("/a")));
