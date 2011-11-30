@@ -102,9 +102,12 @@ public class NettyWebServer implements WebServer {
     }
     
     @Override
-    public int getPort() {    	
-        return publicUri.getPort() == -1 ? 80 : publicUri.getPort();
-    }
+    public int getPort() {  
+    	if (publicUri.getPort() == -1) {
+    		return publicUri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
+    	}
+    	return publicUri.getPort();
+     }
 
     @Override
     public Executor getExecutor() {
