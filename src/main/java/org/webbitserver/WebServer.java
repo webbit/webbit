@@ -131,6 +131,11 @@ public interface WebServer {
      * Get base URI that webserver is serving on.
      */
     URI getUri();
+    
+    /**
+     * Get base port that webserver is serving on.
+     */
+    int getPort();
 
     /**
      * Get main work executor that all handlers will execute on.
