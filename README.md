@@ -88,6 +88,7 @@ And a page that uses the WebSocket (web/index.html)
 More
 -----------
 
++   [Docs on wiki](https://github.com/joewalnes/webbit/wiki)
 +   [Webbit mailing list](http://groups.google.com/group/webbit)
 +   [@webbitserver](http://twitter.com/webbitserver) on Twitter
 +   A [web based chat room](https://github.com/joewalnes/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
