@@ -4,13 +4,15 @@ Webbit - A Java event based WebSocket and HTTP server
 Getting it
 -----------
 
-Warning: Webbit has not had a stable release yet - the API changes regularly.
+[Prebuilt JARs are available](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) from the central Maven repository.
+
+Alternatively, you can get the latest code from Git and build it yourself:
+
+Build is done with `make`. On OS-X and Linux this should work out of the box. On Solaris, use `gmake`. On Windows you will need Cygwing.
 
     git clone git://github.com/joewalnes/webbit.git
     cd webbit
     make
-
-You will need to add dist/webbit.jar to your classpath - it has no external dependencies.
 
 Quick start
 -----------
