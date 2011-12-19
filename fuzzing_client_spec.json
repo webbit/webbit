@@ -1,6 +1,12 @@
 {
+   "options": {"failByDrop": false},
+   "enable-ssl": false,
+
    "servers": [
-       {"agent": "Webbit", "hostname": "localhost", "port": 9001, "version": 13}
+       {"agent": "Webbit", "url": "ws://localhost:9001", "options": {"version": 17}}
    ],
-   "cases": ["*"]
+   "cases": ["*"],
+
+   "exclude-cases": [],
+   "exclude-agent-cases": {"FoobarServer*": ["4.*", "1.1.3"]}
 }
