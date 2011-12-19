@@ -11,7 +11,8 @@ import org.weborganic.furi.URIParameters;
 import org.weborganic.furi.URITemplate;
 
 /**
- * Sinatra-style API around Webbit. Useful for defining RESTful APIs.
+ * Sinatra-style API around Webbit. Useful for defining RESTful APIs. Paths are defined according to the
+ * <a href="http://tools.ietf.org/html/draft-gregorio-uritemplate-07">uritemplate</a> specification.
  */
 public class Rest {
     private WebServer webServer;
@@ -66,15 +67,22 @@ public class Rest {
         return (ResolvedVariables) request.data(UriTemplateHandler.RESOLVED_VARIABLES);
     }
 
-    public static void redirect(HttpResponse response, String uriTemplate, String... parameters) {
-        redirect(response, uriTemplate, params(parameters));
+    /**
+     * Perform a 302 Redirect
+     *
+     * @param response      the response to redirect
+     * @param uriTemplate   where to redirect
+     * @param keyValuePairs Example: ["name", "Mickey", "pet", "Pluto"]
+     */
+    public static void redirect(HttpResponse response, String uriTemplate, String... keyValuePairs) {
+        redirect(response, uriTemplate, params(keyValuePairs));
     }
 
     /**
      * Perform a 302 Redirect
      *
      * @param response    the response to redirect
-     * @param uriTemplate where to
+     * @param uriTemplate where to redirect
      * @param parameters  filled into the {@code uriTemplate}
      */
     public static void redirect(HttpResponse response, String uriTemplate, Parameters parameters) {

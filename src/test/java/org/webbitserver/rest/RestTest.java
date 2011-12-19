@@ -28,7 +28,7 @@ public class RestTest {
     }
 
     @Test
-    public void exposesBodyInRequest() throws IOException, InterruptedException {
+    public void exposesTemplateUriParams() throws IOException, InterruptedException {
         rest.GET("/people/{name}/pets/{petName}", new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -42,19 +42,18 @@ public class RestTest {
 
     @Test
     public void providesEasyRedirectApi() throws IOException, InterruptedException {
-        final String petUri = "/people/{name}/pets/{petName}";
 
         rest.GET("/people/{name}/animals/{petName}", new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                redirect(response, petUri,
+                redirect(response, "/people/{name}/pets/{petName}",
                         "name", (String) params(request).get("name"),
                         "petName", (String) params(request).get("petName")
                 );
             }
         });
 
-        rest.GET(petUri, new HttpHandler() {
+        rest.GET("/people/{name}/pets/{petName}", new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
                 response.content(String.format("Name: %s\nPet: %s\n", param(request, "name"), param(request, "petName"))).end();

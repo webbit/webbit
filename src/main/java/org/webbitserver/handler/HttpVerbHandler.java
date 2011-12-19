@@ -7,7 +7,7 @@ import org.webbitserver.HttpResponse;
 
 public class HttpVerbHandler implements HttpHandler {
     private final String verb;
-    private HttpHandler httpHandler;
+    private final HttpHandler httpHandler;
 
     public HttpVerbHandler(String verb, HttpHandler httpHandler) {
         this.verb = verb;
