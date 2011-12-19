@@ -1,4 +1,4 @@
-package org.webbitserver.uritemplate;
+package org.webbitserver.rest;
 
 import org.junit.Test;
 import org.webbitserver.HttpControl;
@@ -11,15 +11,16 @@ import org.webbitserver.stub.StubHttpResponse;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.webbitserver.rest.Rest.params;
 
 public class UriTemplateHandlerTest {
     @Test
-    public void extracts_values_from_uri_patterns() throws Exception {
+    public void extractsValuesFromUriPatterns() throws Exception {
         UriTemplateHandler uth = new UriTemplateHandler("/foo/{name}/bar/{id}", new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                assertEquals("hello", request.data("name"));
-                assertEquals("96", request.data("id"));
+                assertEquals("hello", params(request).get("name"));
+                assertEquals("96", params(request).get("id"));
             }
         });
         HttpRequest req = new StubHttpRequest("/foo/hello/bar/96");
@@ -27,7 +28,7 @@ public class UriTemplateHandlerTest {
     }
 
     @Test
-    public void calls_next_when_no_match() throws Exception {
+    public void callsNextWhenNoMatch() throws Exception {
         UriTemplateHandler uth = new UriTemplateHandler("/foo/{name}/bar/{id}", new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
