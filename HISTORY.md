@@ -1,11 +1,15 @@
-In Git
-======
+0.3.0 (2011-12-02)
+==================
 
+[Full changelog](https://github.com/joewalnes/webbit/compare/v0.2.16...v0.3.0)
+
+* Support HTTP partial content ranges ([#49](https://github.com/joewalnes/webbit/issues/49) Peter Royal) 
 * Server can be restarted ([#46](https://github.com/joewalnes/webbit/pull/46), [#50](https://github.com/joewalnes/webbit/pull/50) chtheis)
 * Wrap exceptions in WebbitException. This makes it easier to identify exceptions from Webbit in environments where Netty is used in other libs ([#52](https://github.com/joewalnes/webbit/pull/52) Neil Dunn)
 * Add serialVersionUID for Serializable Exception classes to track any future backwards-incompatible changes. (KushalP)
 * Added Netty decoder and handler for flash socket policy file requests. ([#51](https://github.com/joewalnes/webbit/pull/51) Nathan Mische)
 * Added flashchatroom demo which shows how to use the the web-socket-js Flash websocket library with Webbit server. ([#51](https://github.com/joewalnes/webbit/pull/51) Nathan Mische)
+* The [Static|Embedded]ResourceHandler APIs have changed slightly if you're subclassing them. (Aslak Hellesøy, Peter Royal)
 
 0.2.16 (2011-11-20)
 ==================

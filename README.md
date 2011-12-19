@@ -4,13 +4,15 @@ Webbit - A Java event based WebSocket and HTTP server
 Getting it
 -----------
 
-Warning: Webbit has not had a stable release yet - the API changes regularly.
+[Prebuilt JARs are available](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) from the central Maven repository.
+
+Alternatively, you can get the latest code from Git and build it yourself:
+
+Build is done with `make`. On OS-X and Linux this should work out of the box. On Solaris, use `gmake`. On Windows you will need Cygwing.
 
     git clone git://github.com/joewalnes/webbit.git
     cd webbit
     make
-
-You will need to add dist/webbit.jar to your classpath - it has no external dependencies.
 
 Quick start
 -----------
@@ -83,32 +85,10 @@ And a page that uses the WebSocket (web/index.html)
       </body>
     </html>
 
-Running Autobahn tests
-----------------------
-
-[Autobahn](http://www.tavendo.de/autobahn) is a WebSocket server implemented in Python that comes with an extensive 
-[test suite](http://www.tavendo.de/autobahn/testsuite.html) that can be used to test other WebSocket servers as well.
-
-We're using it to test Webbit.
-
-Installing Autobahn
-
-    git submodule update --init
-    python virtualenv.py --no-site-packages . # create local version of python (installing twisted)
-
-Running Autobahn tests
-
-In shell A:
-
-    make echo
-
-In shell B:
-
-    make autobahn
-
 More
 -----------
 
++   [Docs on wiki](https://github.com/joewalnes/webbit/wiki)
 +   [Webbit mailing list](http://groups.google.com/group/webbit)
 +   [@webbitserver](http://twitter.com/webbitserver) on Twitter
 +   A [web based chat room](https://github.com/joewalnes/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
