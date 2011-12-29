@@ -47,7 +47,8 @@ public class EventSourceConnectionWrapper implements EventSourceConnection {
 
     @Override
     public EventSourceConnectionWrapper send(String message) {
-        connection.send(message);
+        EventSourceMessage boxedMessage = new EventSourceMessage(message);
+        connection.send(boxedMessage);
         return this;
     }
 
