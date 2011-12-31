@@ -147,4 +147,29 @@ public interface WebServer {
      * is considered stale if it remains open without sending more data within the timeout window.
      */
     WebServer staleConnectionTimeout(long millis);
+
+    /**
+     * Setup SSL/TLS handler
+     * <p/>
+     * This is shortcut for {@code setupSsl(keyFile, pass, pass)}.
+     *
+     * @param keyFile Keystore file
+     * @param pass Store and key password
+     * @return current WebServer instance
+     * @throws WebbitException A problem loading the keystore
+     * @see #setupSsl(String, String, String)
+     */
+    WebServer setupSsl(String keyFile, String pass) throws WebbitException;
+
+    /**
+     * Setup SSL/TLS handler
+     *
+     * @param keyFile Keystore file
+     * @param storePass Store password
+     * @param keyPass Key password
+     * @return current WebServer instance
+     * @throws WebbitException A problem loading the keystore
+     * @see #setupSsl(String, String, String)
+     */
+    WebServer setupSsl(String keyFile, String storePass, String keyPass) throws WebbitException;
 }

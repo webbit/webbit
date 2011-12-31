@@ -10,8 +10,10 @@ import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.ssl.SslHandler;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
+import org.webbitserver.WebbitException;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.DateHeaderHandler;
@@ -21,6 +23,7 @@ import org.webbitserver.handler.PathMatchHandler;
 import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
+import org.webbitserver.helpers.SslFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import javax.net.ssl.SSLEngine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -49,6 +53,7 @@ public class NettyWebServer implements WebServer {
 
     private ServerBootstrap bootstrap;
     private Channel channel;
+    private SSLEngine sslEngine;
 
     protected long nextId = 1;
     private Thread.UncaughtExceptionHandler exceptionHandler;
@@ -94,6 +99,21 @@ public class NettyWebServer implements WebServer {
     protected void setupDefaultHandlers() {
         add(new ServerHeaderHandler("Webbit"));
         add(new DateHeaderHandler());
+    }
+
+    @Override
+    public NettyWebServer setupSsl(String keyFile, String pass) throws WebbitException {
+        return this.setupSsl(keyFile, pass, pass);
+    }
+
+    @Override
+    public NettyWebServer setupSsl(String keyFile, String storePass, String keyPass) throws WebbitException {
+        try {
+            this.sslEngine = SslFactory.getEngine(keyFile, storePass, keyPass);
+            return this;
+        } catch(Exception e) {
+            throw new WebbitException(e);
+        }
     }
 
     @Override
@@ -157,6 +177,9 @@ public class NettyWebServer implements WebServer {
                 long timestamp = timestamp();
                 Object id = nextId();
                 ChannelPipeline pipeline = pipeline();
+                if (sslEngine != null) {
+                    pipeline.addLast("ssl", new SslHandler(sslEngine));
+                }
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
                 pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(getPort()));
