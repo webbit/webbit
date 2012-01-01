@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class NettyWebServer implements WebServer {
 
     private ServerBootstrap bootstrap;
     private Channel channel;
-    private SSLEngine sslEngine;
+    private SSLContext sslContext;
 
     protected long nextId = 1;
     private Thread.UncaughtExceptionHandler exceptionHandler;
@@ -109,7 +110,7 @@ public class NettyWebServer implements WebServer {
     @Override
     public NettyWebServer setupSsl(String keyFile, String storePass, String keyPass) throws WebbitException {
         try {
-            this.sslEngine = SslFactory.getEngine(keyFile, storePass, keyPass);
+            this.sslContext = SslFactory.getContext(keyFile, storePass, keyPass);
             return this;
         } catch(Exception e) {
             throw new WebbitException(e);
@@ -177,7 +178,9 @@ public class NettyWebServer implements WebServer {
                 long timestamp = timestamp();
                 Object id = nextId();
                 ChannelPipeline pipeline = pipeline();
-                if (sslEngine != null) {
+                if (sslContext != null) {
+                    SSLEngine sslEngine = sslContext.createSSLEngine();
+                    sslEngine.setUseClientMode(false);
                     pipeline.addLast("ssl", new SslHandler(sslEngine));
                 }
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
