@@ -11,20 +11,27 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.webbitserver.helpers.UTF8Exception;
 import org.webbitserver.helpers.UTF8Output;
 
-import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.*;
-import static org.webbitserver.netty.Opcodes.*;
+import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.CORRUPT;
+import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.FRAME_START;
+import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.MASKING_KEY;
+import static org.webbitserver.netty.Opcodes.OPCODE_BINARY;
+import static org.webbitserver.netty.Opcodes.OPCODE_CLOSE;
+import static org.webbitserver.netty.Opcodes.OPCODE_CONT;
+import static org.webbitserver.netty.Opcodes.OPCODE_PING;
+import static org.webbitserver.netty.Opcodes.OPCODE_PONG;
+import static org.webbitserver.netty.Opcodes.OPCODE_TEXT;
 
 public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFrameDecoder.State> {
     private final UTF8Output utf8Output = new UTF8Output();
 
-    // Keep these fields - we'll use them if we exctract a WebSocket client
-    private boolean isServer = true;
-    private boolean requireMaskedClientFrames = true;
+    private final boolean isServer;
+    private final boolean requireMaskedInboundFrames;
+    private final byte[] outboundMaskingKey;
 
     private boolean frameFin;
     private int frameOpcode;
     private long framePayloadLen;
-    private ChannelBuffer maskingKey;
+    private byte[] inboundMaskingKey;
 
     private DecodingHybiFrame currentFrame;
 
@@ -35,8 +42,19 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
         CORRUPT
     }
 
-    public HybiWebSocketFrameDecoder() {
+    public static HybiWebSocketFrameDecoder serverSide() {
+        return new HybiWebSocketFrameDecoder(true, null);
+    }
+
+    public static HybiWebSocketFrameDecoder clientSide(byte[] outboundMaskingKey) {
+        return new HybiWebSocketFrameDecoder(false, outboundMaskingKey);
+    }
+
+    private HybiWebSocketFrameDecoder(boolean isServer, byte[] outboundMaskingKey) {
         super(FRAME_START);
+        this.isServer = isServer;
+        this.requireMaskedInboundFrames = isServer;
+        this.outboundMaskingKey = outboundMaskingKey;
     }
 
     @Override
@@ -59,8 +77,8 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     return null;
                 }
 
-                if (isServer && requireMaskedClientFrames && !frameMasked) {
-                    protocolViolation(channel, "unmasked client to server frame");
+                if (isServer && requireMaskedInboundFrames && !frameMasked) {
+                    protocolViolation(channel, "Received unmasked frame");
                     return null;
                 }
 
@@ -130,20 +148,24 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 checkpoint(MASKING_KEY);
             }
             case MASKING_KEY: {
-                maskingKey = buffer.readBytes(4);
+                inboundMaskingKey = buffer.readBytes(4).array();
                 checkpoint(State.PAYLOAD);
             }
             case PAYLOAD: {
+                System.out.println("CLIENT: " + !isServer);
+                System.out.println("OPCODE: " + frameOpcode);
+                System.out.println("framePayloadLen: " + framePayloadLen);
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
-                unmask(frame);
+                applyMask(frame, inboundMaskingKey);
                 checkpoint(FRAME_START);
+
                 if (frameOpcode == OPCODE_PING) {
                     EncodingHybiFrame pong =
-                            new EncodingHybiFrame(OPCODE_PONG, true, 0, frame);
+                            new EncodingHybiFrame(OPCODE_PONG, true, 0, outboundMaskingKey, frame);
                     channel.write(pong);
                     return null;
                 } else if (frameOpcode == OPCODE_CLOSE) {
-                    EncodingHybiFrame close = new EncodingHybiFrame(OPCODE_CLOSE, true, 0, ChannelBuffers.buffer(0));
+                    EncodingHybiFrame close = new EncodingHybiFrame(OPCODE_CLOSE, true, 0, outboundMaskingKey, ChannelBuffers.buffer(0));
                     channel.write(close);
                     channel.close();
                     return null;
@@ -180,14 +202,15 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
         }
     }
 
-    private void unmask(ChannelBuffer data) {
+    static void applyMask(ChannelBuffer data, byte[] maskingKey) {
         byte[] bytes = data.array();
         for (int i = 0; i < bytes.length; i++) {
-            data.setByte(i, data.getByte(i) ^ maskingKey.getByte(i % 4));
+            data.setByte(i, data.getByte(i) ^ maskingKey[i % 4]);
         }
     }
 
     private void protocolViolation(Channel channel, String reason) throws CorruptedFrameException {
+        System.out.println("reason = " + reason);
         checkpoint(CORRUPT);
         if (channel.isConnected()) {
             channel.write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);

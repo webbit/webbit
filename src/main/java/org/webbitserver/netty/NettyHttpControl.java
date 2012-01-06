@@ -93,7 +93,7 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyWebSocketConnection webSocketConnection() {
         if(nettyWebSocketConnection == null) {
-            nettyWebSocketConnection = new NettyWebSocketConnection(executor, nettyHttpRequest, ctx);
+            nettyWebSocketConnection = new NettyWebSocketConnection(executor, nettyHttpRequest, ctx, null);
         }
         return nettyWebSocketConnection;
     }
