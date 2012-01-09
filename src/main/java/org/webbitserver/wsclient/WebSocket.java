@@ -153,6 +153,8 @@ public class WebSocket {
             if (message instanceof DecodingHybiFrame) {
                 DecodingHybiFrame frame = (DecodingHybiFrame) message;
                 frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandler);
+            } else {
+                throw new IllegalStateException("BAD MESSAGE");
             }
         }
 

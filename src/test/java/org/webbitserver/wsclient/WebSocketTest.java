@@ -14,9 +14,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class WebSocketTest {
     private EchoWsServer server;
@@ -41,19 +40,16 @@ public class WebSocketTest {
         new WebSocket(wsUri, new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
-                System.out.println("AHOY");
                 connection.send("You are Alexander Yalt?");
                 countDown.countDown();
             }
 
             @Override
             public void onClose(WebSocketConnection connection) throws Exception {
-                System.out.println("CLOSE");
             }
 
             @Override
             public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
-                System.out.println("msg = " + msg);
                 assertEquals("You are Alexander Yalt?", msg);
                 countDown.countDown();
             }
@@ -66,11 +62,6 @@ public class WebSocketTest {
             public void onPong(WebSocketConnection connection, String msg) throws Throwable {
             }
         }, Executors.newSingleThreadExecutor());
-//        boolean completed = countDown.await(1000, TimeUnit.MILLISECONDS);
-//        System.out.println("completed = " + completed);
-//        System.out.println("countDown = " + countDown.getCount());
-//        assertFalse("Didn't count down: " + countDown.getCount(), completed);
-
-        sleep(2000);
+        assertTrue(countDown.await(1000, TimeUnit.MILLISECONDS));
     }
 }
