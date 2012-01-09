@@ -61,9 +61,7 @@ public class WebSocket {
             throw new IllegalArgumentException("Only ws(s) is supported.");
         }
 
-        int mask = (int) (Math.random() * 0xFFFFFFFF);
-        // TODO: Write the mask to buffer
-        final byte[] outboundMaskingKey = new byte[]{1, 2, 3, 4};
+        final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
         bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
@@ -95,6 +93,10 @@ public class WebSocket {
         request.setHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ=="); // TODO: Generate a random key here
 
         channel.write(request).awaitUninterruptibly();
+    }
+
+    private byte randomByte() {
+        return (byte) (Math.random() * 256);
     }
 
     public void close() {
@@ -150,12 +152,8 @@ public class WebSocket {
         @Override
         public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
             Object message = e.getMessage();
-            if (message instanceof DecodingHybiFrame) {
-                DecodingHybiFrame frame = (DecodingHybiFrame) message;
-                frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandler);
-            } else {
-                throw new IllegalStateException("BAD MESSAGE");
-            }
+            DecodingHybiFrame frame = (DecodingHybiFrame) message;
+            frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandler);
         }
 
         @Override
