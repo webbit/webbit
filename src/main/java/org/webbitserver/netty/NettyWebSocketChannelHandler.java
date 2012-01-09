@@ -80,7 +80,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             this.webSocketConnection.setHybiWebSocketVersion(hybiVersion);
             upgradeResponseHybi(req, res, hybiVersion);
             ctx.getChannel().write(res);
-            adjustPipelineToWebSocket(ctx, new HybiWebSocketFrameDecoder(), new HybiWebSocketFrameEncoder());
+            adjustPipelineToWebSocket(ctx, HybiWebSocketFrameDecoder.serverSide(), new HybiWebSocketFrameEncoder());
         } else if (isHixie76WebSocketRequest(req)) {
             this.webSocketConnection.setVersion("HIXIE-76");
             upgradeResponseHixie76(req, res);
@@ -206,7 +206,10 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
         res.addHeader(UPGRADE, WEBSOCKET);
         res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
-        res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
+        String origin = req.getHeader(ORIGIN);
+        if(origin != null) {
+            res.addHeader(WEBSOCKET_ORIGIN, origin);
+        }
         res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
         String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
         if (protocol != null) {

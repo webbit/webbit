@@ -16,13 +16,15 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     private final Executor executor;
     private final NettyHttpRequest nettyHttpRequest;
     private final ChannelHandlerContext ctx;
+    private final byte[] outboundMaskingKey;
     private String version;
     private boolean hybi;
 
-    public NettyWebSocketConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx) {
+    public NettyWebSocketConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx, byte[] outboundMaskingKey) {
         this.executor = executor;
         this.nettyHttpRequest = nettyHttpRequest;
         this.ctx = ctx;
+        this.outboundMaskingKey = outboundMaskingKey;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     @Override
     public NettyWebSocketConnection send(String message) {
         if (hybi) {
-            return write(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
+            return write(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
         } else {
             return write(new DefaultWebSocketFrame(message));
         }
@@ -41,12 +43,12 @@ public class NettyWebSocketConnection implements WebSocketConnection {
 
     @Override
     public NettyWebSocketConnection send(byte[] message) {
-        return write(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, ChannelBuffers.wrappedBuffer(message)));
+        return write(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(message)));
     }
 
     @Override
     public NettyWebSocketConnection ping(String message) {
-        return write(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
+        return write(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
     }
 
     private NettyWebSocketConnection write(Object frame) {
@@ -100,7 +102,7 @@ public class NettyWebSocketConnection implements WebSocketConnection {
         this.version = version;
     }
 
-    void setHybiWebSocketVersion(int webSocketVersion) {
+    public void setHybiWebSocketVersion(int webSocketVersion) {
         setVersion("Sec-WebSocket-Version-" + webSocketVersion);
         hybi = true;
     }
