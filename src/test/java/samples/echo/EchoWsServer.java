@@ -19,7 +19,6 @@ public class EchoWsServer {
 
     public EchoWsServer(int port) throws IOException {
         webServer = createWebServer(port)
-                .add(new LoggingHandler(new SimpleLogSink()))
                 .add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());
     }
 
