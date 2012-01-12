@@ -1,6 +1,7 @@
 package org.webbitserver;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.Executor;
 
@@ -151,25 +152,25 @@ public interface WebServer {
     /**
      * Setup SSL/TLS handler
      * <p/>
-     * This is shortcut for {@code setupSsl(keyFile, pass, pass)}.
+     * This is shortcut for {@code setupSsl(keyStore, pass, pass)}.
      *
-     * @param keyFile Keystore file
+     * @param keyStore Keystore InputStream
      * @param pass Store and key password
      * @return current WebServer instance
      * @throws WebbitException A problem loading the keystore
      * @see #setupSsl(String, String, String)
      */
-    WebServer setupSsl(String keyFile, String pass) throws WebbitException;
+    WebServer setupSsl(InputStream keyStore, String pass) throws WebbitException;
 
     /**
      * Setup SSL/TLS handler
      *
-     * @param keyFile Keystore file
+     * @param keyStore Keystore InputStream
      * @param storePass Store password
      * @param keyPass Key password
      * @return current WebServer instance
      * @throws WebbitException A problem loading the keystore
      * @see #setupSsl(String, String, String)
      */
-    WebServer setupSsl(String keyFile, String storePass, String keyPass) throws WebbitException;
+    WebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException;
 }

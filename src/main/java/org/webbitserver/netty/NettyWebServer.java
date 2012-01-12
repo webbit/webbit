@@ -26,6 +26,7 @@ import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 import org.webbitserver.helpers.SslFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -103,14 +104,14 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public NettyWebServer setupSsl(String keyFile, String pass) throws WebbitException {
-        return this.setupSsl(keyFile, pass, pass);
+    public NettyWebServer setupSsl(InputStream keyStore, String pass) throws WebbitException {
+        return this.setupSsl(keyStore, pass, pass);
     }
 
     @Override
-    public NettyWebServer setupSsl(String keyFile, String storePass, String keyPass) throws WebbitException {
+    public NettyWebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException {
         try {
-            this.sslContext = SslFactory.getContext(keyFile, storePass, keyPass);
+            this.sslContext = SslFactory.getContext(keyStore, storePass, keyPass);
             return this;
         } catch(Exception e) {
             throw new WebbitException(e);

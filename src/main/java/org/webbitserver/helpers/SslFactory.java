@@ -1,6 +1,6 @@
 package org.webbitserver.helpers;
 
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.Security;
 import javax.net.ssl.KeyManager;
@@ -10,12 +10,10 @@ import javax.net.ssl.SSLContext;
 public class SslFactory {
     private static final String PROTOCOL = "TLS";
 
-    public static SSLContext getContext(String keyFile, String storePass, String keyPass) throws Exception {
+    public static SSLContext getContext(InputStream keyStore, String storePass, String keyPass) throws Exception {
         // Create and load keystore file
         KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-        FileInputStream fis = new FileInputStream(keyFile);
-        ks.load(fis, storePass.toCharArray());
-        fis.close();
+        ks.load(keyStore, storePass.toCharArray());
 
         // Set up key manager factory to use our key store
         String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");

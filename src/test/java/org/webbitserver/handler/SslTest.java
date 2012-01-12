@@ -1,6 +1,7 @@
 package org.webbitserver.handler;
 
 import java.io.IOException;
+import java.io.FileInputStream;
 import javax.net.ssl.HttpsURLConnection;
 
 import org.junit.Test;
@@ -23,11 +24,14 @@ public class SslTest {
 
     @Test
     public void setsSecureHttpsServerHeader() throws Exception {
+        FileInputStream fis = new FileInputStream("src/test/resources/ssl/keystore");
         WebServer webServer = createWebServer(10443)
-                .setupSsl("src/test/resources/ssl/keystore", "webbit")
+                .setupSsl(fis, "webbit")
                 .add(new ServerHeaderHandler("My Server"))
-                .add(new StringHttpHandler("text/plain", "body"))
-                .start();
+                .add(new StringHttpHandler("text/plain", "body"));
+
+        fis.close();
+        webServer.start();
 
         try {
             HttpsURLConnection  urlConnection = httpsGet(webServer, "/");
