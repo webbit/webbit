@@ -1,3 +1,8 @@
+In Git
+==================
+
+* WebbitException.fromException no longer throws NullPointerException if the channel is null. (Phil Dawes, Aslak Hellesøy)
+
 0.3.0 (2011-12-02)
 ==================
 

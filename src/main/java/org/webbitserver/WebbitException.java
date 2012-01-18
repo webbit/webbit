@@ -30,10 +30,12 @@ public class WebbitException extends RuntimeException {
     }
 
     public static WebbitException fromExceptionEvent(ExceptionEvent e) {
-        return new WebbitException(e.getCause().getMessage() + " on " + e.getChannel().toString(), e.getCause());
+        return fromException(e.getCause(), e.getChannel());
     }
 
     public static WebbitException fromException(Throwable t, Channel channel) {
-        return new WebbitException(t.getMessage() + " on " + channel.toString(), t);
+        String throwableStr = t != null ? t.getMessage() : "[null throwable]";
+        String channelStr = channel != null ? channel.toString() : "[null channel]";
+        return new WebbitException(String.format("%s on %s", throwableStr, channelStr), t);
     }
 }
