@@ -1,7 +1,9 @@
-0.3.1 (2012-01-19)
+0.3.2 (2012-01-19)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.3.0...v0.3.1)
+(There is no 0.3.1 release due to Maven hiccups)
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.0...v0.3.2)
 
 * WebbitException.fromException no longer throws NullPointerException if the channel is null. (Phil Dawes, Aslak Hellesøy)
 * Upgrade to Netty 3.2.7. (Aslak Hellesøy)
