@@ -39,19 +39,15 @@ public class StubConnectionTest {
 	public void testSendEventSourceMessages() throws Exception {
 		StubConnection target = new StubConnection(new StubHttpRequest());
 		
-		EventSourceMessage message = new EventSourceMessage("dummy data");
+		EventSourceMessage message = new EventSourceMessage("dummy\ndata");
 		target.send(message);
 		
 		List<String> expected = new ArrayList<String>();
-		expected.add("data: dummy data\n");
-		expected.add("\n");
-		
+        expected.add("data: dummy\ndata: data\n\n");
 		assertEquals(expected, target.sentMessages());
 		
 		target.send(message);
-		expected.add("data: dummy data\n");
-		expected.add("\n");
-		
+        expected.add("data: dummy\ndata: data\n\n");
 		assertEquals(expected, target.sentMessages());
 	}
 

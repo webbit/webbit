@@ -15,7 +15,7 @@ class LoggingEventSourceConnection extends EventSourceConnectionWrapper {
 
     @Override
     public EventSourceConnectionWrapper send(EventSourceMessage message) {
-        logSink.eventSourceOutboundData(this, message.build() + "\n");
+        logSink.eventSourceOutboundData(this, message.build());
         return super.send(message);
     }
 }

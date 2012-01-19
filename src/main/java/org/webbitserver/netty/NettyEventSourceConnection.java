@@ -29,7 +29,7 @@ public class NettyEventSourceConnection implements EventSourceConnection {
 
     @Override
     public EventSourceConnection send(EventSourceMessage message) {
-        ctx.getChannel().write(copiedBuffer(message.build() + "\n", CharsetUtil.UTF_8));
+        ctx.getChannel().write(copiedBuffer(message.build(), CharsetUtil.UTF_8));
         return this;
     }
 

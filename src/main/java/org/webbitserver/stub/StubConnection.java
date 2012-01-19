@@ -37,7 +37,7 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
 
     @Override
     public StubConnection send(EventSourceMessage message) {
-        return send(message.build()).send("\n");
+        return send(message.build());
     }
 
     public StubConnection httpRequest(HttpRequest httpRequest) {

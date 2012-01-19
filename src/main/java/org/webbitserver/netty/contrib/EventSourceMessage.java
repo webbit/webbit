@@ -51,7 +51,7 @@ public class EventSourceMessage {
     }
 
     public String build() {
-        return payload.toString();
+        return payload.toString() + "\n";
     }
 
     private void appendFieldValue(String field, String value) {

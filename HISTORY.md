@@ -1,3 +1,8 @@
+In Git
+==================
+
+* EventSourceMessage.build() appends the `\n` so that it doesn't have to be done in other places. (Aslak Hellesøy)
+
 0.3.2 (2012-01-19)
 ==================
 
