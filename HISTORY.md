@@ -1,7 +1,10 @@
-In Git
+0.3.1 (2012-01-19)
 ==================
 
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.0...v0.3.1)
+
 * WebbitException.fromException no longer throws NullPointerException if the channel is null. (Phil Dawes, Aslak Hellesøy)
+* Removed deprecated StubWebSocketConnection and EventSourceConnection.send(String). (Aslak Hellesøy)
 
 0.3.0 (2011-12-02)
 ==================

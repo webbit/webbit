@@ -9,12 +9,6 @@ public interface EventSourceConnection extends Executor, DataHolder {
 
     EventSourceConnection send(EventSourceMessage message);
 
-    /**
-     * @see #send(org.webbitserver.netty.contrib.EventSourceMessage) 
-     */
-    @Deprecated
-    EventSourceConnection send(String message);
-
     EventSourceConnection close();
 
     @Override
