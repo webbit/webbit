@@ -20,9 +20,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:git://github.com/joewalnes/webbit.git</connection>
-        <developerConnection>scm:git:git@github.com:joewalnes/webbit.git</developerConnection>
-        <url>git://github.com/joewalnes/webbit.git</url>
+        <connection>scm:git:git://github.com/webbit/webbit.git</connection>
+        <developerConnection>scm:git:git@github.com:webbit/webbit.git</developerConnection>
+        <url>git://github.com/webbit/webbit.git</url>
     </scm>
     <developers>
         <developer>

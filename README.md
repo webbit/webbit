@@ -10,7 +10,7 @@ Alternatively, you can get the latest code from Git and build it yourself:
 
 Build is done with `make`. On OS-X and Linux this should work out of the box. On Solaris, use `gmake`. On Windows you will need Cygwing.
 
-    git clone git://github.com/joewalnes/webbit.git
+    git clone git://github.com/webbit/webbit.git
     cd webbit
     make
 
@@ -88,8 +88,8 @@ And a page that uses the WebSocket (web/index.html)
 More
 -----------
 
-+   [Docs on wiki](https://github.com/joewalnes/webbit/wiki)
++   [Docs on wiki](https://github.com/webbit/webbit/wiki)
 +   [Webbit mailing list](http://groups.google.com/group/webbit)
 +   [@webbitserver](http://twitter.com/webbitserver) on Twitter
-+   A [web based chat room](https://github.com/joewalnes/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
++   A [web based chat room](https://github.com/webbit/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
 +   Jay Fields has written a [WebSockets with Clojure introduction](http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html) that uses Webbit
