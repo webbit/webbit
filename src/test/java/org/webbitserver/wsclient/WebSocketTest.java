@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.netty.WebSocketClient;
 import samples.echo.EchoWsServer;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class WebSocketTest {
     public void sendsAndReceivesTextMessages() throws InterruptedException {
         final CountDownLatch countDown = new CountDownLatch(2);
 
-        new WebSocket(wsUri, new WebSocketHandler() {
+        new WebSocketClient(wsUri, new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
                 connection.send("You are Alexander Yalt?");

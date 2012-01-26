@@ -1,6 +1,8 @@
 In Git
 ==================
 
+* Moved org.webbitserver.wsclient.WebSocket to org.webbitserver.netty.WebSocketClient. (Aslak Hellesøy)
+* Improved WebSocketClient so that it receives onClose events when closed locally.
 * EventSourceMessage.build() appends the `\n` so that it doesn't have to be done in other places. (Aslak Hellesøy)
 
 0.3.2 (2012-01-19)

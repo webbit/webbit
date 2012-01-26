@@ -2,6 +2,7 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
@@ -58,7 +59,7 @@ public class NettyWebSocketConnection implements WebSocketConnection {
 
     @Override
     public NettyWebSocketConnection close() {
-        ctx.getChannel().close();
+        ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         return this;
     }
 

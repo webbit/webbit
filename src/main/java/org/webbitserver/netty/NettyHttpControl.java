@@ -76,7 +76,7 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         NettyWebSocketConnection webSocketConnection = webSocketConnection();
-        new NettyWebSocketChannelHandler(
+        new NettyWebSocketHandshakeHandler(
                 executor,
                 handler,
                 ctx,
