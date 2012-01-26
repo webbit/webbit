@@ -1,4 +1,4 @@
-package org.webbitserver.wsclient;
+package org.webbitserver.netty;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -7,7 +7,6 @@ import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -25,10 +24,10 @@ import org.webbitserver.WebbitException;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.helpers.Base64;
 import org.webbitserver.netty.CatchingRunnable;
-import org.webbitserver.netty.DecodingHybiFrame;
 import org.webbitserver.netty.HybiWebSocketFrameDecoder;
 import org.webbitserver.netty.HybiWebSocketFrameEncoder;
 import org.webbitserver.netty.NettyWebSocketConnection;
+import org.webbitserver.netty.WebSocketConnectionHandler;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -39,7 +38,7 @@ import java.util.concurrent.Executors;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
-public class WebSocket {
+public class WebSocketClient {
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final MessageDigest SHA_1;
 
@@ -57,7 +56,8 @@ public class WebSocket {
     private final Executor executor;
     private final String base64Nonce;
 
-    public WebSocket(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
+
+    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
         String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
@@ -159,8 +159,12 @@ public class WebSocket {
             final NettyWebSocketConnection webSocketConnection = new NettyWebSocketConnection(executor, null, ctx, outboundMaskingKey);
             webSocketConnection.setHybiWebSocketVersion(13);
 
+            // TODO: Allow users to specify these.
+            // TODO: Document the difference between these 2 handlers - I'm not sure I get it myself (AH)
             final Thread.UncaughtExceptionHandler exceptionHandler = new PrintStackTraceExceptionHandler();
-            ChannelHandler webSocketChannelHandler = new WebSocketChannelHandler(webSocketConnection, exceptionHandler);
+            final Thread.UncaughtExceptionHandler ioExceptionHandler = new PrintStackTraceExceptionHandler();
+
+            ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
 
             ChannelPipeline p = ctx.getChannel().getPipeline();
             p.remove("inflater");
@@ -177,30 +181,4 @@ public class WebSocket {
         }
     }
 
-    private class WebSocketChannelHandler extends SimpleChannelUpstreamHandler {
-        private final NettyWebSocketConnection webSocketConnection;
-        private final Thread.UncaughtExceptionHandler exceptionHandler;
-
-        public WebSocketChannelHandler(NettyWebSocketConnection webSocketConnection, Thread.UncaughtExceptionHandler exceptionHandler) {
-            this.webSocketConnection = webSocketConnection;
-            this.exceptionHandler = exceptionHandler;
-        }
-
-        @Override
-        public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-            Object message = e.getMessage();
-            DecodingHybiFrame frame = (DecodingHybiFrame) message;
-            frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandler);
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    exceptionHandler.uncaughtException(Thread.currentThread(), e.getCause());
-                }
-            });
-        }
-    }
 }

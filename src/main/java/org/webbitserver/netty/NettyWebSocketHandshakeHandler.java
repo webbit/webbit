@@ -2,12 +2,14 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.*;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.WebSocketHandler;
@@ -15,16 +17,25 @@ import org.webbitserver.WebbitException;
 import org.webbitserver.helpers.Base64;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY1;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY2;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_LOCATION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_LOCATION;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_ORIGIN;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PROTOCOL;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
-public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
+public class NettyWebSocketHandshakeHandler extends SimpleChannelUpstreamHandler {
     private static final MessageDigest SHA_1;
 
     static {
@@ -41,13 +52,13 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
     protected final NettyWebSocketConnection webSocketConnection;
     protected final Thread.UncaughtExceptionHandler exceptionHandler;
     protected final Thread.UncaughtExceptionHandler ioExceptionHandler;
-    protected final WebSocketHandler handler;
+    protected final WebSocketHandler webSocketHandler;
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final int MIN_HYBI_VERSION = 8;
 
-    public NettyWebSocketChannelHandler(
+    public NettyWebSocketHandshakeHandler(
             Executor executor,
-            WebSocketHandler handler,
+            WebSocketHandler webSocketHandler,
             ChannelHandlerContext ctx,
             UncaughtExceptionHandler exceptionHandler,
             NettyHttpRequest nettyHttpRequest,
@@ -56,7 +67,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
             HttpRequest req,
             HttpResponse res
     ) {
-        this.handler = handler;
+        this.webSocketHandler = webSocketHandler;
         this.exceptionHandler = exceptionHandler;
         this.nettyHttpRequest = nettyHttpRequest;
         this.executor = executor;
@@ -66,7 +77,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         prepareConnection(req, res, ctx);
 
         try {
-            handler.onOpen(this.webSocketConnection);
+            webSocketHandler.onOpen(this.webSocketConnection);
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
         }
@@ -100,43 +111,13 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         staleConnectionTracker.stopTracking(ctx.getChannel());
         p.remove("aggregator");
         p.replace("decoder", "wsdecoder", webSocketFrameDecoder);
-        p.replace("handler", "wshandler", this);
+        p.replace("handler", "wshandler", new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor));
         p.replace("encoder", "wsencoder", webSocketFrameEncoder);
-    }
-
-    @Override
-    public void channelDisconnected(ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception {
-        final Thread thread = Thread.currentThread();
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    handler.onClose(webSocketConnection);
-                } catch (Exception e1) {
-                    exceptionHandler.uncaughtException(thread, WebbitException.fromException(e1, e.getChannel()));
-                }
-            }
-        });
     }
 
     @Override
     public String toString() {
         return nettyHttpRequest.toString();
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
-        if (e.getCause() instanceof ClosedChannelException) {
-            e.getChannel().close();
-        } else {
-            final Thread thread = Thread.currentThread();
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
-                }
-            });
-        }
     }
 
     private Integer getHybiVersion(HttpRequest req) {
@@ -207,7 +188,7 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
         res.addHeader(UPGRADE, WEBSOCKET);
         res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
         String origin = req.getHeader(ORIGIN);
-        if(origin != null) {
+        if (origin != null) {
             res.addHeader(WEBSOCKET_ORIGIN, origin);
         }
         res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
@@ -219,27 +200,5 @@ public class NettyWebSocketChannelHandler extends SimpleChannelUpstreamHandler {
 
     private String getWebSocketLocation(HttpRequest req) {
         return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + req.getUri();
-    }
-
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-        Object message = e.getMessage();
-        if (message instanceof DecodingHybiFrame) {
-            DecodingHybiFrame frame = (DecodingHybiFrame) message;
-            frame.dispatchMessage(handler, webSocketConnection, executor, exceptionHandler);
-        } else {
-            // Hixie 75/76
-            final WebSocketFrame frame = (WebSocketFrame) message;
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        handler.onMessage(webSocketConnection, frame.getTextData());
-                    } catch (Throwable throwable) {
-                        exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(throwable, e.getChannel()));
-                    }
-                }
-            });
-        }
     }
 }
