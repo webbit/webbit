@@ -21,13 +21,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// This test fails intermittently when run in IDEA.
-// This is the main reason it is ignored.
-//
-//
-// It seems to always be passing when run from Make or Maven.
-//
-// For details, see https://github.com/webbit/webbit/issues/65
 public class WebSocketClientTest {
     private EchoWsServer server;
     private URI wsUri;
