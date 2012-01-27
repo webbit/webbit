@@ -6,14 +6,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
-import org.webbitserver.netty.WebSocketClient;
 import samples.echo.EchoWsServer;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -23,14 +21,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-// This test fails intermittently when run in IDEA.
-// This is the main reason it is ignored.
-//
-//
-// It seems to always be passing when run from Make or Maven.
-//
-// For details, see https://github.com/webbit/webbit/issues/65
-@Ignore
 public class WebSocketClientTest {
     private EchoWsServer server;
     private URI wsUri;
@@ -110,7 +100,7 @@ public class WebSocketClientTest {
         }, Executors.newSingleThreadExecutor());
         ws.start();
 
-        assertTrue("Message wasn't echoed", countDown.await(50, TimeUnit.MILLISECONDS));
+        assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
         assertEquals(message, received.get(0));
     }
 
