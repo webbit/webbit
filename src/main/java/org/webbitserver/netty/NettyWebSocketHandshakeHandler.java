@@ -43,10 +43,11 @@ public class NettyWebSocketHandshakeHandler {
 
         for (WebSocketVersion webSocketVersion : versions) {
             if (webSocketVersion.matches()) {
-                getReadyToReceiveWebSocketMessages(HybiWebSocketFrameDecoder.serverSide(), webSocketConnectionHandler, pipeline, channel);
+                ChannelHandler webSocketFrameDecoder = webSocketVersion.createDecoder();
+                getReadyToReceiveWebSocketMessages(webSocketFrameDecoder, webSocketConnectionHandler, pipeline, channel);
                 webSocketVersion.prepareHandshakeResponse(webSocketConnection);
                 channel.write(res);
-                getReadyToSendWebSocketMessages(new HybiWebSocketFrameEncoder(), pipeline);
+                getReadyToSendWebSocketMessages(webSocketVersion.createEncoder(), pipeline);
                 break;
             }
         }

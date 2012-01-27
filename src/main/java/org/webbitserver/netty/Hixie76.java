@@ -2,11 +2,13 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.webbitserver.WebbitException;
+import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
+import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,12 +24,28 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class Hixie76 implements WebSocketVersion {
+    private static final MessageDigest MD5;
+
+    static {
+        try {
+            MD5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("MD5 not supported on this platform");
+        }
+    }
+
+
     private final HttpRequest req;
     private final HttpResponse res;
 
     public Hixie76(HttpRequest req, HttpResponse res) {
         this.req = req;
         this.res = res;
+    }
+
+    @Override
+    public boolean matches() {
+        return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
     }
 
     @Override
@@ -54,17 +72,18 @@ public class Hixie76 implements WebSocketVersion {
         input.writeInt(a);
         input.writeInt(b);
         input.writeLong(c);
-        try {
-            ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(input.array()));
-            res.setContent(output);
-        } catch (NoSuchAlgorithmException e) {
-            throw new WebbitException(e);
-        }
+        ChannelBuffer output = ChannelBuffers.wrappedBuffer(MD5.digest(input.array()));
+        res.setContent(output);
     }
 
     @Override
-    public boolean matches() {
-        return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
+    public ChannelHandler createDecoder() {
+        return new WebSocketFrameDecoder();
+    }
+
+    @Override
+    public ChannelHandler createEncoder() {
+        return new WebSocketFrameEncoder();
     }
 
     private String getWebSocketLocation(HttpRequest req) {
