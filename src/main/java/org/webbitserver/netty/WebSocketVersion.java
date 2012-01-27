@@ -1,5 +1,6 @@
 package org.webbitserver.netty;
 
 public interface WebSocketVersion {
-    void performHandhake();
+    void prepareHandshakeResponse(NettyWebSocketConnection webSocketConnection);
+    boolean matches();
 }

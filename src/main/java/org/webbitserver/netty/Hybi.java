@@ -39,7 +39,9 @@ public class Hybi implements WebSocketVersion {
     }
 
     @Override
-    public void performHandhake() {
+    public void prepareHandshakeResponse(NettyWebSocketConnection webSocketConnection) {
+        webSocketConnection.setHybiWebSocketVersion(getHybiVersion());
+
         if (getHybiVersion() < MIN_HYBI_VERSION) {
             res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
             res.setHeader(SEC_WEB_SOCKET_VERSION, String.valueOf(MIN_HYBI_VERSION));
@@ -58,6 +60,11 @@ public class Hybi implements WebSocketVersion {
         res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
         res.addHeader(CONNECTION, UPGRADE);
         res.addHeader(SEC_WEB_SOCKET_ACCEPT, accept);
+    }
+
+    @Override
+    public boolean matches() {
+        return getHybiVersion() != null;
     }
 
     private Integer getHybiVersion() {
