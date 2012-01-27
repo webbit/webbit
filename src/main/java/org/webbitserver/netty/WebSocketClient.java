@@ -50,18 +50,22 @@ public class WebSocketClient {
         }
     }
 
-    private final ClientBootstrap bootstrap;
-    private final Channel channel;
+    private final URI uri;
     private final WebSocketHandler webSocketHandler;
     private final Executor executor;
-    private final String base64Nonce;
+    private final InetSocketAddress remoteAddress;
+    private final String host;
 
+    private ClientBootstrap bootstrap;
+    private Channel channel;
+    private String base64Nonce;
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
+        this.uri = uri;
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
         String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
-        String host = uri.getHost() == null ? "localhost" : uri.getHost();
+        host = uri.getHost() == null ? "localhost" : uri.getHost();
         int port = uri.getPort();
         if (port == -1) {
             if (scheme.equalsIgnoreCase("ws")) {
@@ -72,7 +76,10 @@ public class WebSocketClient {
         if (!scheme.equalsIgnoreCase("ws")) {
             throw new IllegalArgumentException("Only ws(s) is supported.");
         }
+        remoteAddress = new InetSocketAddress(host, port);
+    }
 
+    public void start() {
         final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
         bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
@@ -89,7 +96,7 @@ public class WebSocketClient {
                 return pipeline;
             }
         });
-        ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
+        ChannelFuture future = bootstrap.connect(remoteAddress);
         channel = future.awaitUninterruptibly().getChannel();
 
         if (!future.isSuccess()) {
