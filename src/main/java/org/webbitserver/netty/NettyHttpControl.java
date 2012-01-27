@@ -4,7 +4,6 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
@@ -23,7 +22,7 @@ public class NettyHttpControl implements HttpControl {
     private final ChannelHandlerContext ctx;
     private final NettyHttpRequest webbitHttpRequest;
     private final org.jboss.netty.handler.codec.http.HttpRequest nettyHttpRequest;
-    private final DefaultHttpResponse nettyHttpResponse;
+    private final org.jboss.netty.handler.codec.http.HttpResponse nettyHttpResponse;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
     private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
@@ -39,7 +38,7 @@ public class NettyHttpControl implements HttpControl {
                             NettyHttpRequest webbitHttpRequest,
                             NettyHttpResponse webbitHttpResponse,
                             org.jboss.netty.handler.codec.http.HttpRequest nettyHttpRequest,
-                            DefaultHttpResponse nettyHttpResponse,
+                            org.jboss.netty.handler.codec.http.HttpResponse nettyHttpResponse,
                             Thread.UncaughtExceptionHandler exceptionHandler,
                             Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.handlerIterator = handlerIterator;
@@ -88,7 +87,7 @@ public class NettyHttpControl implements HttpControl {
         NettyWebSocketConnection webSocketConnection = webSocketConnection();
         WebSocketConnectionHandler webSocketConnectionHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
 
-        prepareConnection(nettyHttpRequest, nettyHttpResponse, ctx, webSocketConnection, webSocketConnectionHandler);
+        performWebSocketHandshake(webSocketConnection, webSocketConnectionHandler);
 
         try {
             webSocketHandler.onOpen(webSocketConnection);
@@ -109,6 +108,8 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyEventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
         NettyEventSourceConnection eventSourceConnection = eventSourceConnection();
+        // TODO: This pattern of calling a constructor to set things up is a bit weird.
+        // We should refactor this to be similar to how the WebSocket handshake is performed.
         new NettyEventSourceChannelHandler(
                 executor,
                 handler,
@@ -141,11 +142,11 @@ public class NettyHttpControl implements HttpControl {
         handlerExecutor().execute(command);
     }
 
-    private void prepareConnection(org.jboss.netty.handler.codec.http.HttpRequest req, org.jboss.netty.handler.codec.http.HttpResponse res, ChannelHandlerContext ctx, NettyWebSocketConnection webSocketConnection, ChannelHandler webSocketConnectionHandler) {
+    private void performWebSocketHandshake(NettyWebSocketConnection webSocketConnection, ChannelHandler webSocketConnectionHandler) {
         WebSocketVersion[] versions = new WebSocketVersion[]{
-                new Hybi(req, res),
-                new Hixie76(req, res),
-                new Hixie75(req, res)
+                new Hybi(nettyHttpRequest, nettyHttpResponse),
+                new Hixie76(nettyHttpRequest, nettyHttpResponse),
+                new Hixie75(nettyHttpRequest, nettyHttpResponse)
         };
 
         Channel channel = ctx.getChannel();
@@ -156,7 +157,7 @@ public class NettyHttpControl implements HttpControl {
                 ChannelHandler webSocketFrameDecoder = webSocketVersion.createDecoder();
                 getReadyToReceiveWebSocketMessages(webSocketFrameDecoder, webSocketConnectionHandler, pipeline, channel);
                 webSocketVersion.prepareHandshakeResponse(webSocketConnection);
-                channel.write(res);
+                channel.write(nettyHttpResponse);
                 getReadyToSendWebSocketMessages(webSocketVersion.createEncoder(), pipeline);
                 break;
             }
