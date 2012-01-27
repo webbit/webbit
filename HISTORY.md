@@ -1,8 +1,10 @@
 In Git
 ==================
 
+* Fixed a race condition where the first incoming WebSocket messages could be lost. ([#65](https://github.com/webbit/webbit/issues/65) Aslak Hellesøy)
 * Moved org.webbitserver.wsclient.WebSocket to org.webbitserver.netty.WebSocketClient. (Aslak Hellesøy)
-* Improved WebSocketClient so that it receives onClose events when closed locally.
+* Improved WebSocketClient so that it receives onClose events when closed locally. (Aslak Hellesøy)
+* WebSocketClient must be start()ed - it no longer connects in the constructor. (Aslak Hellesøy)
 * EventSourceMessage.build() appends the `\n` so that it doesn't have to be done in other places. (Aslak Hellesøy)
 
 0.3.2 (2012-01-19)
