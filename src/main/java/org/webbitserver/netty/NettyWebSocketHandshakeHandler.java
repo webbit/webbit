@@ -13,10 +13,8 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
-import org.webbitserver.helpers.Base64;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -34,19 +32,6 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PRO
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class NettyWebSocketHandshakeHandler {
-    private static final MessageDigest SHA_1;
-
-    static {
-        try {
-            SHA_1 = MessageDigest.getInstance("SHA1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new InternalError("SHA-1 not supported on this platform");
-        }
-    }
-
-    private static final Charset ASCII = Charset.forName("ASCII");
-    private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private static final int MIN_HYBI_VERSION = 8;
 
     public NettyWebSocketHandshakeHandler(
             WebSocketHandler webSocketHandler,
@@ -67,12 +52,14 @@ public class NettyWebSocketHandshakeHandler {
     }
 
     private void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx, NettyWebSocketConnection webSocketConnection, ChannelHandler webSocketConnectionHandler) {
+        WebSocketVersion hybi = new Hybi(req, res);
+
         Integer hybiVersion = getHybiVersion(req);
         if (hybiVersion != null) {
             // Instead of indicating what hybi-x spec version x, we indicate the version header number,
             // which confusingly is different. At the time of this writing it's between 8 and 13.
             webSocketConnection.setHybiWebSocketVersion(hybiVersion);
-            upgradeResponseHybi(req, res, hybiVersion);
+            hybi.performHandhake();
             ctx.getChannel().write(res);
             adjustPipelineToWebSocket(ctx, HybiWebSocketFrameDecoder.serverSide(), new HybiWebSocketFrameEncoder(), webSocketConnectionHandler);
         } else if (isHixie76WebSocketRequest(req)) {
@@ -104,31 +91,6 @@ public class NettyWebSocketHandshakeHandler {
 
     private boolean isHixie76WebSocketRequest(HttpRequest req) {
         return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
-    }
-
-    private void upgradeResponseHybi(HttpRequest req, HttpResponse res, int version) {
-        if (version < MIN_HYBI_VERSION) {
-            res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
-            res.setHeader("Sec-WebSocket-Version", String.valueOf(MIN_HYBI_VERSION));
-            return;
-        }
-
-        String key = req.getHeader("Sec-WebSocket-Key");
-        if (key == null) {
-            res.setStatus(HttpResponseStatus.BAD_REQUEST);
-            return;
-        }
-
-        String accept = Base64.encode(sha1(key + ACCEPT_GUID));
-
-        res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
-        res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
-        res.addHeader(CONNECTION, UPGRADE);
-        res.addHeader("Sec-WebSocket-Accept", accept);
-    }
-
-    private byte[] sha1(String s) {
-        return SHA_1.digest(s.getBytes(ASCII));
     }
 
     private void upgradeResponseHixie76(HttpRequest req, HttpResponse res) {

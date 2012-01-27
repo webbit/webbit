@@ -69,8 +69,6 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 int frameRsv = (b & 0x70) >> 4;
                 frameOpcode = (b & 0x0F);
 
-                System.out.println("b = " + b);
-
                 // MASK, PAYLOAD LEN 1
                 b = buffer.readByte();
                 boolean frameMasked = (b & 0x80) != 0;
