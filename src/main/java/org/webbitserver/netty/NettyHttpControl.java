@@ -2,7 +2,12 @@ package org.webbitserver.netty;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.webbitserver.*;
+import org.webbitserver.EventSourceHandler;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketHandler;
 
 import java.util.Iterator;
 import java.util.concurrent.Executor;
@@ -76,23 +81,22 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler handler) {
         NettyWebSocketConnection webSocketConnection = webSocketConnection();
+        WebSocketConnectionHandler webSocketConnectionHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, handler, executor);
         new NettyWebSocketHandshakeHandler(
-                executor,
                 handler,
                 ctx,
                 exceptionHandler,
-                nettyHttpRequest,
-                ioExceptionHandler,
                 webSocketConnection,
                 httpRequest,
-                defaultHttpResponse
+                defaultHttpResponse,
+                webSocketConnectionHandler
         );
         return webSocketConnection;
     }
 
     @Override
     public NettyWebSocketConnection webSocketConnection() {
-        if(nettyWebSocketConnection == null) {
+        if (nettyWebSocketConnection == null) {
             nettyWebSocketConnection = new NettyWebSocketConnection(executor, nettyHttpRequest, ctx, null);
         }
         return nettyWebSocketConnection;
@@ -117,7 +121,7 @@ public class NettyHttpControl implements HttpControl {
 
     @Override
     public NettyEventSourceConnection eventSourceConnection() {
-        if(nettyEventSourceConnection == null) {
+        if (nettyEventSourceConnection == null) {
             nettyEventSourceConnection = new NettyEventSourceConnection(executor, nettyHttpRequest, ctx);
         }
         return nettyEventSourceConnection;

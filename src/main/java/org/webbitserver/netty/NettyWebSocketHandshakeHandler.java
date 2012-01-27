@@ -5,7 +5,6 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -20,7 +19,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
@@ -35,7 +33,7 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_ORI
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PROTOCOL;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
-public class NettyWebSocketHandshakeHandler extends SimpleChannelUpstreamHandler {
+public class NettyWebSocketHandshakeHandler {
     private static final MessageDigest SHA_1;
 
     static {
@@ -47,77 +45,57 @@ public class NettyWebSocketHandshakeHandler extends SimpleChannelUpstreamHandler
     }
 
     private static final Charset ASCII = Charset.forName("ASCII");
-    protected final Executor executor;
-    protected final NettyHttpRequest nettyHttpRequest;
-    protected final NettyWebSocketConnection webSocketConnection;
-    protected final Thread.UncaughtExceptionHandler exceptionHandler;
-    protected final Thread.UncaughtExceptionHandler ioExceptionHandler;
-    protected final WebSocketHandler webSocketHandler;
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final int MIN_HYBI_VERSION = 8;
 
     public NettyWebSocketHandshakeHandler(
-            Executor executor,
             WebSocketHandler webSocketHandler,
             ChannelHandlerContext ctx,
             UncaughtExceptionHandler exceptionHandler,
-            NettyHttpRequest nettyHttpRequest,
-            UncaughtExceptionHandler ioExceptionHandler,
             NettyWebSocketConnection webSocketConnection,
             HttpRequest req,
-            HttpResponse res
+            HttpResponse res,
+            WebSocketConnectionHandler webSocketConnectionHandler
     ) {
-        this.webSocketHandler = webSocketHandler;
-        this.exceptionHandler = exceptionHandler;
-        this.nettyHttpRequest = nettyHttpRequest;
-        this.executor = executor;
-        this.ioExceptionHandler = ioExceptionHandler;
-        this.webSocketConnection = webSocketConnection;
-
-        prepareConnection(req, res, ctx);
+        prepareConnection(req, res, ctx, webSocketConnection, webSocketConnectionHandler);
 
         try {
-            webSocketHandler.onOpen(this.webSocketConnection);
+            webSocketHandler.onOpen(webSocketConnection);
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
         }
     }
 
-    protected void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx) {
+    private void prepareConnection(HttpRequest req, HttpResponse res, ChannelHandlerContext ctx, NettyWebSocketConnection webSocketConnection, ChannelHandler webSocketConnectionHandler) {
         Integer hybiVersion = getHybiVersion(req);
         if (hybiVersion != null) {
             // Instead of indicating what hybi-x spec version x, we indicate the version header number,
             // which confusingly is different. At the time of this writing it's between 8 and 13.
-            this.webSocketConnection.setHybiWebSocketVersion(hybiVersion);
+            webSocketConnection.setHybiWebSocketVersion(hybiVersion);
             upgradeResponseHybi(req, res, hybiVersion);
             ctx.getChannel().write(res);
-            adjustPipelineToWebSocket(ctx, HybiWebSocketFrameDecoder.serverSide(), new HybiWebSocketFrameEncoder());
+            adjustPipelineToWebSocket(ctx, HybiWebSocketFrameDecoder.serverSide(), new HybiWebSocketFrameEncoder(), webSocketConnectionHandler);
         } else if (isHixie76WebSocketRequest(req)) {
-            this.webSocketConnection.setVersion("HIXIE-76");
+            webSocketConnection.setVersion("HIXIE-76");
             upgradeResponseHixie76(req, res);
             ctx.getChannel().write(res);
-            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder());
+            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder(), webSocketConnectionHandler);
         } else {
-            this.webSocketConnection.setVersion("HIXIE-75");
+            webSocketConnection.setVersion("HIXIE-75");
             upgradeResponseHixie75(req, res);
             ctx.getChannel().write(res);
-            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder());
+            adjustPipelineToWebSocket(ctx, new WebSocketFrameDecoder(), new WebSocketFrameEncoder(), webSocketConnectionHandler);
         }
     }
 
-    private void adjustPipelineToWebSocket(ChannelHandlerContext ctx, ChannelHandler webSocketFrameDecoder, ChannelHandler webSocketFrameEncoder) {
+    private void adjustPipelineToWebSocket(ChannelHandlerContext ctx, ChannelHandler webSocketFrameDecoder, ChannelHandler webSocketFrameEncoder, ChannelHandler webSocketConnectionHandler) {
         ChannelPipeline p = ctx.getChannel().getPipeline();
         StaleConnectionTrackingHandler staleConnectionTracker = (StaleConnectionTrackingHandler) p.remove("staleconnectiontracker");
         staleConnectionTracker.stopTracking(ctx.getChannel());
         p.remove("aggregator");
         p.replace("decoder", "wsdecoder", webSocketFrameDecoder);
-        p.replace("handler", "wshandler", new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor));
+        p.replace("handler", "wshandler", webSocketConnectionHandler);
         p.replace("encoder", "wsencoder", webSocketFrameEncoder);
-    }
-
-    @Override
-    public String toString() {
-        return nettyHttpRequest.toString();
     }
 
     private Integer getHybiVersion(HttpRequest req) {
