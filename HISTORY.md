@@ -1,5 +1,9 @@
-In Git
+0.3.4 (2012-01-30)
 ==================
+
+(There is no 0.3.2 release due to Aslak hiccups)
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.2...v0.3.4)
 
 * All Autobahn tests are passing, except for incorrect closing behaviour in 8 of them (Alex Silverstein, Aslak Hellesøy)
 * Fixed a race condition where the first incoming WebSocket messages could be lost. ([#65](https://github.com/webbit/webbit/issues/65) Aslak Hellesøy)
