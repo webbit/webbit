@@ -1,5 +1,7 @@
-In Git
+0.3.5 (2012-01-30)
 ==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.4...v0.3.5)
 
 * WebSocketClient no longer throws exceptions caused by passing in a null HttpRequest to the connection constructor (Aslak Hellesøy)
 
