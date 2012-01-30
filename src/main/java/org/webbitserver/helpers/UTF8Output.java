@@ -63,7 +63,14 @@ public class UTF8Output {
         state = STATES[state + type];
 
         if (state == UTF8_ACCEPT) {
-            stringBuilder.append((char) codep);
+            // https://github.com/eclipse/jetty.project/blob/cacc5aefa214fc3eae05eb93d964863bb71198a0/jetty-util/src/main/java/org/eclipse/jetty/util/Utf8Appendable.java#L152-160
+            if (codep < Character.MIN_HIGH_SURROGATE) {
+                stringBuilder.append((char) codep);
+            } else {
+                for (char c : Character.toChars(codep)) {
+                    stringBuilder.append(c);
+                }
+            }
         } else if (state == UTF8_REJECT) {
             throw new UTF8Exception("bytes are not UTF-8");
         }

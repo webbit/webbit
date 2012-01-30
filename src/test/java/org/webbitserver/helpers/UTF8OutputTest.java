@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.helpers.Hex.fromHex;
@@ -51,7 +53,6 @@ public class UTF8OutputTest {
         assertUtf8(fromHex("efbfbf"));
     }
 
-    @Ignore
     @Test
     public void autobahn_6_22_3() throws UnsupportedEncodingException {
         assertUtf8(fromHex("f09fbfbe"));
