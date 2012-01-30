@@ -11,35 +11,26 @@ import java.util.concurrent.Executor;
 
 public class DecodingHybiFrame {
 
+    private final UTF8Output utf8Output = new UTF8Output();
     private final int opcode;
-    private final UTF8Output utf8Output;
 
-    private List<ChannelBuffer> fragments = new ArrayList<ChannelBuffer>();
+    private final List<ChannelBuffer> byteMessageFragments = new ArrayList<ChannelBuffer>();
+    private final StringBuilder stringMessageFragments = new StringBuilder();
     private int length;
 
-    public DecodingHybiFrame(int opcode, UTF8Output utf8Output, ChannelBuffer fragment) {
+    public DecodingHybiFrame(int opcode, ChannelBuffer fragment) {
         this.opcode = opcode;
-        this.utf8Output = utf8Output;
         append(fragment);
     }
 
     public void append(ChannelBuffer fragment) {
-        fragments.add(fragment);
         length += fragment.readableBytes();
         if (opcode == Opcodes.OPCODE_TEXT || opcode == Opcodes.OPCODE_PONG) {
             utf8Output.write(fragment.array());
+            stringMessageFragments.append(utf8Output.getStringAndRecycle());
+        } else {
+            byteMessageFragments.add(fragment);
         }
-    }
-
-    private byte[] messageBytes() {
-        byte[] result = new byte[length];
-        int offset = 0;
-        for (ChannelBuffer fragment : fragments) {
-            byte[] array = fragment.array();
-            System.arraycopy(array, 0, result, offset, array.length);
-            offset += array.length;
-        }
-        return result;
     }
 
     public void dispatchMessage(final WebSocketHandler handler, final NettyWebSocketConnection connection, final Executor executor, final Thread.UncaughtExceptionHandler exceptionHandler) {
@@ -47,11 +38,10 @@ public class DecodingHybiFrame {
 
         switch (opcode) {
             case Opcodes.OPCODE_TEXT: {
-                final String messageValue = utf8Output.getStringAndRecycle();
                 executor.execute(new CatchingRunnable(exceptionHandlerWithWebbitContext) {
                     @Override
                     protected void go() throws Throwable {
-                        handler.onMessage(connection, messageValue);
+                        handler.onMessage(connection, stringMessageFragments.toString());
                     }
                 });
                 return;
@@ -79,6 +69,17 @@ public class DecodingHybiFrame {
             default:
                 throw new IllegalStateException("Unexpected opcode:" + opcode);
         }
+    }
+
+    private byte[] messageBytes() {
+        byte[] result = new byte[length];
+        int offset = 0;
+        for (ChannelBuffer fragment : byteMessageFragments) {
+            byte[] array = fragment.array();
+            System.arraycopy(array, 0, result, offset, array.length);
+            offset += array.length;
+        }
+        return result;
     }
 
     // Uncaught exception handler including the connection for context.

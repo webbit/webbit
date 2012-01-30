@@ -9,7 +9,6 @@ import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.webbitserver.helpers.UTF8Exception;
-import org.webbitserver.helpers.UTF8Output;
 
 import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.CORRUPT;
 import static org.webbitserver.netty.HybiWebSocketFrameDecoder.State.FRAME_START;
@@ -23,8 +22,6 @@ import static org.webbitserver.netty.Opcodes.OPCODE_PONG;
 import static org.webbitserver.netty.Opcodes.OPCODE_TEXT;
 
 public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFrameDecoder.State> {
-    private final UTF8Output utf8Output = new UTF8Output();
-
     private final boolean isServer;
     private final boolean requireMaskedInboundFrames;
     private final byte[] outboundMaskingKey;
@@ -160,7 +157,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
             }
             case PAYLOAD: {
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
-                if(inboundMaskingKey != null) {
+                if (inboundMaskingKey != null) {
                     applyMask(frame, inboundMaskingKey);
                 }
                 checkpoint(FRAME_START);
@@ -182,7 +179,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     }
                 } else {
                     try {
-                        currentFrame = new DecodingHybiFrame(frameOpcode, utf8Output, frame);
+                        currentFrame = new DecodingHybiFrame(frameOpcode, frame);
                     } catch (UTF8Exception e) {
                         protocolViolation(channel, "invalid UTF-8 bytes");
                     }

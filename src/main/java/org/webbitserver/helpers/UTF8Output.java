@@ -70,8 +70,12 @@ public class UTF8Output {
     }
 
     public String getStringAndRecycle() {
-        String string = stringBuilder.toString();
-        stringBuilder.setLength(0);
-        return string;
+        if (state == UTF8_ACCEPT) {
+            String string = stringBuilder.toString();
+            stringBuilder.setLength(0);
+            return string;
+        } else {
+            throw new UTF8Exception("bytes are not UTF-8");
+        }
     }
 }
