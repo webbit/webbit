@@ -22,10 +22,10 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
+import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 import org.webbitserver.helpers.Base64;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,10 +56,17 @@ public class WebSocketClient {
     private ClientBootstrap bootstrap;
     private Channel channel;
     private String base64Nonce;
+    private Thread.UncaughtExceptionHandler exceptionHandler;
+    private Thread.UncaughtExceptionHandler ioExceptionHandler;
+
+    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler) {
+        this(uri, webSocketHandler, Executors.newSingleThreadExecutor());
+    }
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
+
         String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
         String host = uri.getHost() == null ? "localhost" : uri.getHost();
         int port = uri.getPort();
@@ -74,6 +81,33 @@ public class WebSocketClient {
         }
         remoteAddress = new InetSocketAddress(host, port);
         request = createNettyHttpRequest(uri.toASCIIString().replaceFirst("http", "ws"), host);
+
+        uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
+        connectionExceptionHandler(new SilentExceptionHandler());
+    }
+
+    /**
+     * What to do when an exception gets thrown in a handler.
+     * <p/>
+     * Defaults to using {@link org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler}.
+     * It is suggested that apps supply their own implementation (e.g. to log somewhere).
+     */
+    WebSocketClient uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+        this.exceptionHandler = handler;
+        return this;
+    }
+
+    /**
+     * What to do when an exception occurs when attempting to read/write data
+     * from/to the underlying connection. e.g. If an HTTP request disconnects
+     * before it was expected.
+     * <p/>
+     * Defaults to using {@link org.webbitserver.handler.exceptions.SilentExceptionHandler}
+     * as this is a common thing to happen on a network, and most systems should not care.
+     */
+    WebSocketClient connectionExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+        this.ioExceptionHandler = handler;
+        return this;
     }
 
     public void start() {
@@ -108,10 +142,10 @@ public class WebSocketClient {
         request.setHeader(HttpHeaders.Names.HOST, host);
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
-        request.setHeader("Sec-WebSocket-Version", 13);
+        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, 13);
 
         base64Nonce = base64Nonce();
-        request.setHeader("Sec-WebSocket-Key", base64Nonce);
+        request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
         return request;
     }
 
@@ -142,7 +176,7 @@ public class WebSocketClient {
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
             HttpResponse response = (HttpResponse) e.getMessage();
-            String webSocketAccept = response.getHeader("Sec-WebSocket-Accept");
+            String webSocketAccept = response.getHeader(Hybi.SEC_WEBSOCKET_ACCEPT);
             verifySecWebSocketAccept(webSocketAccept);
             adjustPipelineToWebSocket(ctx, e, HybiWebSocketFrameDecoder.clientSide(outboundMaskingKey), new HybiWebSocketFrameEncoder());
         }
@@ -165,11 +199,6 @@ public class WebSocketClient {
             NettyHttpRequest httpRequest = new NettyHttpRequest(messageEvent, request, nextId(), timestamp());
             final NettyWebSocketConnection webSocketConnection = new NettyWebSocketConnection(executor, httpRequest, ctx, outboundMaskingKey);
             webSocketConnection.setHybiWebSocketVersion(13);
-
-            // TODO: Allow users to specify these.
-            // TODO: Document the difference between these 2 handlers - I'm not sure I get it myself (AH)
-            final Thread.UncaughtExceptionHandler exceptionHandler = new PrintStackTraceExceptionHandler();
-            final Thread.UncaughtExceptionHandler ioExceptionHandler = new PrintStackTraceExceptionHandler();
 
             ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
 

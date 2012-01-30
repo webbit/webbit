@@ -15,9 +15,9 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 
 public class Hybi implements WebSocketVersion {
-    private static final String SEC_WEB_SOCKET_VERSION = "Sec-WebSocket-Version";
-    private static final String SEC_WEB_SOCKET_ACCEPT = "Sec-WebSocket-Accept";
-    private static final String SEC_WEB_SOCKET_KEY = "Sec-WebSocket-Key";
+    public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
+    public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
+    public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
     private static final Charset ASCII = Charset.forName("ASCII");
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final int MIN_HYBI_VERSION = 8;
@@ -50,11 +50,11 @@ public class Hybi implements WebSocketVersion {
 
         if (getHybiVersion() < MIN_HYBI_VERSION) {
             res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
-            res.setHeader(SEC_WEB_SOCKET_VERSION, String.valueOf(MIN_HYBI_VERSION));
+            res.setHeader(SEC_WEBSOCKET_VERSION, String.valueOf(MIN_HYBI_VERSION));
             return;
         }
 
-        String key = req.getHeader(SEC_WEB_SOCKET_KEY);
+        String key = req.getHeader(SEC_WEBSOCKET_KEY);
         if (key == null) {
             res.setStatus(HttpResponseStatus.BAD_REQUEST);
             return;
@@ -65,7 +65,7 @@ public class Hybi implements WebSocketVersion {
         res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
         res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
         res.addHeader(CONNECTION, UPGRADE);
-        res.addHeader(SEC_WEB_SOCKET_ACCEPT, accept);
+        res.addHeader(SEC_WEBSOCKET_ACCEPT, accept);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class Hybi implements WebSocketVersion {
     }
 
     private Integer getHybiVersion() {
-        return req.containsHeader(SEC_WEB_SOCKET_VERSION) ? Integer.parseInt(req.getHeader(SEC_WEB_SOCKET_VERSION).trim()) : null;
+        return req.containsHeader(SEC_WEBSOCKET_VERSION) ? Integer.parseInt(req.getHeader(SEC_WEBSOCKET_VERSION).trim()) : null;
     }
 
     private byte[] sha1(String s) {
