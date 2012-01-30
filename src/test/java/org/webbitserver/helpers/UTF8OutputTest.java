@@ -1,5 +1,6 @@
 package org.webbitserver.helpers;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -40,11 +41,20 @@ public class UTF8OutputTest {
         utf8Output.getStringAndRecycle();
     }
 
-    @Test(expected = UTF8Exception.class)
-    public void throwsOnIncompleteUtf8() throws UnsupportedEncodingException {
-        utf8Output.write(fromHex("f09fbfbe"));
-        String s = utf8Output.getStringAndRecycle();
-        System.out.println("s = " + s);
+    @Test
+    public void autobahn_6_22_1() throws UnsupportedEncodingException {
+        assertUtf8(fromHex("efbfbe"));
+    }
+
+    @Test
+    public void autobahn_6_22_2() throws UnsupportedEncodingException {
+        assertUtf8(fromHex("efbfbf"));
+    }
+
+    @Ignore
+    @Test
+    public void autobahn_6_22_3() throws UnsupportedEncodingException {
+        assertUtf8(fromHex("f09fbfbe"));
     }
 
     @Test(expected = UTF8Exception.class)
