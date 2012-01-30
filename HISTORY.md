@@ -1,6 +1,7 @@
 In Git
 ==================
 
+* All Autobahn tests are passing, except for incorrect closing behaviour in 8 of them (Alex Silverstein, Aslak Hellesøy)
 * Fixed a race condition where the first incoming WebSocket messages could be lost. ([#65](https://github.com/webbit/webbit/issues/65) Aslak Hellesøy)
 * Moved org.webbitserver.wsclient.WebSocket to org.webbitserver.netty.WebSocketClient. (Aslak Hellesøy)
 * Improved WebSocketClient so that it receives onClose events when closed locally. (Aslak Hellesøy)

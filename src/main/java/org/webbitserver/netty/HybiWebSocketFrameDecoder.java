@@ -24,7 +24,6 @@ import static org.webbitserver.netty.Opcodes.OPCODE_TEXT;
 
 public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFrameDecoder.State> {
     private final UTF8Output utf8Output = new UTF8Output();
-
     private final boolean isServer;
     private final boolean requireMaskedInboundFrames;
     private final byte[] outboundMaskingKey;
@@ -160,7 +159,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
             }
             case PAYLOAD: {
                 ChannelBuffer frame = buffer.readBytes(toFrameLength(framePayloadLen));
-                if(inboundMaskingKey != null) {
+                if (inboundMaskingKey != null) {
                     applyMask(frame, inboundMaskingKey);
                 }
                 checkpoint(FRAME_START);
