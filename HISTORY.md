@@ -1,3 +1,8 @@
+In Git
+==================
+
+* WebSocketClient no longer throws exceptions caused by passing in a null HttpRequest to the connection constructor (Aslak Hellesøy)
+
 0.3.4 (2012-01-30)
 ==================
 

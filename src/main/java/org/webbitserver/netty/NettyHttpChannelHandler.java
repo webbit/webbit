@@ -43,7 +43,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent messageEvent) throws Exception {
-        if(messageEvent.getMessage() instanceof HttpRequest) {
+        if (messageEvent.getMessage() instanceof HttpRequest) {
             handleHttpRequest(ctx, messageEvent, (HttpRequest) messageEvent.getMessage());
         } else {
             super.messageReceived(ctx, messageEvent);
