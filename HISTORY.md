@@ -1,11 +1,8 @@
 In Git
 ==================
 
-<<<<<<< HEAD
 * WebSocketClient can reconnect. (Aslak Hellesøy)
-=======
 * Added support for wss:// in WebSocketClient (Aslak Hellesøy)
->>>>>>> wss
 
 0.3.6 (2012-01-30)
 ==================
