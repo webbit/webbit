@@ -259,7 +259,7 @@ public class WebSocketClient implements WebSocket {
             final NettyWebSocketConnection webSocketConnection = new NettyWebSocketConnection(executor, httpRequest, ctx, outboundMaskingKey);
             webSocketConnection.setHybiWebSocketVersion(17);
 
-            ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
+            ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(executor, exceptionHandler, ioExceptionHandler, webSocketConnection, webSocketHandler);
 
             ChannelPipeline p = ctx.getChannel().getPipeline();
             p.remove("inflater");

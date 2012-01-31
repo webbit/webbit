@@ -3,7 +3,6 @@ package org.webbitserver.stub;
 import org.webbitserver.EventSourceConnection;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.WebSocketConnection;
-import org.webbitserver.netty.contrib.EventSourceMessage;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
     }
 
     @Override
-    public StubConnection send(EventSourceMessage message) {
+    public StubConnection send(org.webbitserver.EventSourceMessage message) {
         return send(message.build());
     }
 

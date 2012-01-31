@@ -3,70 +3,31 @@ package org.webbitserver.netty;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.EventSourceConnection;
-import org.webbitserver.netty.contrib.EventSourceMessage;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.buffer.ChannelBuffers.copiedBuffer;
 
-public class NettyEventSourceConnection implements EventSourceConnection {
-    private final Executor executor;
-    private final NettyHttpRequest nettyHttpRequest;
-    private final ChannelHandlerContext ctx;
-
+public class NettyEventSourceConnection extends AbstractHttpConnection implements EventSourceConnection {
     public NettyEventSourceConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx) {
-        this.executor = executor;
-        this.nettyHttpRequest = nettyHttpRequest;
-        this.ctx = ctx;
+        super(ctx, nettyHttpRequest, executor);
     }
 
     @Override
-    public NettyHttpRequest httpRequest() {
-        return nettyHttpRequest;
+    public NettyEventSourceConnection send(org.webbitserver.EventSourceMessage message) {
+        writeMessage(copiedBuffer(message.build(), CharsetUtil.UTF_8));
+        return this;
     }
 
     @Override
-    public EventSourceConnection send(EventSourceMessage message) {
-        ctx.getChannel().write(copiedBuffer(message.build(), CharsetUtil.UTF_8));
+    public NettyEventSourceConnection data(String key, Object value) {
+        putData(key, value);
         return this;
     }
 
     @Override
     public NettyEventSourceConnection close() {
-        ctx.getChannel().close();
+        closeChannel();
         return this;
-    }
-
-    @Override
-    public void execute(Runnable command) {
-        executor.execute(command);
-    }
-
-    @Override
-    public Map<String, Object> data() {
-        return nettyHttpRequest.data();
-    }
-
-    @Override
-    public Object data(String key) {
-        return data().get(key);
-    }
-
-    @Override
-    public NettyEventSourceConnection data(String key, Object value) {
-        data().put(key, value);
-        return this;
-    }
-
-    @Override
-    public Set<String> dataKeys() {
-        return data().keySet();
-    }
-
-    @Override
-    public Executor handlerExecutor() {
-        return executor;
     }
 }

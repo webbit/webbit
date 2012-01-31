@@ -1,9 +1,6 @@
 package org.webbitserver;
 
-import java.util.concurrent.Executor;
-
-public interface WebSocketConnection extends Executor, DataHolder {
-    HttpRequest httpRequest();
+public interface WebSocketConnection extends HttpConnection {
 
     /**
      * Sends a text frame
@@ -29,12 +26,16 @@ public interface WebSocketConnection extends Executor, DataHolder {
      */
     WebSocketConnection ping(String message);
 
+    /**
+     * @return the WebSocket protocol version
+     */
+    String version();
+
+    // Override methods to provide more specific return type.
+
+    @Override
     WebSocketConnection close();
 
     @Override
-    WebSocketConnection data(String key, Object value); // Override DataHolder to provide more specific return type.
-
-    Executor handlerExecutor();
-
-    String version();
+    WebSocketConnection data(String key, Object value);
 }
