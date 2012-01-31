@@ -8,6 +8,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 import org.jboss.netty.util.CharsetUtil;
 
+import java.util.concurrent.Executor;
+
 /**
  * Checks the received {@link org.jboss.netty.buffer.ChannelBuffer
  * ChannelBuffer}s for Flash policy file requests.
@@ -29,20 +31,24 @@ import org.jboss.netty.util.CharsetUtil;
  * </p>
  */
 public class FlashPolicyFileDecoder extends FrameDecoder {
-
-    private final int publicPort;
-
     private static final ChannelBuffer FLASH_POLICY_REQUEST = ChannelBuffers
             .copiedBuffer("<policy-file-request/>\0", CharsetUtil.US_ASCII);
 
-    public FlashPolicyFileDecoder(int publicPort) {
+    private final Executor executor;
+    private final Thread.UncaughtExceptionHandler exceptionHandler;
+    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
+    private final int publicPort;
+
+    public FlashPolicyFileDecoder(Executor executor, Thread.UncaughtExceptionHandler exceptionHandler, Thread.UncaughtExceptionHandler ioExceptionHandler, int publicPort) {
         super(true);
         this.publicPort = publicPort;
+        this.executor = executor;
+        this.exceptionHandler = exceptionHandler;
+        this.ioExceptionHandler = ioExceptionHandler;
     }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel,
-                            ChannelBuffer buffer) throws Exception {
+    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
 
         // Will use the first 23 bytes to detect the policy file request.
         if (buffer.readableBytes() >= 23) {
@@ -51,7 +57,7 @@ public class FlashPolicyFileDecoder extends FrameDecoder {
 
             if (FLASH_POLICY_REQUEST.equals(firstMessage)) {
                 p.addAfter("flashpolicydecoder", "flashpolicyhandler",
-                        new FlashPolicyFileHandler(this.publicPort));
+                        new FlashPolicyFileHandler(executor, exceptionHandler, ioExceptionHandler, this.publicPort));
             }
 
             p.remove(this);
