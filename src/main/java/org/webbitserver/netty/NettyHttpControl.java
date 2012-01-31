@@ -4,6 +4,7 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
@@ -86,7 +87,6 @@ public class NettyHttpControl implements HttpControl {
     public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler webSocketHandler) {
         NettyWebSocketConnection webSocketConnection = webSocketConnection();
         WebSocketConnectionHandler webSocketConnectionHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
-
         performWebSocketHandshake(webSocketConnection, webSocketConnectionHandler);
 
         try {
@@ -106,21 +106,16 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public NettyEventSourceConnection upgradeToEventSourceConnection(EventSourceHandler handler) {
+    public NettyEventSourceConnection upgradeToEventSourceConnection(EventSourceHandler eventSourceHandler) {
         NettyEventSourceConnection eventSourceConnection = eventSourceConnection();
-        // TODO: This pattern of calling a constructor to set things up is a bit weird.
-        // We should refactor this to be similar to how the WebSocket handshake is performed.
-        new NettyEventSourceChannelHandler(
-                executor,
-                handler,
-                ctx,
-                exceptionHandler,
-                webbitHttpRequest,
-                ioExceptionHandler,
-                eventSourceConnection,
-                nettyHttpRequest,
-                nettyHttpResponse
-        );
+        EventSourceConnectionHandler eventSourceConnectionHandler = new EventSourceConnectionHandler(eventSourceConnection, exceptionHandler, ioExceptionHandler, eventSourceHandler, executor);
+        performEventSourceHandshake(eventSourceConnectionHandler);
+
+        try {
+            eventSourceHandler.onOpen(eventSourceConnection);
+        } catch (Exception e) {
+            exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
+        }
         return eventSourceConnection;
     }
 
@@ -141,6 +136,26 @@ public class NettyHttpControl implements HttpControl {
     public void execute(Runnable command) {
         handlerExecutor().execute(command);
     }
+
+    private void performEventSourceHandshake(ChannelHandler eventSourceConnectionHandler) {
+        nettyHttpResponse.setStatus(HttpResponseStatus.OK);
+        nettyHttpResponse.addHeader("Content-Type", "text/event-stream");
+        nettyHttpResponse.addHeader("Transfer-Encoding", "identity");
+        nettyHttpResponse.addHeader("Connection", "keep-alive");
+        nettyHttpResponse.addHeader("Cache-Control", "no-cache");
+        nettyHttpResponse.setChunked(false);
+        ctx.getChannel().write(nettyHttpResponse);
+        getReadyToSendEventSourceMessages(eventSourceConnectionHandler);
+    }
+
+    private void getReadyToSendEventSourceMessages(ChannelHandler eventSourceConnectionHandler) {
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        StaleConnectionTrackingHandler staleConnectionTracker = (StaleConnectionTrackingHandler) p.remove("staleconnectiontracker");
+        staleConnectionTracker.stopTracking(ctx.getChannel());
+        p.remove("aggregator");
+        p.replace("handler", "ssehandler", eventSourceConnectionHandler);
+    }
+
 
     private void performWebSocketHandshake(NettyWebSocketConnection webSocketConnection, ChannelHandler webSocketConnectionHandler) {
         WebSocketVersion[] versions = new WebSocketVersion[]{

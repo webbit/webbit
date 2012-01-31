@@ -11,7 +11,7 @@ public class EventSourceMessage {
     private static final String RETRY = "retry";
 
     private static final String LF = "\n";
-    private StringBuilder payload = new StringBuilder();
+    private final StringBuilder payload = new StringBuilder();
 
     public EventSourceMessage() {
     }

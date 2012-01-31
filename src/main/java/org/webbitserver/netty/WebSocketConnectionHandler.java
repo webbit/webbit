@@ -19,7 +19,13 @@ public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
     private final Thread.UncaughtExceptionHandler exceptionHandler;
     private final Thread.UncaughtExceptionHandler ioExceptionHandler;
 
-    public WebSocketConnectionHandler(NettyWebSocketConnection webSocketConnection, Thread.UncaughtExceptionHandler exceptionHandler, Thread.UncaughtExceptionHandler ioExceptionHandler, WebSocketHandler webSocketHandler, Executor executor) {
+    public WebSocketConnectionHandler(
+            NettyWebSocketConnection webSocketConnection,
+            Thread.UncaughtExceptionHandler exceptionHandler,
+            Thread.UncaughtExceptionHandler ioExceptionHandler,
+            WebSocketHandler webSocketHandler,
+            Executor executor
+    ) {
         this.webSocketConnection = webSocketConnection;
         this.exceptionHandler = exceptionHandler;
         this.ioExceptionHandler = ioExceptionHandler;
