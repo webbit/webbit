@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import samples.echo.EchoWsServer;
@@ -28,7 +29,8 @@ public class WebSocketClientTest {
     @Before
     public void start() throws IOException, URISyntaxException, InterruptedException {
         server = new EchoWsServer(59509);
-        URI uri = server.start();
+        server.start();
+        URI uri = server.uri();
         wsUri = new URI(uri.toASCIIString().replaceFirst("http", "ws"));
     }
 
@@ -73,7 +75,7 @@ public class WebSocketClientTest {
         final CountDownLatch countDown = new CountDownLatch(2);
         final List<String> received = Collections.synchronizedList(new ArrayList<String>());
 
-        WebSocketClient ws = new WebSocketClient(wsUri, new WebSocketHandler() {
+        WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
                 connection.send(message);
