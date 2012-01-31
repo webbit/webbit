@@ -1,6 +1,7 @@
 package org.webbitserver;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.Executor;
 
@@ -147,4 +148,29 @@ public interface WebServer {
      * is considered stale if it remains open without sending more data within the timeout window.
      */
     WebServer staleConnectionTimeout(long millis);
+
+    /**
+     * Setup SSL/TLS handler
+     * <p/>
+     * This is shortcut for {@code setupSsl(keyStore, pass, pass)}.
+     *
+     * @param keyStore Keystore InputStream
+     * @param pass Store and key password
+     * @return current WebServer instance
+     * @throws WebbitException A problem loading the keystore
+     * @see #setupSsl(String, String, String)
+     */
+    WebServer setupSsl(InputStream keyStore, String pass) throws WebbitException;
+
+    /**
+     * Setup SSL/TLS handler
+     *
+     * @param keyStore Keystore InputStream
+     * @param storePass Store password
+     * @param keyPass Key password
+     * @return current WebServer instance
+     * @throws WebbitException A problem loading the keystore
+     * @see #setupSsl(String, String, String)
+     */
+    WebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException;
 }
