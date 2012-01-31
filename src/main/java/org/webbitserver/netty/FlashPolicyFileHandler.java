@@ -11,6 +11,8 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.util.CharsetUtil;
 
+import java.util.concurrent.Executor;
+
 /**
  * Responds with a Flash socket policy file.
  * <p/>
@@ -26,15 +28,20 @@ import org.jboss.netty.util.CharsetUtil;
 public class FlashPolicyFileHandler extends SimpleChannelUpstreamHandler {
 
     private final int publicPort;
+    private final ConnectionHelper connectionHelper;
 
-    public FlashPolicyFileHandler(int publicPort) {
-        super();
+    public FlashPolicyFileHandler(Executor executor, Thread.UncaughtExceptionHandler exceptionHandler, Thread.UncaughtExceptionHandler ioExceptionHandler, int publicPort) {
         this.publicPort = publicPort;
+        this.connectionHelper = new ConnectionHelper(executor, exceptionHandler, ioExceptionHandler) {
+            @Override
+            protected void fireOnClose() throws Exception {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-            throws Exception {
+    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Channel ch = e.getChannel();
         ChannelBuffer response = getPolicyFileContents();
         ChannelFuture future = ch.write(response);
@@ -55,10 +62,8 @@ public class FlashPolicyFileHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-            throws Exception {
-        e.getCause().printStackTrace();
-        e.getChannel().close();
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        connectionHelper.fireConnectionException(e);
     }
 
 }

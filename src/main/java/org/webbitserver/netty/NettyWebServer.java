@@ -182,7 +182,7 @@ public class NettyWebServer implements WebServer {
                 }
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
-                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(getPort()));
+                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(executor, exceptionHandler, ioExceptionHandler, getPort()));
                 pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
                 pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
                 pipeline.addLast("decompressor", new HttpContentDecompressor());
