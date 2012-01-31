@@ -37,8 +37,11 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
@@ -125,41 +128,52 @@ public class WebSocketClient implements WebSocket {
     }
 
     @Override
-    public WebSocketClient start() {
-        final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
+    public Future<WebSocket> start() {
+        final FutureTask<WebSocket> future = new FutureTask<WebSocket>(new Callable<WebSocket>() {
+            @Override
+            public WebSocket call() throws Exception {
+                final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
-        bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
+                bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
+                        Executors.newCachedThreadPool(),
+                        Executors.newCachedThreadPool()));
 
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() throws Exception {
-                ChannelPipeline pipeline = pipeline();
-                if (ssl) {
-                    if (sslFactory == null) {
-                        throw new WebbitException("You need to call setupSsl first");
+                bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+                    public ChannelPipeline getPipeline() throws Exception {
+                        ChannelPipeline pipeline = pipeline();
+                        if (ssl) {
+                            if (sslFactory == null) {
+                                throw new WebbitException("You need to call setupSsl first");
+                            }
+                            SSLContext sslContext = sslFactory.getClientContext();
+                            SSLEngine sslEngine = sslContext.createSSLEngine();
+                            sslEngine.setUseClientMode(true);
+                            pipeline.addLast("ssl", new SslHandler(sslEngine));
+                        }
+                        pipeline.addLast("decoder", new HttpResponseDecoder());
+                        pipeline.addLast("encoder", new HttpRequestEncoder());
+                        pipeline.addLast("inflater", new HttpContentDecompressor());
+                        pipeline.addLast("handshakeHandler", new HandshakeChannelHandler(outboundMaskingKey));
+                        return pipeline;
                     }
-                    SSLContext sslContext = sslFactory.getClientContext();
-                    SSLEngine sslEngine = sslContext.createSSLEngine();
-                    sslEngine.setUseClientMode(true);
-                    pipeline.addLast("ssl", new SslHandler(sslEngine));
-                }
-                pipeline.addLast("decoder", new HttpResponseDecoder());
-                pipeline.addLast("encoder", new HttpRequestEncoder());
-                pipeline.addLast("inflater", new HttpContentDecompressor());
-                pipeline.addLast("handshakeHandler", new HandshakeChannelHandler(outboundMaskingKey));
-                return pipeline;
-            }
-        });
-        ChannelFuture future = bootstrap.connect(remoteAddress);
-        channel = future.awaitUninterruptibly().getChannel();
+                });
+                ChannelFuture future = bootstrap.connect(remoteAddress);
+                channel = future.awaitUninterruptibly().getChannel();
 
-        if (!future.isSuccess()) {
-            close();
-        } else {
-            channel.write(request).awaitUninterruptibly();
-        }
-        return this;
+                if (!future.isSuccess()) {
+                    close();
+                } else {
+                    ChannelFuture requestFuture = channel.write(request);
+                    requestFuture.awaitUninterruptibly();
+
+                }
+
+                return WebSocketClient.this;
+            };
+        });
+
+        executor.execute(future);
+        return future;
     }
 
     private HttpRequest createNettyHttpRequest(String uri, String host) {
@@ -188,12 +202,12 @@ public class WebSocketClient implements WebSocket {
 
     @Override
     public WebSocket close() {
-        channel.getCloseFuture().awaitUninterruptibly();
-        bootstrap.releaseExternalResources();
         executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
+                    channel.getCloseFuture().awaitUninterruptibly();
+                    bootstrap.releaseExternalResources();
                     webSocketHandler.onClose(null);
                 } catch (Exception e) {
                     exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, channel));

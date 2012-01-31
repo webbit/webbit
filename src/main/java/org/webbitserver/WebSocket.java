@@ -3,9 +3,10 @@ package org.webbitserver;
 import org.webbitserver.netty.WebSocketClient;
 
 import java.io.InputStream;
+import java.util.concurrent.Future;
 
 public interface WebSocket {
-    WebSocket start();
+    Future<WebSocket> start();
 
     WebSocket close();
 
