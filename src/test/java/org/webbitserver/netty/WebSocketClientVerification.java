@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.webbitserver.WebServer;
 import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class WebSocketClientTest {
+public abstract class WebSocketClientVerification {
     private EchoWsServer server;
     private URI wsUri;
 
@@ -33,6 +34,10 @@ public class WebSocketClientTest {
         URI uri = server.uri();
         wsUri = new URI(uri.toASCIIString().replaceFirst("http", "ws"));
     }
+
+    protected abstract WebServer createServer() throws IOException;
+
+    protected abstract void configure(WebSocket ws);
 
     @After
     public void die() throws IOException, InterruptedException {
@@ -100,6 +105,7 @@ public class WebSocketClientTest {
             public void onPong(WebSocketConnection connection, String msg) throws Throwable {
             }
         }, Executors.newSingleThreadExecutor());
+        configure(ws);
         ws.start();
 
         assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));

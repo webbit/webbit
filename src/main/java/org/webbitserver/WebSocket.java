@@ -1,9 +1,13 @@
 package org.webbitserver;
 
+import java.io.InputStream;
+
 public interface WebSocket {
     WebSocket start();
 
     WebSocket close();
 
-    void reconnectEvery(long millis);
+    WebSocket reconnectEvery(long millis);
+
+    WebSocket setupSsl(InputStream resourceAsStream, String webbit);
 }
