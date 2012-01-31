@@ -1,4 +1,4 @@
-package org.webbitserver;
+package org.webbitserver.helpers;
 
 import java.net.HttpCookie;
 import java.util.ArrayList;

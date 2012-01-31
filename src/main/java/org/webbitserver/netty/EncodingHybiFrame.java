@@ -63,7 +63,7 @@ public class EncodingHybiFrame {
             header.writeLong(length);
         }
 
-        if(maskingKey != null) {
+        if (maskingKey != null) {
             header.writeBytes(maskingKey);
             applyMask(data, maskingKey);
         }

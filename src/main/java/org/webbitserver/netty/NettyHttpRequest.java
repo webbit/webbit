@@ -3,7 +3,7 @@ package org.webbitserver.netty;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
-import org.webbitserver.InboundCookieParser;
+import org.webbitserver.helpers.InboundCookieParser;
 import org.webbitserver.helpers.QueryParameters;
 
 import java.net.HttpCookie;

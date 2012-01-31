@@ -14,9 +14,6 @@ import org.jboss.netty.channel.ExceptionEvent;
 public class WebbitException extends RuntimeException {
     private static final long serialVersionUID = 8212455395690231426L;
 
-    public WebbitException() {
-    }
-
     public WebbitException(String message) {
         super(message);
     }

@@ -122,14 +122,14 @@ public class NettyWebServer implements WebServer {
     public URI getUri() {
         return publicUri;
     }
-    
+
     @Override
-    public int getPort() {  
-    	if (publicUri.getPort() == -1) {
-    		return publicUri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
-    	}
-    	return publicUri.getPort();
-     }
+    public int getPort() {
+        if (publicUri.getPort() == -1) {
+            return publicUri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
+        }
+        return publicUri.getPort();
+    }
 
     @Override
     public Executor getExecutor() {
@@ -186,7 +186,7 @@ public class NettyWebServer implements WebServer {
                 }
                 pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                 pipeline.addLast("connectiontracker", connectionTrackingHandler);
-                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(getPort()));
+                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(executor, exceptionHandler, ioExceptionHandler, getPort()));
                 pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
                 pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
                 pipeline.addLast("decompressor", new HttpContentDecompressor());

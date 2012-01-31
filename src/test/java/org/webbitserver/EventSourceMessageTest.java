@@ -1,4 +1,4 @@
-package org.webbitserver.netty.contrib;
+package org.webbitserver;
 
 import static org.junit.Assert.assertEquals;
 

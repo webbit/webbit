@@ -1,97 +1,56 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebSocketConnection;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class NettyWebSocketConnection implements WebSocketConnection {
+public class NettyWebSocketConnection extends AbstractHttpConnection implements WebSocketConnection {
 
-    private final Executor executor;
-    private final NettyHttpRequest nettyHttpRequest;
-    private final ChannelHandlerContext ctx;
     private final byte[] outboundMaskingKey;
     private String version;
     private boolean hybi;
 
     public NettyWebSocketConnection(Executor executor, NettyHttpRequest nettyHttpRequest, ChannelHandlerContext ctx, byte[] outboundMaskingKey) {
-        this.executor = executor;
-        this.nettyHttpRequest = nettyHttpRequest;
-        this.ctx = ctx;
+        super(ctx, nettyHttpRequest, executor);
         this.outboundMaskingKey = outboundMaskingKey;
-    }
-
-    @Override
-    public NettyHttpRequest httpRequest() {
-        return nettyHttpRequest;
     }
 
     @Override
     public NettyWebSocketConnection send(String message) {
         if (hybi) {
-            return write(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
+            writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
         } else {
-            return write(new DefaultWebSocketFrame(message));
+            writeMessage(new DefaultWebSocketFrame(message));
         }
+        return this;
     }
 
     @Override
     public NettyWebSocketConnection send(byte[] message) {
-        return write(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(message)));
+        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(message)));
+        return this;
     }
 
     @Override
     public NettyWebSocketConnection ping(String message) {
-        return write(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
-    }
-
-    private NettyWebSocketConnection write(Object frame) {
-        ctx.getChannel().write(frame);
+        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
         return this;
     }
 
     @Override
     public NettyWebSocketConnection close() {
-        ctx.getChannel().write(ChannelBuffers.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        closeChannel();
         return this;
-    }
-
-    @Override
-    public Map<String, Object> data() {
-        return nettyHttpRequest.data();
-    }
-
-    @Override
-    public Object data(String key) {
-        return data().get(key);
     }
 
     @Override
     public NettyWebSocketConnection data(String key, Object value) {
-        data().put(key, value);
+        putData(key, value);
         return this;
-    }
-
-    @Override
-    public Set<String> dataKeys() {
-        return data().keySet();
-    }
-
-    @Override
-    public Executor handlerExecutor() {
-        return executor;
-    }
-
-    @Override
-    public void execute(Runnable command) {
-        handlerExecutor().execute(command);
     }
 
     @Override
@@ -106,9 +65,5 @@ public class NettyWebSocketConnection implements WebSocketConnection {
     public void setHybiWebSocketVersion(int webSocketVersion) {
         setVersion("Sec-WebSocket-Version-" + webSocketVersion);
         hybi = true;
-    }
-
-    Channel getChannel() {
-        return ctx.getChannel();
     }
 }

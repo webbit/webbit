@@ -10,6 +10,7 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
 
@@ -84,9 +85,9 @@ public class NettyHttpControl implements HttpControl {
     }
 
     @Override
-    public NettyWebSocketConnection upgradeToWebSocketConnection(WebSocketHandler webSocketHandler) {
+    public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler webSocketHandler) {
         NettyWebSocketConnection webSocketConnection = webSocketConnection();
-        WebSocketConnectionHandler webSocketConnectionHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
+        WebSocketConnectionHandler webSocketConnectionHandler = new WebSocketConnectionHandler(executor, exceptionHandler, ioExceptionHandler, webSocketConnection, webSocketHandler);
         performWebSocketHandshake(webSocketConnection, webSocketConnectionHandler);
 
         try {
@@ -108,7 +109,7 @@ public class NettyHttpControl implements HttpControl {
     @Override
     public NettyEventSourceConnection upgradeToEventSourceConnection(EventSourceHandler eventSourceHandler) {
         NettyEventSourceConnection eventSourceConnection = eventSourceConnection();
-        EventSourceConnectionHandler eventSourceConnectionHandler = new EventSourceConnectionHandler(eventSourceConnection, exceptionHandler, ioExceptionHandler, eventSourceHandler, executor);
+        EventSourceConnectionHandler eventSourceConnectionHandler = new EventSourceConnectionHandler(executor, exceptionHandler, ioExceptionHandler, eventSourceConnection, eventSourceHandler);
         performEventSourceHandshake(eventSourceConnectionHandler);
 
         try {
