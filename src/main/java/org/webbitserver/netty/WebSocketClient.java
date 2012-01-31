@@ -35,7 +35,6 @@ import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Executor;
@@ -62,6 +61,7 @@ public class WebSocketClient implements WebSocket {
     private final InetSocketAddress remoteAddress;
     private final HttpRequest request;
     private final boolean ssl;
+    private ConnectionHelper connectionHelper;
 
     private ClientBootstrap bootstrap;
     private Channel channel;
@@ -96,32 +96,31 @@ public class WebSocketClient implements WebSocket {
         connectionExceptionHandler(new SilentExceptionHandler());
     }
 
-    /**
-     * What to do when an exception gets thrown in a handler.
-     * <p/>
-     * Defaults to using {@link org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler}.
-     * It is suggested that apps supply their own implementation (e.g. to log somewhere).
-     */
-    WebSocket uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+    @Override
+    public WebSocketClient uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         this.exceptionHandler = handler;
+        connectionHelper = createConnectionHelper();
         return this;
     }
 
-    /**
-     * What to do when an exception occurs when attempting to read/write data
-     * from/to the underlying connection. e.g. If an HTTP request disconnects
-     * before it was expected.
-     * <p/>
-     * Defaults to using {@link org.webbitserver.handler.exceptions.SilentExceptionHandler}
-     * as this is a common thing to happen on a network, and most systems should not care.
-     */
-    WebSocket connectionExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+    @Override
+    public WebSocketClient connectionExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         this.ioExceptionHandler = handler;
+        connectionHelper = createConnectionHelper();
         return this;
     }
 
-    public WebSocketClient setupSsl(InputStream keyStore, String pass) {
-        sslFactory = new SslFactory(keyStore, pass);
+    private ConnectionHelper createConnectionHelper() {
+        return new ConnectionHelper(executor, exceptionHandler, ioExceptionHandler) {
+            @Override
+            protected void fireOnClose() throws Exception {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public WebSocketClient setupSsl(InputStream keyStore, String storePass) {
+        sslFactory = new SslFactory(keyStore, storePass);
         return this;
     }
 
@@ -219,17 +218,7 @@ public class WebSocketClient implements WebSocket {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
-            if (e.getCause() instanceof ClosedChannelException) {
-                e.getChannel().close();
-            } else {
-                final Thread thread = Thread.currentThread();
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
-                    }
-                });
-            }
+            connectionHelper.fireConnectionException(e);
         }
 
         @Override

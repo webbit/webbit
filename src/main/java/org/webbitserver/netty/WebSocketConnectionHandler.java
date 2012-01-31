@@ -12,7 +12,6 @@ import java.util.concurrent.Executor;
 
 public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
     private final Executor executor;
-    private final Thread.UncaughtExceptionHandler exceptionHandler;
     private final NettyWebSocketConnection webSocketConnection;
     private final WebSocketHandler webSocketHandler;
     private final ConnectionHelper connectionHelper;
@@ -25,7 +24,6 @@ public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
             final WebSocketHandler webSocketHandler
     ) {
         this.executor = executor;
-        this.exceptionHandler = exceptionHandler;
         this.webSocketConnection = webSocketConnection;
         this.webSocketHandler = webSocketHandler;
         this.connectionHelper = new ConnectionHelper(executor, exceptionHandler, ioExceptionHandler) {
@@ -53,7 +51,7 @@ public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
         Object message = e.getMessage();
         if (message instanceof DecodingHybiFrame) {
             DecodingHybiFrame frame = (DecodingHybiFrame) message;
-            frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandler);
+            frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandlerWithContext);
         } else {
             // Hixie 75/76
             final WebSocketFrame frame = (WebSocketFrame) message;
