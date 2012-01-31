@@ -8,7 +8,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -22,13 +22,13 @@ public class SslTest {
 
     @Test
     public void setsSecureHttpsServerHeader() throws Exception {
-        FileInputStream fis = new FileInputStream("src/test/resources/ssl/keystore");
+        InputStream keystore = getClass().getResourceAsStream("/ssl/keystore");
         WebServer webServer = createWebServer(10443)
-                .setupSsl(fis, "webbit")
+                .setupSsl(keystore, "webbit")
                 .add(new ServerHeaderHandler("My Server"))
                 .add(new StringHttpHandler("text/plain", "body"));
 
-        fis.close();
+        keystore.close();
         webServer.start();
 
         try {
