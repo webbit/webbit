@@ -1,7 +1,7 @@
 package org.webbitserver.stub;
 
 import org.webbitserver.HttpRequest;
-import org.webbitserver.InboundCookieParser;
+import org.webbitserver.helpers.InboundCookieParser;
 import org.webbitserver.helpers.QueryParameters;
 
 import java.net.HttpCookie;

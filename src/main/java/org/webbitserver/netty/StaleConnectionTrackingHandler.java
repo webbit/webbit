@@ -63,6 +63,7 @@ public class StaleConnectionTrackingHandler extends SimpleChannelHandler {
 
     /**
      * Stops tracking this channel for staleness. This happens for WebSockets and EventSource connections.
+     *
      * @param channel
      */
     public void stopTracking(final Channel channel) {

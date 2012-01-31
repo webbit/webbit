@@ -37,8 +37,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
                              HttpResponse response,
                              boolean isKeepAlive,
                              Thread.UncaughtExceptionHandler exceptionHandler,
-                             Thread.UncaughtExceptionHandler ioExceptionHandler)
-    {
+                             Thread.UncaughtExceptionHandler ioExceptionHandler) {
         this.ctx = ctx;
         this.response = response;
         this.isKeepAlive = isKeepAlive;
@@ -137,7 +136,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         flushResponse();
 
         exceptionHandler.uncaughtException(Thread.currentThread(),
-                                           WebbitException.fromException(error, ctx.getChannel()));
+                WebbitException.fromException(error, ctx.getChannel()));
 
         return this;
     }
@@ -167,7 +166,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             }
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(),
-                                               WebbitException.fromException(e, ctx.getChannel()));
+                    WebbitException.fromException(e, ctx.getChannel()));
         }
     }
 

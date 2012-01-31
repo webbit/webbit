@@ -1,4 +1,4 @@
-package org.webbitserver;
+package org.webbitserver.helpers;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.webbitserver.helpers.InboundCookieParser;
 
 public class InboundCookieParserTest {
     @Test

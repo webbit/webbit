@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import org.junit.Test;
-import org.webbitserver.netty.contrib.EventSourceMessage;
+import org.webbitserver.EventSourceMessage;
 
 public class StubConnectionTest {
 
