@@ -5,6 +5,7 @@ import org.webbitserver.WebServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -18,6 +19,12 @@ public class HttpClient {
     public static URLConnection httpGet(WebServer webServer, String path) throws IOException {
         URL url = new URL(webServer.getUri().toURL(), path);
         return url.openConnection();
+    }
+
+    public static HttpsURLConnection httpsGet(WebServer webServer, String path) throws IOException {
+        URL wsUrl = webServer.getUri().toURL();
+        URL url = new URL("https", "localhost", wsUrl.getPort(), path);
+        return (HttpsURLConnection) url.openConnection();
     }
 
     public static URLConnection httpGetAcceptCompressed(WebServer webServer, String path) throws IOException {
