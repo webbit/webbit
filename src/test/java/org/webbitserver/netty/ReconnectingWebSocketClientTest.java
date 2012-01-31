@@ -12,8 +12,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +37,7 @@ public class ReconnectingWebSocketClientTest {
     }
 
     @Test
-    public void client_reconnects_when_told_to_do_so() throws InterruptedException, IOException {
+    public void client_reconnects_when_told_to_do_so() throws InterruptedException, IOException, ExecutionException, TimeoutException {
         final CountDownLatch closed = new CountDownLatch(1);
         final CountDownLatch connected = new CountDownLatch(1);
         WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
@@ -62,7 +65,7 @@ public class ReconnectingWebSocketClientTest {
         });
         ws.reconnectEvery(10);
 
-        ws.start();
+        ws.start().get(100, TimeUnit.MILLISECONDS);
         assertTrue("Should have closed", closed.await(50, TimeUnit.MILLISECONDS));
 
         server.start();
@@ -70,7 +73,7 @@ public class ReconnectingWebSocketClientTest {
     }
 
     @Test
-    public void client_does_not_reconnect_when__not_told_to_do_so() throws InterruptedException, IOException {
+    public void client_does_not_reconnect_when__not_told_to_do_so() throws InterruptedException, IOException, ExecutionException, TimeoutException {
         final CountDownLatch closed = new CountDownLatch(1);
         final CountDownLatch connected = new CountDownLatch(1);
         WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
@@ -97,7 +100,7 @@ public class ReconnectingWebSocketClientTest {
             }
         });
 
-        ws.start();
+        ws.start().get(100, TimeUnit.MILLISECONDS);
         assertTrue("Should have closed", closed.await(50, TimeUnit.MILLISECONDS));
 
         server.start();

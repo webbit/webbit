@@ -1,7 +1,9 @@
 package org.webbitserver;
 
+import java.util.concurrent.Future;
+
 public interface WebSocket {
-    WebSocket start();
+    Future<WebSocket> start();
 
     WebSocket close();
 
