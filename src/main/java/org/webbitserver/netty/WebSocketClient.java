@@ -19,12 +19,17 @@ import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.ssl.SslHandler;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 import org.webbitserver.helpers.Base64;
+import org.webbitserver.helpers.SslFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.MessageDigest;
@@ -52,12 +57,14 @@ public class WebSocketClient {
     private final Executor executor;
     private final InetSocketAddress remoteAddress;
     private final HttpRequest request;
+    private final boolean ssl;
 
     private ClientBootstrap bootstrap;
     private Channel channel;
     private String base64Nonce;
     private Thread.UncaughtExceptionHandler exceptionHandler;
     private Thread.UncaughtExceptionHandler ioExceptionHandler;
+    private SslFactory sslFactory;
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler) {
         this(uri, webSocketHandler, Executors.newSingleThreadExecutor());
@@ -70,14 +77,13 @@ public class WebSocketClient {
         String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
         String host = uri.getHost() == null ? "localhost" : uri.getHost();
         int port = uri.getPort();
+        ssl = scheme.equalsIgnoreCase("wss");
         if (port == -1) {
             if (scheme.equalsIgnoreCase("ws")) {
                 port = 80;
+            } else if (ssl) {
+                port = 443;
             }
-        }
-
-        if (!scheme.equalsIgnoreCase("ws")) {
-            throw new IllegalArgumentException("Only ws(s) is supported.");
         }
         remoteAddress = new InetSocketAddress(host, port);
         request = createNettyHttpRequest(uri.toASCIIString().replaceFirst("http", "ws"), host);
@@ -110,6 +116,11 @@ public class WebSocketClient {
         return this;
     }
 
+    public WebSocketClient setupSsl(InputStream keyStore, String pass) {
+        sslFactory = new SslFactory(keyStore, pass);
+        return this;
+    }
+
     public void start() {
         final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
@@ -120,6 +131,15 @@ public class WebSocketClient {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline pipeline = pipeline();
+                if (ssl) {
+                    if(sslFactory == null) {
+                        throw new WebbitException("You need to call setupSsl first");
+                    }
+                    SSLContext sslContext = sslFactory.getClientContext();
+                    SSLEngine sslEngine = sslContext.createSSLEngine();
+                    sslEngine.setUseClientMode(true);
+                    pipeline.addLast("ssl", new SslHandler(sslEngine));
+                }
                 pipeline.addLast("decoder", new HttpResponseDecoder());
                 pipeline.addLast("encoder", new HttpRequestEncoder());
                 pipeline.addLast("inflater", new HttpContentDecompressor());

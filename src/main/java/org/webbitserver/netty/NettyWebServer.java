@@ -13,9 +13,9 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
-import org.webbitserver.WebbitException;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketHandler;
+import org.webbitserver.WebbitException;
 import org.webbitserver.handler.DateHeaderHandler;
 import org.webbitserver.handler.HttpToEventSourceHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
@@ -25,6 +25,8 @@ import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 import org.webbitserver.helpers.SslFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -32,8 +34,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -110,26 +110,22 @@ public class NettyWebServer implements WebServer {
 
     @Override
     public NettyWebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException {
-        try {
-            this.sslContext = SslFactory.getContext(keyStore, storePass, keyPass);
-            return this;
-        } catch(Exception e) {
-            throw new WebbitException(e);
-        }
+        this.sslContext = new SslFactory(keyStore, storePass).getServerContext(keyPass);
+        return this;
     }
 
     @Override
     public URI getUri() {
         return publicUri;
     }
-    
+
     @Override
-    public int getPort() {  
-    	if (publicUri.getPort() == -1) {
-    		return publicUri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
-    	}
-    	return publicUri.getPort();
-     }
+    public int getPort() {
+        if (publicUri.getPort() == -1) {
+            return publicUri.getScheme().equalsIgnoreCase("https") ? 443 : 80;
+        }
+        return publicUri.getPort();
+    }
 
     @Override
     public Executor getExecutor() {

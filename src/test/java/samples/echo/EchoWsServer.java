@@ -5,8 +5,6 @@ import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
-import org.webbitserver.handler.logging.LoggingHandler;
-import org.webbitserver.handler.logging.SimpleLogSink;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,8 +16,12 @@ public class EchoWsServer {
     private final WebServer webServer;
 
     public EchoWsServer(int port) throws IOException {
-        webServer = createWebServer(port)
-                .add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());
+        this(createWebServer(port));
+    }
+
+    public EchoWsServer(WebServer webServer) throws IOException {
+        this.webServer = webServer;
+        webServer.add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());
     }
 
     public URI start() throws IOException {

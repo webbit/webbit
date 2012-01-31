@@ -1,3 +1,8 @@
+In Git
+==================
+
+* Added support for wss:// in WebSocketClient (Aslak Hellesøy)
+
 0.3.6 (2012-01-30)
 ==================
 
