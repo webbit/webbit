@@ -5,8 +5,6 @@ import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
-import org.webbitserver.handler.logging.LoggingHandler;
-import org.webbitserver.handler.logging.SimpleLogSink;
 
 import java.io.IOException;
 import java.net.URI;

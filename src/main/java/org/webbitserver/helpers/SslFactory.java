@@ -3,7 +3,6 @@ package org.webbitserver.helpers;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.Security;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 

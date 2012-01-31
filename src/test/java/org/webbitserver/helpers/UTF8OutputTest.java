@@ -1,16 +1,12 @@
 package org.webbitserver.helpers;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.helpers.Hex.fromHex;
-import static org.webbitserver.helpers.Hex.toHex;
 
 public class UTF8OutputTest {
     private UTF8Output utf8Output = new UTF8Output();
