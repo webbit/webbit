@@ -7,7 +7,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         EchoWsServer server = new EchoWsServer(9001);
-        System.out.println("Echo server running on: " + server.start());
+        server.start();
+        System.out.println("Echo server running on: " + server.uri());
     }
 
 }

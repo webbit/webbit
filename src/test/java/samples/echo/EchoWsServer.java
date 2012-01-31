@@ -20,8 +20,11 @@ public class EchoWsServer {
                 .add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());
     }
 
-    public URI start() throws IOException {
+    public void start() throws IOException {
         webServer.start();
+    }
+
+    public URI uri() throws IOException {
         return webServer.getUri();
     }
 

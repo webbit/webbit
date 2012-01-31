@@ -7,6 +7,7 @@ import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -19,22 +20,28 @@ import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
+import org.webbitserver.handler.ReconnectingWebSocketHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
 import org.webbitserver.helpers.Base64;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.channels.ClosedChannelException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
-public class WebSocketClient {
+public class WebSocketClient implements WebSocket {
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final MessageDigest SHA_1;
 
@@ -48,7 +55,7 @@ public class WebSocketClient {
 
     private static long nextId = 1;
 
-    private final WebSocketHandler webSocketHandler;
+    private WebSocketHandler webSocketHandler;
     private final Executor executor;
     private final InetSocketAddress remoteAddress;
     private final HttpRequest request;
@@ -92,7 +99,7 @@ public class WebSocketClient {
      * Defaults to using {@link org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler}.
      * It is suggested that apps supply their own implementation (e.g. to log somewhere).
      */
-    WebSocketClient uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+    WebSocket uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         this.exceptionHandler = handler;
         return this;
     }
@@ -105,36 +112,49 @@ public class WebSocketClient {
      * Defaults to using {@link org.webbitserver.handler.exceptions.SilentExceptionHandler}
      * as this is a common thing to happen on a network, and most systems should not care.
      */
-    WebSocketClient connectionExceptionHandler(Thread.UncaughtExceptionHandler handler) {
+    WebSocket connectionExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         this.ioExceptionHandler = handler;
         return this;
     }
 
-    public void start() {
-        final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
+    @Override
+    public Future<WebSocket> start() {
+        final FutureTask<WebSocket> future = new FutureTask<WebSocket>(new Callable<WebSocket>() {
+            @Override
+            public WebSocket call() throws Exception {
+                final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
-        bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
-                Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool()));
+                bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
+                        Executors.newCachedThreadPool(),
+                        Executors.newCachedThreadPool()));
 
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() throws Exception {
-                ChannelPipeline pipeline = pipeline();
-                pipeline.addLast("decoder", new HttpResponseDecoder());
-                pipeline.addLast("encoder", new HttpRequestEncoder());
-                pipeline.addLast("inflater", new HttpContentDecompressor());
-                pipeline.addLast("handshakeHandler", new HandshakeChannelHandler(outboundMaskingKey));
-                return pipeline;
-            }
+                bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+                    public ChannelPipeline getPipeline() throws Exception {
+                        ChannelPipeline pipeline = pipeline();
+                        pipeline.addLast("decoder", new HttpResponseDecoder());
+                        pipeline.addLast("encoder", new HttpRequestEncoder());
+                        pipeline.addLast("inflater", new HttpContentDecompressor());
+                        pipeline.addLast("handshakeHandler", new HandshakeChannelHandler(outboundMaskingKey));
+                        return pipeline;
+                    }
+                });
+                ChannelFuture future = bootstrap.connect(remoteAddress);
+                channel = future.awaitUninterruptibly().getChannel();
+
+                if (!future.isSuccess()) {
+                    close();
+                } else {
+                    ChannelFuture requestFuture = channel.write(request);
+                    requestFuture.awaitUninterruptibly();
+
+                }
+
+                return WebSocketClient.this;
+            };
         });
-        ChannelFuture future = bootstrap.connect(remoteAddress);
-        channel = future.awaitUninterruptibly().getChannel();
 
-        if (!future.isSuccess()) {
-            close();
-            throw new WebbitException(future.getCause());
-        }
-        channel.write(request).awaitUninterruptibly();
+        executor.execute(future);
+        return future;
     }
 
     private HttpRequest createNettyHttpRequest(String uri, String host) {
@@ -161,9 +181,26 @@ public class WebSocketClient {
         return (byte) (Math.random() * 256);
     }
 
-    public void close() {
-        channel.getCloseFuture().awaitUninterruptibly();
-        bootstrap.releaseExternalResources();
+    @Override
+    public WebSocket close() {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    channel.getCloseFuture().awaitUninterruptibly();
+                    bootstrap.releaseExternalResources();
+                    webSocketHandler.onClose(null);
+                } catch (Exception e) {
+                    exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, channel));
+                }
+            }
+        });
+        return this;
+    }
+
+    @Override
+    public void reconnectEvery(long reconnectIntervalMillis) {
+        webSocketHandler = new ReconnectingWebSocketHandler(webSocketHandler, WebSocketClient.this, reconnectIntervalMillis);
     }
 
     private class HandshakeChannelHandler extends SimpleChannelUpstreamHandler {
@@ -171,6 +208,21 @@ public class WebSocketClient {
 
         public HandshakeChannelHandler(byte[] outboundMaskingKey) {
             this.outboundMaskingKey = outboundMaskingKey;
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
+            if (e.getCause() instanceof ClosedChannelException) {
+                e.getChannel().close();
+            } else {
+                final Thread thread = Thread.currentThread();
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        ioExceptionHandler.uncaughtException(thread, WebbitException.fromExceptionEvent(e));
+                    }
+                });
+            }
         }
 
         @Override
@@ -198,7 +250,7 @@ public class WebSocketClient {
         private void adjustPipelineToWebSocket(ChannelHandlerContext ctx, MessageEvent messageEvent, ChannelHandler webSocketFrameDecoder, ChannelHandler webSocketFrameEncoder) {
             NettyHttpRequest httpRequest = new NettyHttpRequest(messageEvent, request, nextId(), timestamp());
             final NettyWebSocketConnection webSocketConnection = new NettyWebSocketConnection(executor, httpRequest, ctx, outboundMaskingKey);
-            webSocketConnection.setHybiWebSocketVersion(13);
+            webSocketConnection.setHybiWebSocketVersion(17);
 
             ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(webSocketConnection, exceptionHandler, ioExceptionHandler, webSocketHandler, executor);
 
