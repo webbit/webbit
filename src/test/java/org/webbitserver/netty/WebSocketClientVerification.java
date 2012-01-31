@@ -4,11 +4,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import samples.echo.EchoWsServer;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -21,16 +23,19 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class WebSocketClientTest {
+public abstract class WebSocketClientVerification {
     private EchoWsServer server;
     private URI wsUri;
 
     @Before
     public void start() throws IOException, URISyntaxException, InterruptedException {
-        server = new EchoWsServer(59509);
+        server = new EchoWsServer(createServer());
         URI uri = server.start();
         wsUri = new URI(uri.toASCIIString().replaceFirst("http", "ws"));
     }
+
+    protected abstract WebServer createServer() throws IOException;
+    protected abstract void configure(WebSocketClient ws);
 
     @After
     public void die() throws IOException, InterruptedException {
@@ -98,6 +103,7 @@ public class WebSocketClientTest {
             public void onPong(WebSocketConnection connection, String msg) throws Throwable {
             }
         }, Executors.newSingleThreadExecutor());
+        configure(ws);
         ws.start();
 
         assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));

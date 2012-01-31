@@ -29,21 +29,18 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private final HttpResponse response;
     private final boolean isKeepAlive;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
-    private final Thread.UncaughtExceptionHandler ioExceptionHandler;
     private final ChannelBuffer responseBuffer;
     private Charset charset;
 
     public NettyHttpResponse(ChannelHandlerContext ctx,
                              HttpResponse response,
                              boolean isKeepAlive,
-                             Thread.UncaughtExceptionHandler exceptionHandler,
-                             Thread.UncaughtExceptionHandler ioExceptionHandler)
+                             Thread.UncaughtExceptionHandler exceptionHandler)
     {
         this.ctx = ctx;
         this.response = response;
         this.isKeepAlive = isKeepAlive;
         this.exceptionHandler = exceptionHandler;
-        this.ioExceptionHandler = ioExceptionHandler;
         this.charset = DEFAULT_CHARSET;
         responseBuffer = ChannelBuffers.dynamicBuffer();
     }
