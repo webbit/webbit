@@ -1,6 +1,7 @@
 In Git
 ==================
 
+* Added support for HTTPS ([#63](https://github.com/webbit/webbit/pull/63), [#9](https://github.com/webbit/webbit/issues/9) Michael Rykov)
 * WebSocketClient can reconnect. (Aslak Hellesøy)
 * Added support for wss:// in WebSocketClient (Aslak Hellesøy)
 
