@@ -16,7 +16,8 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
 
     private final List<String> sentMessages = new LinkedList<String>();
     private final List<byte[]> sentBinaryMessages = new LinkedList<byte[]>();
-    private final List<String> sentPings = new LinkedList<String>();
+    private final List<byte[]> sentPings = new LinkedList<byte[]>();
+    private final List<byte[]> sentPongs = new LinkedList<byte[]>();
     private boolean closed = false;
     private HttpRequest httpRequest;
     private String version = null;
@@ -57,8 +58,14 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
     }
 
     @Override
-    public StubConnection ping(String message) {
-        sentPings.add(message);
+    public StubConnection ping(byte[] msg) {
+        sentPings.add(msg);
+        return this;
+    }
+
+    @Override
+    public StubConnection pong(byte[] msg) {
+        sentPongs.add(msg);
         return this;
     }
 
@@ -80,8 +87,12 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
         return sentBinaryMessages;
     }
 
-    public List<String> sentPings() {
+    public List<byte[]> sentPings() {
         return sentPings;
+    }
+
+    public List<byte[]> sentPongs() {
+        return sentPongs;
     }
 
     @Override

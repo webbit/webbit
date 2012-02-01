@@ -69,8 +69,13 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void webSocketInboundPong(WebSocketConnection connection, String message) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-PONG", message);
+    public void webSocketInboundPing(WebSocketConnection connection, byte[] msg) {
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-PING", toHex(msg));
+    }
+
+    @Override
+    public void webSocketInboundPong(WebSocketConnection connection, byte[] msg) {
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-IN-PONG", toHex(msg));
     }
 
     @Override
@@ -84,8 +89,13 @@ public class SimpleLogSink implements LogSink {
     }
 
     @Override
-    public void webSocketOutboundPing(WebSocketConnection connection, String message) {
-        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-PING", message);
+    public void webSocketOutboundPing(WebSocketConnection connection, byte[] msg) {
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-OUT-PING", toHex(msg));
+    }
+
+    @Override
+    public void webSocketOutboundPong(WebSocketConnection connection, byte[] msg) {
+        custom(connection.httpRequest(), "WEB-SOCKET-" + connection.version() + "-OUT-PONG", toHex(msg));
     }
 
     @Override

@@ -102,7 +102,12 @@ public abstract class WebSocketClientVerification {
             }
 
             @Override
-            public void onPong(WebSocketConnection connection, String msg) throws Throwable {
+            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+                connection.pong(msg);
+            }
+
+            @Override
+            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         }, Executors.newSingleThreadExecutor());
         configure(ws);

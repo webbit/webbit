@@ -54,7 +54,12 @@ public class Chatroom implements WebSocketHandler {
     }
 
     @Override
-    public void onPong(WebSocketConnection connection, String msg) {
+    public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+        connection.pong(msg);
+    }
+
+    @Override
+    public void onPong(WebSocketConnection connection, byte[] msg) {
     }
 
     private void login(WebSocketConnection connection, String username) {
