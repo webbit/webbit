@@ -1,5 +1,7 @@
-In Git
+0.3.7 (2012-02-01)
 ==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.6...v0.3.7)
 
 * Added support for HTTPS ([#63](https://github.com/webbit/webbit/pull/63), [#9](https://github.com/webbit/webbit/issues/9) Michael Rykov)
 * WebSocketClient can reconnect. (Aslak Hellesøy)
