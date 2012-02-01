@@ -8,6 +8,7 @@ import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 
 import static org.webbitserver.WebServers.createWebServer;
 
@@ -24,16 +25,16 @@ public class EchoWsServer {
         webServer.add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());
     }
 
-    public void start() throws IOException {
-        webServer.start();
+    public void start() throws ExecutionException, InterruptedException {
+        webServer.start().get();
     }
 
     public URI uri() throws IOException {
         return webServer.getUri();
     }
 
-    public void stop() throws IOException, InterruptedException {
-        webServer.stop().join();
+    public void stop() throws ExecutionException, InterruptedException {
+        webServer.stop().get();
     }
 
     private static class EchoHandler implements WebSocketHandler {

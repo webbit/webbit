@@ -4,6 +4,7 @@ import org.webbitserver.WebServer;
 import org.webbitserver.handler.StaticFileHandler;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static org.webbitserver.WebServers.createWebServer;
 
@@ -13,10 +14,10 @@ import static org.webbitserver.WebServers.createWebServer;
  */
 public class AudioTagUsesRangesExample {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         WebServer webServer = createWebServer(45453)
                 .add(new StaticFileHandler("src/test/java/samples/ranges/content"))
-                .start();
+                .start().get();
 
         System.out.println("Running on " + webServer.getUri());
     }

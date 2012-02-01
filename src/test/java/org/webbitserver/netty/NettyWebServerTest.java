@@ -1,7 +1,11 @@
 package org.webbitserver.netty;
 
 import org.junit.Test;
-import org.webbitserver.*;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.WebServer;
 
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -18,21 +22,21 @@ public class NettyWebServerTest {
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();
-        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
-        assertEquals(threadCountStart + 2, getCurrentThreadCount());
-        server.stop().join();
+        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
+        assertEquals(threadCountStart + 3, getCurrentThreadCount());
+        server.stop().get();
         sleep(100);
-        assertEquals(threadCountStart, getCurrentThreadCount());
+        assertEquals(threadCountStart + 1, getCurrentThreadCount());
     }
 
     @Test
     public void stopsServerCleanlyAlsoWhenClientsAreConnected() throws Exception {
         final CountDownLatch stopper = new CountDownLatch(1);
-        final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
+        final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
         server.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                server.stop().join();
+                server.stop().get();
                 stopper.countDown();
             }
         });
@@ -49,19 +53,19 @@ public class NettyWebServerTest {
     @Test
     public void restartServerDoesNotThrowException() throws Exception {
         WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
-        server.start();
-        server.stop().join();
-        server.start();
-        server.stop().join();
+        server.start().get();
+        server.stop().get();
+        server.start().get();
+        server.stop().get();
     }
 
     @Test
     public void startServerAndTestIsRunning() throws Exception {
         NettyWebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
-        server.start();
+        server.start().get();
         assertTrue("Server should be running", server.isRunning());
 
-        server.stop().join();
+        server.stop().get();
         assertTrue("Server should not be running", !server.isRunning());
     }
 

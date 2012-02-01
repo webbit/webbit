@@ -9,6 +9,7 @@ import static org.webbitserver.testutil.HttpClient.httpPostCompressed;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.After;
 import org.junit.Test;
@@ -25,32 +26,32 @@ public class CompressionTest {
     private final String content = "Very short string for which there is no real point in compressing, but we're going to do it anyway.";
 
     @After
-    public void die() throws IOException, InterruptedException {
-        webServer.stop().join();
+    public void die() throws InterruptedException, ExecutionException {
+        webServer.stop().get();
     }
 
     @Test
-    public void compressedPostIsUncompressedProperly() throws IOException {
+    public void compressedPostIsUncompressedProperly() throws IOException, ExecutionException, InterruptedException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control)
                     throws Exception {
                 response.content(request.body()).end();
             }
-        }).start();
+        }).start().get();
         String result = contents(httpPostCompressed(webServer, "/", content));
         assertEquals(content, result);
     }
 
     @Test
-    public void compressedResponseIsSentProperly() throws IOException {
+    public void compressedResponseIsSentProperly() throws IOException, ExecutionException, InterruptedException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control)
                     throws Exception {
                 response.content(content).end();
             }
-        }).start();
+        }).start().get();
         HttpURLConnection urlConnection = (HttpURLConnection) httpGetAcceptCompressed(webServer, "/");
         String result = decompressContents(urlConnection);
         assertEquals(content, result);

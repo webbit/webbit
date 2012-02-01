@@ -12,6 +12,7 @@ import org.webbitserver.stub.StubHttpResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
@@ -181,7 +182,7 @@ public class StaticFileHandlerTest {
      * the responses.
      */
     @Test
-    public void shouldWorkInRealServer() throws IOException, InterruptedException {
+    public void shouldWorkInRealServer() throws IOException, InterruptedException, ExecutionException {
         writeFile("index.html", "Hello world");
         writeFile("foo.js", "some js");
         mkdir("some/dir");
@@ -189,13 +190,14 @@ public class StaticFileHandlerTest {
 
         WebServer webServer = createWebServer(59504)
                 .add(handler)
-                .start();
+                .start()
+                .get();
         try {
             assertEquals("Hello world", contents(httpGet(webServer, "/index.html")));
             assertEquals("some js", contents(httpGet(webServer, "/foo.js?xx=y")));
             assertEquals("some txt", contents(httpGet(webServer, "/some/dir/content1.txt")));
         } finally {
-            webServer.stop().join();
+            webServer.stop().get();
         }
     }
 

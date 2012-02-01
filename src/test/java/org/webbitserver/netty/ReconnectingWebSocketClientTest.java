@@ -32,7 +32,7 @@ public class ReconnectingWebSocketClientTest {
     }
 
     @After
-    public void die() throws IOException, InterruptedException {
+    public void die() throws ExecutionException, InterruptedException {
         server.stop();
     }
 
