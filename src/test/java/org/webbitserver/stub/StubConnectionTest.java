@@ -1,5 +1,6 @@
 package org.webbitserver.stub;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -55,14 +56,14 @@ public class StubConnectionTest {
 	public void testPing() throws Exception {
 		StubConnection target = new StubConnection(null);
 		
-		target.ping("ring!");
-		target.ping("ping!");
+		target.ping("ring!".getBytes("UTF-8"));
+		target.ping("ping!".getBytes("UTF-8"));
 		
-		List<String> expected = new ArrayList<String>();
-		expected.add("ring!");
-		expected.add("ping!");
+		List<byte[]> expected = new ArrayList<byte[]>();
+		expected.add("ring!".getBytes("UTF-8"));
+		expected.add("ping!".getBytes("UTF-8"));
 		
-		assertEquals(expected, target.sentPings());
+		assertArrayEquals(expected.toArray(), target.sentPings().toArray());
 	}
 
 	@Test

@@ -164,11 +164,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                 }
                 checkpoint(FRAME_START);
 
-                if (frameOpcode == OPCODE_PING) {
-                    EncodingHybiFrame pong = new EncodingHybiFrame(OPCODE_PONG, true, 0, outboundMaskingKey, frame);
-                    channel.write(pong);
-                    return null;
-                } else if (frameOpcode == OPCODE_CLOSE) {
+                if (frameOpcode == OPCODE_CLOSE) {
                     EncodingHybiFrame close = new EncodingHybiFrame(OPCODE_CLOSE, true, 0, outboundMaskingKey, ChannelBuffers.buffer(0));
                     channel.write(close);
                     channel.close();
@@ -179,6 +175,8 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
                     } catch (UTF8Exception e) {
                         protocolViolation(channel, "invalid UTF-8 bytes");
                     }
+                } else if (frameOpcode == OPCODE_PING || frameOpcode == OPCODE_PONG) {
+                    return new DecodingHybiFrame(frameOpcode, utf8Output, frame);
                 } else {
                     try {
                         currentFrame = new DecodingHybiFrame(frameOpcode, utf8Output, frame);

@@ -36,8 +36,14 @@ public class NettyWebSocketConnection extends AbstractHttpConnection implements 
     }
 
     @Override
-    public NettyWebSocketConnection ping(String message) {
-        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
+    public NettyWebSocketConnection ping(byte[] msg) {
+        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_PING, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(msg)));
+        return this;
+    }
+
+    @Override
+    public NettyWebSocketConnection pong(byte[] msg) {
+        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_PONG, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(msg)));
         return this;
     }
 
@@ -66,4 +72,6 @@ public class NettyWebSocketConnection extends AbstractHttpConnection implements 
         setVersion("Sec-WebSocket-Version-" + webSocketVersion);
         hybi = true;
     }
+
+
 }

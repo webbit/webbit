@@ -43,7 +43,12 @@ public class ReconnectingWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void onPong(WebSocketConnection connection, String msg) throws Throwable {
+    public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+        handler.onPing(connection, msg);
+    }
+
+    @Override
+    public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
         handler.onPong(connection, msg);
     }
 

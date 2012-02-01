@@ -60,7 +60,12 @@ public class ReconnectingWebSocketClientTest {
             }
 
             @Override
-            public void onPong(WebSocketConnection connection, String msg) throws Throwable {
+            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+                connection.pong(msg);
+            }
+
+            @Override
+            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         });
         ws.reconnectEvery(10);
@@ -96,7 +101,12 @@ public class ReconnectingWebSocketClientTest {
             }
 
             @Override
-            public void onPong(WebSocketConnection connection, String msg) throws Throwable {
+            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+                connection.pong(msg);
+            }
+
+            @Override
+            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         });
 

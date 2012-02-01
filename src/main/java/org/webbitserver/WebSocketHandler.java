@@ -1,5 +1,7 @@
 package org.webbitserver;
 
+import org.webbitserver.netty.NettyWebSocketConnection;
+
 public interface WebSocketHandler {
     void onOpen(WebSocketConnection connection) throws Exception;
 
@@ -15,5 +17,7 @@ public interface WebSocketHandler {
 
     void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable;
 
-    void onPong(WebSocketConnection connection, String msg) throws Throwable;
+    void onPing(WebSocketConnection connection, byte[] msg) throws Throwable;
+
+    void onPong(WebSocketConnection connection, byte[] msg) throws Throwable;
 }

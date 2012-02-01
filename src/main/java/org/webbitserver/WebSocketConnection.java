@@ -21,10 +21,18 @@ public interface WebSocketConnection extends HttpConnection {
     /**
      * Sends a ping frame
      * 
-     * @param message the payload of the ping
+     *
+     * @param msg@return this
+     */
+    WebSocketConnection ping(byte[] msg);
+
+    /**
+     * Sends a pong frame
+     *
+     * @param msg
      * @return this
      */
-    WebSocketConnection ping(String message);
+    WebSocketConnection pong(byte[] msg);
 
     /**
      * @return the WebSocket protocol version

@@ -41,7 +41,13 @@ class LoggingWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void onPong(WebSocketConnection connection, String message) throws Throwable {
+    public void onPing(WebSocketConnection connection, byte[] message) throws Throwable {
+        logSink.webSocketInboundPing(connection, message);
+        handler.onPing(loggingConnection, message);
+    }
+
+    @Override
+    public void onPong(WebSocketConnection connection, byte[] message) throws Throwable {
         logSink.webSocketInboundPong(connection, message);
         handler.onPong(loggingConnection, message);
     }

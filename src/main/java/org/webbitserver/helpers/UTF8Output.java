@@ -47,13 +47,13 @@ public class UTF8Output {
 
     private final StringBuilder stringBuilder = new StringBuilder();
 
-    public void write(byte[] bytes) {
+    public void write(byte[] bytes) throws UTF8Exception {
         for (byte b : bytes) {
             write(b);
         }
     }
 
-    public void write(int b) {
+    public void write(int b) throws UTF8Exception {
         byte type = TYPES[b & 0xFF];
 
         codep = (state != UTF8_ACCEPT) ?
@@ -76,7 +76,7 @@ public class UTF8Output {
         }
     }
 
-    public String getStringAndRecycle() {
+    public String getStringAndRecycle() throws UTF8Exception {
         if (state == UTF8_ACCEPT) {
             String string = stringBuilder.toString();
             stringBuilder.setLength(0);
