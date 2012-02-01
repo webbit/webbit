@@ -27,7 +27,6 @@ import org.webbitserver.helpers.SslFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -36,9 +35,12 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,7 @@ import static org.jboss.netty.channel.Channels.pipeline;
 public class NettyWebServer implements WebServer {
     private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
 
+    private final Executor startStopExecutor = Executors.newSingleThreadExecutor();
     private final SocketAddress socketAddress;
     private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
@@ -160,58 +163,64 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public synchronized NettyWebServer start() {
-        if (isRunning()) {
-            throw new IllegalStateException("Server already started.");
-        }
-
-        // Configure the server.
-        bootstrap = new ServerBootstrap();
-
-        // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+    public Future<WebServer> start() {
+        FutureTask<WebServer> future = new FutureTask<WebServer>(new Callable<WebServer>() {
             @Override
-            public ChannelPipeline getPipeline() throws Exception {
-                long timestamp = timestamp();
-                Object id = nextId();
-                ChannelPipeline pipeline = pipeline();
-                if (sslContext != null) {
-                    SSLEngine sslEngine = sslContext.createSSLEngine();
-                    sslEngine.setUseClientMode(false);
-                    pipeline.addLast("ssl", new SslHandler(sslEngine));
+            public WebServer call() throws Exception {
+                if (isRunning()) {
+                    throw new IllegalStateException("Server already started.");
                 }
-                pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
-                pipeline.addLast("connectiontracker", connectionTrackingHandler);
-                pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(executor, exceptionHandler, ioExceptionHandler, getPort()));
-                pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
-                pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
-                pipeline.addLast("decompressor", new HttpContentDecompressor());
-                pipeline.addLast("encoder", new HttpResponseEncoder());
-                pipeline.addLast("compressor", new HttpContentCompressor());
-                pipeline.addLast("handler", new NettyHttpChannelHandler(
-                        executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
-                return pipeline;
+
+                // Configure the server.
+                bootstrap = new ServerBootstrap();
+
+                // Set up the event pipeline factory.
+                bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+                    @Override
+                    public ChannelPipeline getPipeline() throws Exception {
+                        long timestamp = timestamp();
+                        Object id = nextId();
+                        ChannelPipeline pipeline = pipeline();
+                        if (sslContext != null) {
+                            SSLEngine sslEngine = sslContext.createSSLEngine();
+                            sslEngine.setUseClientMode(false);
+                            pipeline.addLast("ssl", new SslHandler(sslEngine));
+                        }
+                        pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
+                        pipeline.addLast("connectiontracker", connectionTrackingHandler);
+                        pipeline.addLast("flashpolicydecoder", new FlashPolicyFileDecoder(executor, exceptionHandler, ioExceptionHandler, getPort()));
+                        pipeline.addLast("decoder", new HttpRequestDecoder(maxInitialLineLength, maxHeaderSize, maxChunkSize));
+                        pipeline.addLast("aggregator", new HttpChunkAggregator(maxContentLength));
+                        pipeline.addLast("decompressor", new HttpContentDecompressor());
+                        pipeline.addLast("encoder", new HttpResponseEncoder());
+                        pipeline.addLast("compressor", new HttpContentCompressor());
+                        pipeline.addLast("handler", new NettyHttpChannelHandler(executor, handlers, id, timestamp, exceptionHandler, ioExceptionHandler));
+                        return pipeline;
+                    }
+                });
+
+                staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout, executor);
+                ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+                staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
+                    @Override
+                    public void run() {
+                        staleConnectionTrackingHandler.closeStaleConnections();
+                    }
+                }, staleConnectionTimeout / 2, staleConnectionTimeout / 2, TimeUnit.MILLISECONDS);
+                executorServices.add(staleCheckExecutor);
+
+                connectionTrackingHandler = new ConnectionTrackingHandler();
+                ExecutorService bossExecutor = Executors.newSingleThreadExecutor();
+                executorServices.add(bossExecutor);
+                ExecutorService workerExecutor = Executors.newSingleThreadExecutor();
+                executorServices.add(workerExecutor);
+                bootstrap.setFactory(new NioServerSocketChannelFactory(bossExecutor, workerExecutor, 1));
+                channel = bootstrap.bind(socketAddress);
+                return NettyWebServer.this;
             }
         });
-
-        staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout, executor);
-        ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
-        staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                staleConnectionTrackingHandler.closeStaleConnections();
-            }
-        }, staleConnectionTimeout / 2, staleConnectionTimeout / 2, TimeUnit.MILLISECONDS);
-        executorServices.add(staleCheckExecutor);
-
-        connectionTrackingHandler = new ConnectionTrackingHandler();
-        ExecutorService bossExecutor = Executors.newSingleThreadExecutor();
-        executorServices.add(bossExecutor);
-        ExecutorService workerExecutor = Executors.newSingleThreadExecutor();
-        executorServices.add(workerExecutor);
-        bootstrap.setFactory(new NioServerSocketChannelFactory(bossExecutor, workerExecutor, 1));
-        channel = bootstrap.bind(socketAddress);
-        return this;
+        startStopExecutor.execute(future);
+        return future;
     }
 
     public boolean isRunning() {
@@ -219,32 +228,34 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public synchronized NettyWebServer stop() throws IOException {
-        if (channel != null) {
-            channel.close();
-        }
-        if (connectionTrackingHandler != null) {
-            connectionTrackingHandler.closeAllConnections();
-            connectionTrackingHandler = null;
-        }
-        if (bootstrap != null) {
-            bootstrap.releaseExternalResources();
-        }
-        for (ExecutorService executorService : executorServices) {
-            executorService.shutdown();
-        }
+    public Future<WebServer> stop() {
+        FutureTask<WebServer> future = new FutureTask<WebServer>(new Callable<WebServer>() {
+            @Override
+            public WebServer call() throws Exception {
+                if (channel != null) {
+                    channel.close();
+                }
+                if (connectionTrackingHandler != null) {
+                    connectionTrackingHandler.closeAllConnections();
+                    connectionTrackingHandler = null;
+                }
+                if (bootstrap != null) {
+                    bootstrap.releaseExternalResources();
+                }
+                for (ExecutorService executorService : executorServices) {
+                    executorService.shutdown();
+                }
 
-        bootstrap = null;
+                bootstrap = null;
 
-        return this;
-    }
-
-    @Override
-    public synchronized NettyWebServer join() throws InterruptedException {
-        if (channel != null) {
-            channel.getCloseFuture().await();
-        }
-        return this;
+                if (channel != null) {
+                    channel.getCloseFuture().await();
+                }
+                return NettyWebServer.this;
+            }
+        });
+        startStopExecutor.execute(future);
+        return future;
     }
 
     @Override

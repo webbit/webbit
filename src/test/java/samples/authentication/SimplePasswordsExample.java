@@ -6,6 +6,7 @@ import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 import org.webbitserver.handler.authentication.InMemoryPasswords;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static org.webbitserver.WebServers.createWebServer;
 
@@ -16,7 +17,7 @@ import static org.webbitserver.WebServers.createWebServer;
  */
 public class SimplePasswordsExample {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         InMemoryPasswords passwords = new InMemoryPasswords()
                 .add("joe", "secret")
                 .add("jeff", "somepassword");
@@ -26,7 +27,7 @@ public class SimplePasswordsExample {
                 .add("/whoami", new WhoAmIHttpHandler())
                 .add("/whoami-ws", new WhoAmIWebSocketHandler())
                 .add(new StaticFileHandler("src/test/java/samples/authentication/content"))
-                .start();
+                .start().get();
 
         System.out.println("Running on " + webServer.getUri());
     }
