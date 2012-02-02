@@ -1,3 +1,8 @@
+In Git
+==================
+
+* Added WebSocketConnection.send(byte[] message, int offset, int length)
+
 0.3.8 (2012-02-01)
 ==================
 
