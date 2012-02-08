@@ -168,7 +168,7 @@ public class WebSocketClient implements WebSocket {
                 }
 
                 return WebSocketClient.this;
-            };
+            }
         });
 
         executor.execute(future);

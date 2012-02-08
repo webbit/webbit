@@ -35,8 +35,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     public NettyHttpResponse(ChannelHandlerContext ctx,
                              HttpResponse response,
                              boolean isKeepAlive,
-                             Thread.UncaughtExceptionHandler exceptionHandler)
-    {
+                             Thread.UncaughtExceptionHandler exceptionHandler) {
         this.ctx = ctx;
         this.response = response;
         this.isKeepAlive = isKeepAlive;

@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
  */
 public class InMemoryPasswords implements PasswordAuthenticator {
 
-    private final Map<String,String> usernameToPasswords = new HashMap<String, String>();
+    private final Map<String, String> usernameToPasswords = new HashMap<String, String>();
 
     public InMemoryPasswords add(String username, String password) {
         usernameToPasswords.put(username, password);

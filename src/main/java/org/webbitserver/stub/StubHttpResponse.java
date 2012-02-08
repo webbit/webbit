@@ -158,12 +158,12 @@ public class StubHttpResponse implements HttpResponse {
     @Override
     public String toString() {
         return "StubHttpResponse{" +
-               "charset=" + charset +
-               ", status=" + status +
-               ", headers=" + headers +
-               ", error=" + error +
-               ", ended=" + ended +
-               ", contents=" + contentsString() +
-               '}';
+                "charset=" + charset +
+                ", status=" + status +
+                ", headers=" + headers +
+                ", error=" + error +
+                ", ended=" + ended +
+                ", contents=" + contentsString() +
+                '}';
     }
 }

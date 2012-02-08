@@ -7,13 +7,13 @@ import java.io.StringReader;
 
 /**
  * Encodes binary data to plain text as Base64.
- *
+ * <p/>
  * Despite there being a gazillion other Base64 implementations out there, this has been written as part of XStream as
  * it forms a core part but is too trivial to warrant an extra dependency.
- *
+ * <p/>
  * This meets the standard as described in RFC 1521, section 5.2 <http://www.freesoft.org/CIE/RFC/1521/7.htm>, allowing
  * other Base64 tools to manipulate the data.
- *
+ * <p/>
  * This code originally came from the XStream http://xstream.codehaus.org project by Joe Walnes. Relicensed to Webbit.
  */
 public class Base64 {
@@ -50,7 +50,8 @@ public class Base64 {
         for (int i = 0; i < input.length; i += 3) {
             int remaining = Math.min(3, input.length - i);
             int oneBigNumber = (input[i] & 0xff) << 16 | (remaining <= 1 ? 0 : input[i + 1] & 0xff) << 8 | (remaining <= 2 ? 0 : input[i + 2] & 0xff);
-            for (int j = 0; j < 4; j++) result.append(remaining + 1 > j ? SIXTY_FOUR_CHARS[0x3f & oneBigNumber >> 6 * (3 - j)] : '=');
+            for (int j = 0; j < 4; j++)
+                result.append(remaining + 1 > j ? SIXTY_FOUR_CHARS[0x3f & oneBigNumber >> 6 * (3 - j)] : '=');
             if ((outputCharCount += 4) % 76 == 0) result.append('\n');
         }
         return result.toString();
@@ -79,7 +80,7 @@ public class Base64 {
         int c;
         while ((c = input.read()) != -1) {
             int result = REVERSE_MAPPING[c];
-            if (result != 0) return result -1;
+            if (result != 0) return result - 1;
             if (c == '=') return -1;
         }
         return -1;

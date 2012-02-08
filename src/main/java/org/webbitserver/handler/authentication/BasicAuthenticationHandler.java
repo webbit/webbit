@@ -9,7 +9,7 @@ import org.webbitserver.helpers.Base64;
 /**
  * Adds HTTP Basic authentication to a page. Users should provide an implementation of UsernamePasswordAuthenticator
  * to check the supplied credentials.
- *
+ * <p/>
  * See samples.authentication.SimplePasswordsExample in the src/tests directory for a really basic usage. To implement
  * a custom authenticator that performs background IO, see samples.authentication.AsyncPasswordsExample.
  *
@@ -64,7 +64,7 @@ public class BasicAuthenticationHandler implements HttpHandler {
                     needAuthentication(response);
                 }
             }
-       }
+        }
     }
 
     private void needAuthentication(HttpResponse response) {

@@ -5,7 +5,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 
 /**
  * Marker for any exceptions in the Webbit stack.
- *
+ * <p/>
  * This is used to ensure the exceptions we report to {@link Thread.UncaughtExceptionHandler}s are well
  * documented and make it obvious that an error occurred in Webbit. This is particularly useful for projects
  * that make heavy use of Netty in other libraries, since most of our exceptions come out of the Netty stack,

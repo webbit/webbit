@@ -1,7 +1,5 @@
 package org.webbitserver;
 
-import org.webbitserver.netty.NettyWebSocketConnection;
-
 public interface WebSocketHandler {
     void onOpen(WebSocketConnection connection) throws Exception;
 

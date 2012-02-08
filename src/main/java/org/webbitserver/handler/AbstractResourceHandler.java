@@ -26,7 +26,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         mimeTypes.put("html", "text/html");
         mimeTypes.put("xml", "text/xml");
         mimeTypes.put("js",
-                      "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
+                "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
         mimeTypes.put("xhtml", "application/xhtml+xml");
         mimeTypes.put("json", "application/json");
         mimeTypes.put("pdf", "application/pdf");
@@ -68,8 +68,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
     @Override
     public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control)
-            throws Exception
-    {
+            throws Exception {
         // Switch from web thead to IO thread, so we don't block web server when we access the filesystem.
         ioThread.execute(createIOWorker(request, response, control));
     }
@@ -78,8 +77,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                          final ByteBuffer contents,
                          HttpControl control,
                          final HttpResponse response,
-                         final HttpRequest request)
-    {
+                         final HttpRequest request) {
         // Switch back from IO thread to web thread.
         control.execute(new Runnable() {
             @Override
@@ -119,23 +117,23 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             int end = Integer.parseInt(endString);
             if (start <= end) {
                 serveRange(start,
-                           Math.min(contents.remaining() - 1, end),
-                           contents,
-                           response);
+                        Math.min(contents.remaining() - 1, end),
+                        contents,
+                        response);
                 return true;
             }
         } else if (null != startString) {
             serveRange(Integer.parseInt(startString),
-                       contents.remaining() - 1,
-                       contents,
-                       response);
+                    contents.remaining() - 1,
+                    contents,
+                    response);
             return true;
         } else if (null != endString) {
             int end = Integer.parseInt(endString);
             serveRange(contents.remaining() - end,
-                       contents.remaining() - 1,
-                       contents,
-                       response);
+                    contents.remaining() - 1,
+                    contents,
+                    response);
             return true;
         }
 
