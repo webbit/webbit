@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -28,7 +29,7 @@ public abstract class WebSocketClientVerification {
     private URI wsUri;
 
     @Before
-    public void start() throws IOException, URISyntaxException, InterruptedException {
+    public void start() throws IOException, URISyntaxException, InterruptedException, ExecutionException {
         server = new EchoWsServer(59509);
         server.start();
         URI uri = server.uri();
@@ -40,7 +41,7 @@ public abstract class WebSocketClientVerification {
     protected abstract void configure(WebSocket ws);
 
     @After
-    public void die() throws IOException, InterruptedException {
+    public void die() throws IOException, InterruptedException, ExecutionException {
         server.stop();
     }
 

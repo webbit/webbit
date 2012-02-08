@@ -14,7 +14,7 @@ public class Main {
                 .add(new LoggingHandler(new SimpleLogSink(Chatroom.USERNAME_KEY)))
                 .add("/chatsocket", new Chatroom())
                 .add(new StaticFileHandler("./src/test/java/samples/chatroom/content"))
-                .start();
+                .start().get();
 
         System.out.println("Chat room running on: " + webServer.getUri());
     }

@@ -129,7 +129,7 @@ public class WebSocketClient implements WebSocket {
 
     @Override
     public Future<WebSocket> start() {
-        final FutureTask<WebSocket> future = new FutureTask<WebSocket>(new Callable<WebSocket>() {
+        FutureTask<WebSocket> future = new FutureTask<WebSocket>(new Callable<WebSocket>() {
             @Override
             public WebSocket call() throws Exception {
                 final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
@@ -165,7 +165,6 @@ public class WebSocketClient implements WebSocket {
                 } else {
                     ChannelFuture requestFuture = channel.write(request);
                     requestFuture.awaitUninterruptibly();
-
                 }
 
                 return WebSocketClient.this;

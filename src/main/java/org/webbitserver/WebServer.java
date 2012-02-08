@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 
 /**
  * <p>Configures an event based webserver.</p>
@@ -93,22 +94,18 @@ public interface WebServer {
     WebServer add(String path, EventSourceHandler handler);
 
     /**
-     * Start web server in background.
+     * Start web server in background. This returns immediately, but the server
+     * may still not be ready to accept incoming requests. To wait until it's fully started,
+     * call {@link java.util.concurrent.Future#get()} on the returned future.
      */
-    WebServer start() throws IOException;
+    Future<? extends WebServer> start();
 
     /**
      * Stop web server background thread. This returns immediately, but the
      * webserver may still be shutting down. To wait until it's fully stopped,
-     * use {@link #join()}.
+     * call {@link java.util.concurrent.Future#get()} on the returned future.
      */
-    WebServer stop() throws IOException;
-
-    /**
-     * Call after {@link #stop()} to wait until webserver has stopped its background
-     * threads and closed all socket connections. This method blocks.
-     */
-    WebServer join() throws InterruptedException;
+    Future<WebServer> stop();
 
     /**
      * What to do when an exception gets thrown in a handler.

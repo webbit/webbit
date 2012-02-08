@@ -1,12 +1,17 @@
 package org.webbitserver.netty;
 
+import org.junit.After;
 import org.junit.Test;
-import org.webbitserver.*;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
 
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -15,23 +20,33 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class NettyWebServerTest {
+
+    private NettyWebServer server;
+
+    @After
+    public void stopServer() throws ExecutionException, InterruptedException {
+        server.stop().get();
+    }
+
+
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();
-        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
-        server.stop().join();
-        sleep(300);
-        assertEquals(threadCountStart, getCurrentThreadCount());
+        server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
+        assertEquals(threadCountStart + 3, getCurrentThreadCount());
+        server.stop().get();
+        sleep(200);
+        assertEquals(threadCountStart + 1, getCurrentThreadCount());
     }
 
     @Test
     public void stopsServerCleanlyAlsoWhenClientsAreConnected() throws Exception {
         final CountDownLatch stopper = new CountDownLatch(1);
-        final WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start();
+        server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
         server.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                server.stop().join();
+                server.stop().get();
                 stopper.countDown();
             }
         });
@@ -47,20 +62,20 @@ public class NettyWebServerTest {
 
     @Test
     public void restartServerDoesNotThrowException() throws Exception {
-        WebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
-        server.start();
-        server.stop().join();
-        server.start();
-        server.stop().join();
+        server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
+        server.start().get();
+        server.stop().get();
+        server.start().get();
+        server.stop().get();
     }
 
     @Test
     public void startServerAndTestIsRunning() throws Exception {
-        NettyWebServer server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
-        server.start();
+        server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080);
+        server.start().get();
         assertTrue("Server should be running", server.isRunning());
 
-        server.stop().join();
+        server.stop().get();
         assertTrue("Server should not be running", !server.isRunning());
     }
 

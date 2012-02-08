@@ -10,6 +10,7 @@ import org.webbitserver.stub.StubHttpRequest;
 import org.webbitserver.stub.StubHttpResponse;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
@@ -36,8 +37,8 @@ public class EmbeddedResourceHandlerTest {
     }
 
     @After
-    public void stop() throws IOException, InterruptedException {
-        webServer.stop().join();
+    public void stop() throws InterruptedException, ExecutionException {
+        webServer.stop().get();
     }
 
     @Test
@@ -54,15 +55,15 @@ public class EmbeddedResourceHandlerTest {
     }
 
     @Test
-    public void shouldWorkInRealServer() throws IOException, InterruptedException {
-        webServer.add(handler).start();
+    public void shouldWorkInRealServer() throws IOException, InterruptedException, ExecutionException {
+        webServer.add(handler).start().get();
         assertEquals("Hello world", contents(httpGet(webServer, "/index.html")));
         assertEquals("Hello world", contents(httpGet(webServer, "/index.html?x=y")));
     }
 
     @Test
-    public void shouldWorkWithBiggerFilesUsingEmbedded() throws IOException, InterruptedException {
-        webServer.add(handler).start();
+    public void shouldWorkWithBiggerFilesUsingEmbedded() throws IOException, InterruptedException, ExecutionException {
+        webServer.add(handler).start().get();
         String jquery = contents(httpGet(webServer, "/jquery-1.5.2.js"));
         if (!jquery.endsWith("})(window);\n")) {
             fail("Ended with:[" + jquery.substring(jquery.length() - 200, jquery.length()) + "]");
@@ -70,9 +71,9 @@ public class EmbeddedResourceHandlerTest {
     }
 
     @Test
-    public void shouldWorkWithBiggerFilesUsingFileHandler() throws IOException, InterruptedException {
+    public void shouldWorkWithBiggerFilesUsingFileHandler() throws IOException, InterruptedException, ExecutionException {
         handler = new StaticFileHandler("src/test/resources/web");
-        webServer.add(handler).start();
+        webServer.add(handler).start().get();
 
         String jquery = contents(httpGet(webServer, "/jquery-1.5.2.js"));
         if (!jquery.endsWith("})(window);\n")) {
@@ -81,8 +82,8 @@ public class EmbeddedResourceHandlerTest {
     }
 
     @Test
-    public void shouldFindWelcomeFileInRealServer() throws IOException, InterruptedException {
-        webServer.add(handler).start();
+    public void shouldFindWelcomeFileInRealServer() throws IOException, InterruptedException, ExecutionException {
+        webServer.add(handler).start().get();
         assertEquals("Hello world", contents(httpGet(webServer, "/")));
     }
 

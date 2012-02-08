@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
@@ -26,18 +27,18 @@ public class CookieTest {
     private WebServer webServer = createWebServer(59504);
 
     @After
-    public void die() throws IOException, InterruptedException {
-        webServer.stop().join();
+    public void die() throws InterruptedException, ExecutionException {
+        webServer.stop().get();
     }
 
     @Test
-    public void setsOneOutboundCookie() throws IOException, InterruptedException {
+    public void setsOneOutboundCookie() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
                 response.cookie(new HttpCookie("a", "b")).end();
             }
-        }).start();
+        }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         List<HttpCookie> cookies = cookies(urlConnection);
         assertEquals(1, cookies.size());
@@ -46,13 +47,13 @@ public class CookieTest {
     }
 
     @Test
-    public void setsTwoOutboundCookies() throws IOException, InterruptedException {
+    public void setsTwoOutboundCookies() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
                 response.cookie(new HttpCookie("a", "b")).cookie(new HttpCookie("c", "d")).end();
             }
-        }).start();
+        }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         List<HttpCookie> cookies = cookies(urlConnection);
         assertEquals(2, cookies.size());
@@ -63,7 +64,7 @@ public class CookieTest {
     }
 
     @Test
-    public void parsesOneInboundCookie() throws IOException, InterruptedException {
+    public void parsesOneInboundCookie() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -72,14 +73,14 @@ public class CookieTest {
                         .content(body)
                         .end();
             }
-        }).start();
+        }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         urlConnection.addRequestProperty("Cookie", new HttpCookie("someName", "someValue").toString());
         assertEquals("Your cookie value: someValue", contents(urlConnection));
     }
 
     @Test
-    public void parsesThreeInboundCookiesInTwoHeaders() throws IOException, InterruptedException {
+    public void parsesThreeInboundCookiesInTwoHeaders() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -92,7 +93,7 @@ public class CookieTest {
                         .content(body)
                         .end();
             }
-        }).start();
+        }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         urlConnection.addRequestProperty("Cookie", new HttpCookie("a", "b").toString());
         urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "\"d").toString() + "; " + new HttpCookie("e", "f").toString());
@@ -100,7 +101,7 @@ public class CookieTest {
     }
 
     @Test
-    public void behavesWellWhenThereAreNoInboundCookies() throws IOException {
+    public void behavesWellWhenThereAreNoInboundCookies() throws IOException, ExecutionException, InterruptedException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -109,7 +110,7 @@ public class CookieTest {
                         .content(body)
                         .end();
             }
-        }).start();
+        }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         assertEquals("Cookie count:0", contents(urlConnection));
     }

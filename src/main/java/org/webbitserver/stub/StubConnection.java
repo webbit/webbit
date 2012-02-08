@@ -53,19 +53,26 @@ public class StubConnection extends StubDataHolder implements EventSourceConnect
 
     @Override
     public StubConnection send(byte[] message) {
-        sentBinaryMessages.add(message);
+        return send(message, 0, message.length);
+    }
+
+    @Override
+    public StubConnection send(byte[] message, int offset, int length) {
+        byte[] subMessage = new byte[length];
+        System.arraycopy(message, offset, subMessage, 0, length);
+        sentBinaryMessages.add(subMessage);
         return this;
     }
 
     @Override
-    public StubConnection ping(byte[] msg) {
-        sentPings.add(msg);
+    public StubConnection ping(byte[] message) {
+        sentPings.add(message);
         return this;
     }
 
     @Override
-    public StubConnection pong(byte[] msg) {
-        sentPongs.add(msg);
+    public StubConnection pong(byte[] message) {
+        sentPongs.add(message);
         return this;
     }
 

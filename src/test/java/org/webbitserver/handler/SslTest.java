@@ -36,7 +36,7 @@ public class SslTest {
             assertEquals("My Server", urlConnection.getHeaderField("Server"));
             assertEquals("body", contents(urlConnection));
         } finally {
-            webServer.stop().join();
+            webServer.stop().get();
         }
     }
 

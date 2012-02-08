@@ -68,7 +68,8 @@ public class Main {
                     }
                 })
                 .add(new EmbeddedResourceHandler("samples/eventsource/content"))
-                .start();
+                .start()
+                .get();
 
         System.out.println("EventSource demo running on: " + webServer.getUri());
 

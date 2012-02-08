@@ -6,6 +6,7 @@ import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 import org.webbitserver.handler.authentication.PasswordAuthenticator;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -19,13 +20,14 @@ public class AsyncPasswordsExample {
 
     static Executor backgroundAuthenticatorThread = Executors.newSingleThreadExecutor();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         WebServer webServer = createWebServer(45454)
                 .add(new BasicAuthenticationHandler(new SlowPasswordAuthenticator()))
                 .add("/whoami", new WhoAmIHttpHandler())
                 .add("/whoami-ws", new WhoAmIWebSocketHandler())
                 .add(new StaticFileHandler("src/test/java/samples/authentication/content"))
-                .start();
+                .start()
+                .get();
 
         System.out.println("Running on " + webServer.getUri());
     }

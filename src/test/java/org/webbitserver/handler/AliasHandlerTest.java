@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.webbitserver.WebServer;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
@@ -15,8 +16,8 @@ public class AliasHandlerTest {
     private WebServer webServer = createWebServer(59504);
 
     @After
-    public void die() throws IOException, InterruptedException {
-        webServer.stop().join();
+    public void die() throws InterruptedException, ExecutionException {
+        webServer.stop().get();
     }
 
     @Test
@@ -24,7 +25,8 @@ public class AliasHandlerTest {
         webServer
                 .add("/tomayto", new AliasHandler("/tomato"))
                 .add("/tomato", new StringHttpHandler("text/plain", "body"))
-                .start();
+                .start()
+                .get();
         assertEquals("body", contents(httpGet(webServer, "/tomayto")));
     }
 }
