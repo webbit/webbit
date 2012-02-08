@@ -1,8 +1,8 @@
 package samples.echo;
 
+import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 
@@ -37,15 +37,7 @@ public class EchoWsServer {
         webServer.stop().get();
     }
 
-    private static class EchoHandler implements WebSocketHandler {
-        @Override
-        public void onOpen(WebSocketConnection connection) throws Exception {
-        }
-
-        @Override
-        public void onClose(WebSocketConnection connection) throws Exception {
-        }
-
+    private static class EchoHandler extends BaseWebSocketHandler {
         @Override
         public void onMessage(WebSocketConnection connection, String msg) throws Exception {
             connection.send(msg);
@@ -54,15 +46,6 @@ public class EchoWsServer {
         @Override
         public void onMessage(WebSocketConnection connection, byte[] msg) {
             connection.send(msg);
-        }
-
-        @Override
-        public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-            connection.pong(msg);
-        }
-
-        @Override
-        public void onPong(WebSocketConnection connection, byte[] msg) {
         }
     }
 }

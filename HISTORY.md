@@ -13,6 +13,7 @@ As of this release, both `WebServer.start()` and `WebServer.stop()` are asynchro
 * Added `WebSocketConnection.pong(byte[])` ([#71](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
 * `WebSocketConnection.onPong(WebSocketConnection, String)` is now `WebSocketConnection.onPong(WebSocketConnection, byte[])` ([#71](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
 * Added `WebSocketConnection.onPing(byte[])` ([#71](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
+* Added `BaseWebSocketHandler` that implements `WebSocketHandler` with no-ops (except for sending pings back as pongs) (Aslak Hellesøy)
 
 0.3.8 (2012-02-01)
 ==================

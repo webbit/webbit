@@ -1,5 +1,6 @@
 package samples.authentication;
 
+import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
@@ -10,7 +11,7 @@ import java.util.Set;
 /**
  * WebSocket handler that keeps track of whos connected and broadcasts to other users.
  */
-public class WhoAmIWebSocketHandler implements WebSocketHandler {
+public class WhoAmIWebSocketHandler extends BaseWebSocketHandler {
 
     private final Set<WebSocketConnection> connections = new HashSet<WebSocketConnection>();
 
@@ -33,25 +34,5 @@ public class WhoAmIWebSocketHandler implements WebSocketHandler {
         for (WebSocketConnection otherConnection : connections) {
             otherConnection.send(username + " has left");
         }
-    }
-
-    @Override
-    public void onMessage(WebSocketConnection connection, String msg) throws Exception {
-        // Do nothing
-    }
-
-    @Override
-    public void onMessage(WebSocketConnection connection, byte[] msg) {
-        // Do nothing
-    }
-
-    @Override
-    public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-        connection.pong(msg);
-    }
-
-    @Override
-    public void onPong(WebSocketConnection connection, byte[] msg) {
-        // Do nothing
     }
 }

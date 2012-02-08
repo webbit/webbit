@@ -1,13 +1,14 @@
 package samples.flashchatroom;
 
 import com.google.gson.Gson;
+import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class Chatroom implements WebSocketHandler {
+public class Chatroom extends BaseWebSocketHandler {
 
     private final Gson json = new Gson();
 
@@ -47,19 +48,6 @@ public class Chatroom implements WebSocketHandler {
                 say(connection, incoming.message);
                 break;
         }
-    }
-
-    @Override
-    public void onMessage(WebSocketConnection connection, byte[] msg) {
-    }
-
-    @Override
-    public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-        connection.pong(msg);
-    }
-
-    @Override
-    public void onPong(WebSocketConnection connection, byte[] msg) {
     }
 
     private void login(WebSocketConnection connection, String username) {

@@ -3,6 +3,7 @@ package org.webbitserver.netty;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
@@ -40,7 +41,7 @@ public class ReconnectingWebSocketClientTest {
     public void client_reconnects_when_told_to_do_so() throws InterruptedException, IOException, ExecutionException, TimeoutException {
         final CountDownLatch closed = new CountDownLatch(1);
         final CountDownLatch connected = new CountDownLatch(1);
-        WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
+        WebSocket ws = new WebSocketClient(wsUri, new BaseWebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
                 connected.countDown();
@@ -49,23 +50,6 @@ public class ReconnectingWebSocketClientTest {
             @Override
             public void onClose(WebSocketConnection connection) throws Exception {
                 closed.countDown();
-            }
-
-            @Override
-            public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
-            }
-
-            @Override
-            public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-            }
-
-            @Override
-            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-                connection.pong(msg);
-            }
-
-            @Override
-            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         });
         ws.reconnectEvery(10);
@@ -78,10 +62,10 @@ public class ReconnectingWebSocketClientTest {
     }
 
     @Test
-    public void client_does_not_reconnect_when__not_told_to_do_so() throws InterruptedException, IOException, ExecutionException, TimeoutException {
+    public void client_does_not_reconnect_when_not_told_to_do_so() throws InterruptedException, IOException, ExecutionException, TimeoutException {
         final CountDownLatch closed = new CountDownLatch(1);
         final CountDownLatch connected = new CountDownLatch(1);
-        WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
+        WebSocket ws = new WebSocketClient(wsUri, new BaseWebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
                 connected.countDown();
@@ -90,23 +74,6 @@ public class ReconnectingWebSocketClientTest {
             @Override
             public void onClose(WebSocketConnection connection) throws Exception {
                 closed.countDown();
-            }
-
-            @Override
-            public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
-            }
-
-            @Override
-            public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-            }
-
-            @Override
-            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-                connection.pong(msg);
-            }
-
-            @Override
-            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         });
 

@@ -4,10 +4,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
 import samples.echo.EchoWsServer;
 
 import java.io.IOException;
@@ -81,7 +81,7 @@ public abstract class WebSocketClientVerification {
         final CountDownLatch countDown = new CountDownLatch(2);
         final List<String> received = Collections.synchronizedList(new ArrayList<String>());
 
-        WebSocket ws = new WebSocketClient(wsUri, new WebSocketHandler() {
+        WebSocket ws = new WebSocketClient(wsUri, new BaseWebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Exception {
                 connection.send(message);
@@ -89,26 +89,9 @@ public abstract class WebSocketClientVerification {
             }
 
             @Override
-            public void onClose(WebSocketConnection connection) throws Exception {
-            }
-
-            @Override
             public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
                 received.add(msg);
                 countDown.countDown();
-            }
-
-            @Override
-            public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-            }
-
-            @Override
-            public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
-                connection.pong(msg);
-            }
-
-            @Override
-            public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         }, Executors.newSingleThreadExecutor());
         configure(ws);
