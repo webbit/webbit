@@ -92,7 +92,7 @@ public class NettyHttpControl implements HttpControl {
 
         try {
             webSocketHandler.onOpen(webSocketConnection);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
         }
         return webSocketConnection;

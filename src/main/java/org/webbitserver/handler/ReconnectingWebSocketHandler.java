@@ -22,12 +22,12 @@ public class ReconnectingWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void onOpen(WebSocketConnection connection) throws Exception {
+    public void onOpen(WebSocketConnection connection) throws Throwable {
         handler.onOpen(connection);
     }
 
     @Override
-    public void onClose(WebSocketConnection connection) throws Exception {
+    public void onClose(WebSocketConnection connection) throws Throwable {
         handler.onClose(connection);
         scheduleReconnect();
     }

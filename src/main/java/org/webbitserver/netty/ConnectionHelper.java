@@ -48,7 +48,7 @@ abstract class ConnectionHelper {
         }
     }
 
-    protected abstract void fireOnClose() throws Exception;
+    protected abstract void fireOnClose() throws Throwable;
 
     // Uncaught exception handler including the connection for context.
     protected Thread.UncaughtExceptionHandler webbitExceptionWrappingExceptionHandler(final Channel channel) {

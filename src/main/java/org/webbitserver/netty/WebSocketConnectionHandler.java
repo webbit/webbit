@@ -28,7 +28,7 @@ public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
         this.webSocketHandler = webSocketHandler;
         this.connectionHelper = new ConnectionHelper(executor, exceptionHandler, ioExceptionHandler) {
             @Override
-            protected void fireOnClose() throws Exception {
+            protected void fireOnClose() throws Throwable {
                 webSocketHandler.onClose(webSocketConnection);
             }
         };

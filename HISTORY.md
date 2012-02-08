@@ -14,6 +14,7 @@ As of this release, both `WebServer.start()` and `WebServer.stop()` are asynchro
 * `WebSocketConnection.onPong(WebSocketConnection, String)` is now `WebSocketConnection.onPong(WebSocketConnection, byte[])` ([#71](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
 * Added `WebSocketConnection.onPing(byte[])` ([#71](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
 * Added `BaseWebSocketHandler` that implements `WebSocketHandler` with no-ops (except for sending pings back as pongs) (Aslak Hellesøy)
+* Added `WebSocketHandler.onClose` and `WebSocketHandler.onClose` throw `Throwable` instead of `Exception` for consistency with other methods. (Aslak Hellesøy)
 
 0.3.8 (2012-02-01)
 ==================

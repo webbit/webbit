@@ -208,7 +208,7 @@ public class WebSocketClient implements WebSocket {
                     channel.getCloseFuture().awaitUninterruptibly();
                     bootstrap.releaseExternalResources();
                     webSocketHandler.onClose(null);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, channel));
                 }
             }
@@ -271,7 +271,7 @@ public class WebSocketClient implements WebSocket {
 
             executor.execute(new CatchingRunnable(exceptionHandler) {
                 @Override
-                public void go() throws Exception {
+                public void go() throws Throwable {
                     webSocketHandler.onOpen(webSocketConnection);
                 }
             });
