@@ -16,10 +16,6 @@ public class EchoWsServer {
 
     private final WebServer webServer;
 
-    public EchoWsServer(int port) throws IOException {
-        this(createWebServer(port));
-    }
-
     public EchoWsServer(WebServer webServer) throws IOException {
         this.webServer = webServer;
         webServer.add(new HttpToWebSocketHandler(new EchoHandler())).connectionExceptionHandler(new PrintStackTraceExceptionHandler());

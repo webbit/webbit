@@ -30,7 +30,7 @@ public abstract class WebSocketClientVerification {
 
     @Before
     public void start() throws IOException, URISyntaxException, InterruptedException, ExecutionException {
-        server = new EchoWsServer(59509);
+        server = new EchoWsServer(createServer());
         server.start();
         URI uri = server.uri();
         wsUri = new URI(uri.toASCIIString().replaceFirst("http", "ws"));

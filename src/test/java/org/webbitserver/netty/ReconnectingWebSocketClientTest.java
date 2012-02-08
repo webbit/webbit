@@ -27,7 +27,7 @@ public class ReconnectingWebSocketClientTest {
 
     @Before
     public void start() throws IOException, URISyntaxException, InterruptedException {
-        server = new EchoWsServer(59509);
+        server = new EchoWsServer(new NettyWebServer(59509));
         URI uri = server.uri();
         wsUri = new URI(uri.toASCIIString().replaceFirst("http", "ws"));
     }
