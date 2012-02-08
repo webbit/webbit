@@ -51,6 +51,12 @@ public class WebSocketConnectionWrapper implements WebSocketConnection {
     }
 
     @Override
+    public WebSocketConnectionWrapper send(byte[] message, int offset, int length) {
+        connection.send(message, offset, length);
+        return this;
+    }
+
+    @Override
     public WebSocketConnectionWrapper ping(String message) {
         connection.ping(message);
         return this;

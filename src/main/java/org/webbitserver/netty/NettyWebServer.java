@@ -163,10 +163,10 @@ public class NettyWebServer implements WebServer {
     }
 
     @Override
-    public Future<WebServer> start() {
-        FutureTask<WebServer> future = new FutureTask<WebServer>(new Callable<WebServer>() {
+    public Future<NettyWebServer> start() {
+        FutureTask<NettyWebServer> future = new FutureTask<NettyWebServer>(new Callable<NettyWebServer>() {
             @Override
-            public WebServer call() throws Exception {
+            public NettyWebServer call() throws Exception {
                 if (isRunning()) {
                     throw new IllegalStateException("Server already started.");
                 }

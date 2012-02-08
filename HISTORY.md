@@ -1,5 +1,21 @@
-In Git
+0.4.0 (In Git)
 ==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.8...v0.4.0)
+
+In previous versions of Webbit, `WebServer.start()` was synchronous and `WebServer.stop()` was asynchronous (You could call `WebServer.join()` to wait for a complete shutdown.
+As of this release, both `WebServer.start()` and `WebServer.stop()` are asynchronous, and they return a `Future<WebServer>` that can be used to wait for the operation to complete.
+
+* Removed `WebServer.join()`. ([#70](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
+* `WebServer.start()` is asynchronous. ([#70](https://github.com/webbit/webbit/issues/70) Aslak Hellesøy)
+* Added WebSocketConnection.send(byte[] message, int offset, int length) (Aslak Hellesøy)
+
+0.3.8 (2012-02-01)
+==================
+
+(There is no 0.3.7 release due to Maven hiccups)
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.3.6...v0.3.8)
 
 * Added support for HTTPS ([#63](https://github.com/webbit/webbit/pull/63), [#9](https://github.com/webbit/webbit/issues/9) Michael Rykov)
 * WebSocketClient can reconnect. (Aslak Hellesøy)
@@ -17,7 +33,7 @@ In Git
 0.3.4 (2012-01-30)
 ==================
 
-(There is no 0.3.2 release due to Aslak hiccups)
+(There is no 0.3.3 release due to Aslak hiccups)
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.3.2...v0.3.4)
 

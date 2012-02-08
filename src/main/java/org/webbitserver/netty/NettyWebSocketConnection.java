@@ -31,7 +31,12 @@ public class NettyWebSocketConnection extends AbstractHttpConnection implements 
 
     @Override
     public NettyWebSocketConnection send(byte[] message) {
-        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(message)));
+        return send(message, 0, message.length);
+    }
+
+    @Override
+    public NettyWebSocketConnection send(byte[] message, int offset, int length) {
+        writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_BINARY, true, 0, outboundMaskingKey, ChannelBuffers.wrappedBuffer(message, offset, length)));
         return this;
     }
 

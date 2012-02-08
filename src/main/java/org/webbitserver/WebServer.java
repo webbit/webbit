@@ -98,7 +98,7 @@ public interface WebServer {
      * may still not be ready to accept incoming requests. To wait until it's fully started,
      * call {@link java.util.concurrent.Future#get()} on the returned future.
      */
-    Future<WebServer> start();
+    Future<? extends WebServer> start();
 
     /**
      * Stop web server background thread. This returns immediately, but the

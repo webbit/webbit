@@ -65,13 +65,13 @@ public class PostTest {
     }
 
     @Test
-    public void exposesPostBodyAsBytes() throws IOException {
+    public void exposesPostBodyAsBytes() throws IOException, ExecutionException, InterruptedException {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
                 response.content(Arrays.toString(request.bodyAsBytes())).end();
             }
-        }).start();
+        }).start().get();
         byte[] byteArray = new byte[] {87, 79, 87, 46, 46, 46};
         String result = contents(httpPost(webServer, "/", new String(byteArray)));
         assertEquals(Arrays.toString(byteArray), result);
