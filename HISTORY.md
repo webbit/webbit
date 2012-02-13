@@ -1,4 +1,11 @@
-0.4.0 (In Git)
+0.4.0 (2012-02-13)
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.0...v0.4.1)
+
+* Bugfix: WebSocketConnection.send(byte[] message, int offset, int length) would fail if offset was bigger than length (Aslak Hellesøy)
+
+0.4.0 (2012-02-08)
 ==================
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.3.8...v0.4.0)

@@ -205,7 +205,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
     }
 
     static void applyMask(ChannelBuffer data, byte[] maskingKey) {
-        int length = data.arrayOffset();
+        int length = data.writerIndex();
         for (int i = 0; i < length; i++) {
             data.setByte(i, data.getByte(i) ^ maskingKey[i % 4]);
         }

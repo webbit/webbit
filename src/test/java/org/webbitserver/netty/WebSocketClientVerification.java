@@ -99,7 +99,7 @@ public abstract class WebSocketClientVerification {
 
     @Test
     public void server_echoes_byte_binary_message_with_offset_and_length_immediately() throws InterruptedException {
-        assertEchoed(binaryMessage(10000), 200, 128);
+        assertEchoed(binaryMessage(10), 4, 3);
     }
 
     // This always fails. We should un-Ignore this when #65 is fixed.
@@ -135,6 +135,9 @@ public abstract class WebSocketClientVerification {
     }
 
     private void assertEchoed(final byte[] message, final int offset, final int length) throws InterruptedException {
+        byte[] expected = new byte[length];
+        System.arraycopy(message, offset, expected, 0, length);
+
         final CountDownLatch countDown = new CountDownLatch(2);
         final List<byte[]> received = Collections.synchronizedList(new ArrayList<byte[]>());
 
@@ -156,8 +159,6 @@ public abstract class WebSocketClientVerification {
         ws.start();
 
         assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
-        byte[] expected = new byte[length];
-        System.arraycopy(message, offset, expected, 0, length);
         assertArrayEquals(expected, received.get(0));
     }
 
