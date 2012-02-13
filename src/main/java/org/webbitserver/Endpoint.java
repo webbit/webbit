@@ -56,7 +56,8 @@ public interface Endpoint<T> {
      * @param keyStore Keystore InputStream
      * @param pass     Store and key password
      * @return current WebServer instance
-     * @throws org.webbitserver.WebbitException A problem loading the keystore
+     * @throws org.webbitserver.WebbitException
+     *          A problem loading the keystore
      * @see #setupSsl(String, String, String)
      */
     T setupSsl(InputStream keyStore, String pass) throws WebbitException;

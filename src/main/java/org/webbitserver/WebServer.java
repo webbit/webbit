@@ -1,7 +1,6 @@
 package org.webbitserver;
 
 import java.io.InputStream;
-import java.util.concurrent.Executor;
 
 /**
  * <p>Configures an event based webserver.</p>
@@ -108,7 +107,8 @@ public interface WebServer extends Endpoint<WebServer> {
      * @param storePass Store password
      * @param keyPass   Key password
      * @return current WebServer instance
-     * @throws org.webbitserver.WebbitException A problem loading the keystore
+     * @throws org.webbitserver.WebbitException
+     *          A problem loading the keystore
      * @see #setupSsl(String, String, String)
      */
     WebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException;
