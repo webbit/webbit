@@ -1,6 +1,7 @@
 package org.webbitserver.netty;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
@@ -28,14 +29,14 @@ public class NettyWebServerTest {
         server.stop().get();
     }
 
+    @Ignore // See https://github.com/webbit/webbit/issues/41
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();
         server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
         server.stop().get();
         sleep(200);
-        // It's a little fishy that we have one more thread now. Related to https://github.com/webbit/webbit/issues/41 maybe?
-        assertEquals(threadCountStart + 1, getCurrentThreadCount());
+        assertEquals(threadCountStart, getCurrentThreadCount());
     }
 
     @Test

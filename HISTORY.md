@@ -1,7 +1,9 @@
-0.4.0 (2012-02-13)
+0.4.2 (2012-02-13)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.0...v0.4.1)
+(There is no 0.4.1 because NettyWebServerTest#stopsServerCleanlyNotLeavingResourcesHanging failed after Maven had tagged git)
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.0...v0.4.2)
 
 * Bugfix: WebSocketConnection.send(byte[] message, int offset, int length) would fail if offset was bigger than length (Aslak Hellesøy)
 
