@@ -8,6 +8,7 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
+import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import samples.echo.EchoWsServer;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -46,35 +48,65 @@ public abstract class WebSocketClientVerification {
     }
 
     @Test
-    public void server_echoes_1_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(1));
+    public void server_echoes_1_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(1));
     }
 
     @Test
-    public void server_echoes_125_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(125));
+    public void server_echoes_1_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(10), 0, 1);
     }
 
     @Test
-    public void server_echoes_126_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(126));
+    public void server_echoes_125_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(125));
     }
 
     @Test
-    public void server_echoes_127_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(127));
+    public void server_echoes_125_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(125), 0, 125);
     }
 
     @Test
-    public void server_echoes_128_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(128));
+    public void server_echoes_126_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(126));
+    }
+
+    @Test
+    public void server_echoes_126_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(126), 0, 126);
+    }
+
+    @Test
+    public void server_echoes_127_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(127));
+    }
+
+    @Test
+    public void server_echoes_127_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(127), 0, 127);
+    }
+
+    @Test
+    public void server_echoes_128_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(128));
+    }
+
+    @Test
+    public void server_echoes_128_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(128), 0, 128);
+    }
+
+    @Test
+    public void server_echoes_byte_binary_message_with_offset_and_length_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(10000), 200, 128);
     }
 
     // This always fails. We should un-Ignore this when #65 is fixed.
     @Ignore
     @Test
-    public void server_echoes_0_byte_message_immediately() throws InterruptedException {
-        assertEchoed(message(0));
+    public void server_echoes_0_byte_string_message_immediately() throws InterruptedException {
+        assertEchoed(stringMessage(0));
     }
 
     private void assertEchoed(final String message) throws InterruptedException {
@@ -94,6 +126,7 @@ public abstract class WebSocketClientVerification {
                 countDown.countDown();
             }
         }, Executors.newSingleThreadExecutor());
+        ws.connectionExceptionHandler(new PrintStackTraceExceptionHandler());
         configure(ws);
         ws.start();
 
@@ -101,11 +134,46 @@ public abstract class WebSocketClientVerification {
         assertEquals(message, received.get(0));
     }
 
-    private String message(int length) {
+    private void assertEchoed(final byte[] message, final int offset, final int length) throws InterruptedException {
+        final CountDownLatch countDown = new CountDownLatch(2);
+        final List<byte[]> received = Collections.synchronizedList(new ArrayList<byte[]>());
+
+        WebSocket ws = new WebSocketClient(wsUri, new BaseWebSocketHandler() {
+            @Override
+            public void onOpen(WebSocketConnection connection) throws Exception {
+                connection.send(message, offset, length);
+                countDown.countDown();
+            }
+
+            @Override
+            public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
+                received.add(msg);
+                countDown.countDown();
+            }
+        }, Executors.newSingleThreadExecutor());
+        ws.connectionExceptionHandler(new PrintStackTraceExceptionHandler());
+        configure(ws);
+        ws.start();
+
+        assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
+        byte[] expected = new byte[length];
+        System.arraycopy(message, offset, expected, 0, length);
+        assertArrayEquals(expected, received.get(0));
+    }
+
+    private String stringMessage(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append("*");
         }
         return sb.toString();
+    }
+
+    private byte[] binaryMessage(int length) {
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; i++) {
+            bytes[i] = (byte) i;
+        }
+        return bytes;
     }
 }
