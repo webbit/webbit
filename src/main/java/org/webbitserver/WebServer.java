@@ -1,9 +1,7 @@
 package org.webbitserver;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 
 /**
  * <p>Configures an event based webserver.</p>
@@ -41,7 +39,7 @@ import java.util.concurrent.Future;
  * @see WebSocketConnection
  * @see EventSourceConnection
  */
-public interface WebServer {
+public interface WebServer extends Endpoint<WebServer> {
 
     /**
      * Add an HttpHandler. When a request comes in the first HttpHandler will be invoked.
@@ -93,51 +91,9 @@ public interface WebServer {
     WebServer add(String path, EventSourceHandler handler);
 
     /**
-     * Start web server in background. This returns immediately, but the server
-     * may still not be ready to accept incoming requests. To wait until it's fully started,
-     * call {@link java.util.concurrent.Future#get()} on the returned future.
-     */
-    Future<? extends WebServer> start();
-
-    /**
-     * Stop web server background thread. This returns immediately, but the
-     * webserver may still be shutting down. To wait until it's fully stopped,
-     * call {@link java.util.concurrent.Future#get()} on the returned future.
-     */
-    Future<WebServer> stop();
-
-    /**
-     * What to do when an exception gets thrown in a handler.
-     * <p/>
-     * Defaults to using {@link org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler}.
-     * It is suggested that apps supply their own implementation (e.g. to log somewhere).
-     */
-    WebServer uncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler);
-
-    /**
-     * What to do when an exception occurs when attempting to read/write data
-     * from/to the underlying connection. e.g. If an HTTP request disconnects
-     * before it was expected.
-     * <p/>
-     * Defaults to using {@link org.webbitserver.handler.exceptions.SilentExceptionHandler}
-     * as this is a common thing to happen on a network, and most systems should not care.
-     */
-    WebServer connectionExceptionHandler(Thread.UncaughtExceptionHandler handler);
-
-    /**
-     * Get base URI that webserver is serving on.
-     */
-    URI getUri();
-
-    /**
      * Get base port that webserver is serving on.
      */
     int getPort();
-
-    /**
-     * Get main work executor that all handlers will execute on.
-     */
-    Executor getExecutor();
 
     /**
      * Number of milliseconds before a stale HTTP keep-alive connection is closed by the server. A HTTP connection
@@ -147,25 +103,12 @@ public interface WebServer {
 
     /**
      * Setup SSL/TLS handler
-     * <p/>
-     * This is shortcut for {@code setupSsl(keyStore, pass, pass)}.
-     *
-     * @param keyStore Keystore InputStream
-     * @param pass     Store and key password
-     * @return current WebServer instance
-     * @throws WebbitException A problem loading the keystore
-     * @see #setupSsl(String, String, String)
-     */
-    WebServer setupSsl(InputStream keyStore, String pass) throws WebbitException;
-
-    /**
-     * Setup SSL/TLS handler
      *
      * @param keyStore  Keystore InputStream
      * @param storePass Store password
      * @param keyPass   Key password
      * @return current WebServer instance
-     * @throws WebbitException A problem loading the keystore
+     * @throws org.webbitserver.WebbitException A problem loading the keystore
      * @see #setupSsl(String, String, String)
      */
     WebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException;
