@@ -1,3 +1,10 @@
+0.4.3 (In Git)
+==============
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.2...master)
+
+* Update docs (and related examples and wiki pages) to work for the `Future` API update in `WebServer` ([#78](https://github.com/webbit/webbit/issues/78) Kushal Pisavadia)
+
 0.4.2 (2012-02-13)
 ==================
 
