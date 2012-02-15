@@ -23,16 +23,16 @@ import java.util.concurrent.Future;
  *   }
  * }
  * WebServer webServer = WebServers.createWebServer(8080)
- *                                 .add(new HelloWorldHandler())
- *                                 .start();
+ *                                 .add(new HelloWorldHandler());
+ * webServer.start();
  * print("Point your browser to " + webServer.getUri());
  * </pre>
  * <p/>
  * <h2>Serving Static Files</h2>
  * <pre>
  * WebServer webServer = WebServers.createWebServer(8080)
- *                                 .add(new StaticFileHandler("./wwwdata"))
- *                                 .start();
+ *                                 .add(new StaticFileHandler("./wwwdata"));
+ * webServer.start();
  * </pre>
  *
  * @author Joe Walnes

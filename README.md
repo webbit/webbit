@@ -20,8 +20,8 @@ Quick start
 Start a web server on port 8080 and serve some static files:
 
     WebServer webServer = WebServers.createWebServer(8080)
-      .add(new StaticFileHandler("/web")) // path to web content
-      .start();
+      .add(new StaticFileHandler("/web")); // path to web content
+    webServer.start();
 
 That was easy.
 
@@ -47,14 +47,17 @@ Now let's build a WebSocketHandler.
       public void onMessage(WebSocketConnection connection, byte[] message) {
       }
 
-      public void onPong(WebSocketConnection connection, String message) {
+      public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+      }
+
+      public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
       }
 
       public static void main(String[] args) {
         WebServer webServer = WebServers.createWebServer(8080)
           .add("/hellowebsocket", new HelloWebSockets())
-          .add(new StaticFileHandler("/web"))
-          .start();
+          .add(new StaticFileHandler("/web"));
+        webServer.start();
         System.out.println("Server running at " + webServer.getUri());
       }
     }
