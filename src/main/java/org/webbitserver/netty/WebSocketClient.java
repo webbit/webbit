@@ -59,6 +59,7 @@ public class WebSocketClient implements WebSocket {
 
     private static long nextId = 1;
 
+    private final URI uri;
     private WebSocketHandler webSocketHandler;
     private final Executor executor;
     private final InetSocketAddress remoteAddress;
@@ -78,6 +79,7 @@ public class WebSocketClient implements WebSocket {
     }
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
+        this.uri = uri;
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
 
@@ -113,6 +115,16 @@ public class WebSocketClient implements WebSocket {
         return this;
     }
 
+    @Override
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    @Override
+    public URI getUri() {
+        return uri;
+    }
+
     private ConnectionHelper createConnectionHelper() {
         return new ConnectionHelper(executor, exceptionHandler, ioExceptionHandler) {
             @Override
@@ -128,10 +140,10 @@ public class WebSocketClient implements WebSocket {
     }
 
     @Override
-    public Future<WebSocket> start() {
-        FutureTask<WebSocket> future = new FutureTask<WebSocket>(new Callable<WebSocket>() {
+    public Future<WebSocketClient> start() {
+        FutureTask<WebSocketClient> future = new FutureTask<WebSocketClient>(new Callable<WebSocketClient>() {
             @Override
-            public WebSocket call() throws Exception {
+            public WebSocketClient call() throws Exception {
                 final byte[] outboundMaskingKey = new byte[]{randomByte(), randomByte(), randomByte(), randomByte()};
 
                 bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
@@ -161,7 +173,7 @@ public class WebSocketClient implements WebSocket {
                 channel = future.awaitUninterruptibly().getChannel();
 
                 if (!future.isSuccess()) {
-                    close();
+                    stop();
                 } else {
                     ChannelFuture requestFuture = channel.write(request);
                     requestFuture.awaitUninterruptibly();
@@ -200,10 +212,10 @@ public class WebSocketClient implements WebSocket {
     }
 
     @Override
-    public WebSocket close() {
-        executor.execute(new Runnable() {
+    public Future<WebSocketClient> stop() {
+        FutureTask<WebSocketClient> future = new FutureTask<WebSocketClient>(new Callable<WebSocketClient>() {
             @Override
-            public void run() {
+            public WebSocketClient call() throws Exception {
                 try {
                     channel.getCloseFuture().awaitUninterruptibly();
                     bootstrap.releaseExternalResources();
@@ -211,9 +223,11 @@ public class WebSocketClient implements WebSocket {
                 } catch (Throwable e) {
                     exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(e, channel));
                 }
+                return WebSocketClient.this;
             }
         });
-        return this;
+        executor.execute(future);
+        return future;
     }
 
     @Override
