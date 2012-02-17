@@ -1,7 +1,7 @@
-0.4.3 (In Git)
-==============
+0.4.3 (2012-02-17)
+==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.2...master)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.2...v0.4.3)
 
 * Log outbound binary websocket messages sent with offset and length (Aslak Hellesøy)
 * Update docs (and related examples and wiki pages) to work for the `Future` API update in `WebServer` ([#78](https://github.com/webbit/webbit/issues/78) Kushal Pisavadia)
