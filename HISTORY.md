@@ -4,6 +4,7 @@
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.2...master)
 
 * Update docs (and related examples and wiki pages) to work for the `Future` API update in `WebServer` ([#78](https://github.com/webbit/webbit/issues/78) Kushal Pisavadia)
+* Consolidated WebSocket client API with WebServer API ([#76](https://github.com/webbit/webbit/pull/76) Aslak Hellesøy)
 
 0.4.2 (2012-02-13)
 ==================
