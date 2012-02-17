@@ -3,6 +3,7 @@
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.2...master)
 
+* Log outbound binary websocket messages sent with offset and length (Aslak Hellesøy)
 * Update docs (and related examples and wiki pages) to work for the `Future` API update in `WebServer` ([#78](https://github.com/webbit/webbit/issues/78) Kushal Pisavadia)
 * Consolidated WebSocket client API with WebServer API ([#76](https://github.com/webbit/webbit/pull/76) Aslak Hellesøy)
 

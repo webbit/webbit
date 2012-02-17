@@ -25,6 +25,14 @@ class LoggingWebSocketConnection extends WebSocketConnectionWrapper {
     }
 
     @Override
+    public WebSocketConnectionWrapper send(byte[] message, int offset, int length) {
+        byte[] sent = new byte[length];
+        System.arraycopy(message, offset, sent, 0, length);
+        logSink.webSocketOutboundData(this, sent);
+        return super.send(message, offset, length);
+    }
+
+    @Override
     public WebSocketConnectionWrapper ping(byte[] message) {
         logSink.webSocketOutboundPing(this, message);
         return super.ping(message);
