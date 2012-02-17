@@ -1,21 +1,25 @@
-Webbit - A Java event based WebSocket and HTTP server
-=====================================================
+# Webbit - A Java event based WebSocket and HTTP server
 
-Getting it
------------
+## Getting it
 
 [Prebuilt JARs are available](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) from the central Maven repository.
 
 Alternatively, you can get the latest code from Git and build it yourself:
 
-Build is done with `make`. On OS-X and Linux this should work out of the box. On Solaris, use `gmake`. On Windows you will need Cygwing.
-
     git clone git://github.com/webbit/webbit.git
     cd webbit
+
+### Make
+
+Build is done with `make`. On OS-X and Linux this should work out of the box. On Solaris, use `gmake`. On Windows you will need Cygwin.
+
     make
 
-Quick start
------------
+### Maven
+
+    mvn install
+
+## Quick start
 
 Start a web server on port 8080 and serve some static files:
 
@@ -84,8 +88,7 @@ And a page that uses the WebSocket (web/index.html)
 </html>
 ```
 
-More
------------
+## More
 
 +   [Docs on wiki](https://github.com/webbit/webbit/wiki)
 +   [Webbit mailing list](http://groups.google.com/group/webbit)
