@@ -88,6 +88,39 @@ And a page that uses the WebSocket (web/index.html)
 </html>
 ```
 
+## Contributing
+
+### Running JUnit tests
+
+    mvn clean test
+
+or
+
+    make clean test
+
+### Running Autobahn tests
+
+[Autobahn](http://www.tavendo.de/autobahn) is a WebSocket server implemented in Python that comes with an extensive
+[test suite](http://www.tavendo.de/autobahn/testsuite.html) that can be used to test other WebSocket servers as well.
+
+We're using it to test Webbit.
+
+Installing Autobahn
+
+    git submodule update --init
+
+Running Autobahn tests
+
+In shell A:
+
+    make echo
+
+In shell B:
+
+    make autobahn
+
+Open `reports/servers/index.html` to see the results.
+
 ## More
 
 +   [Docs on wiki](https://github.com/webbit/webbit/wiki)

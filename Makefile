@@ -63,8 +63,13 @@ build/.tests-pass: build/$(LIBRARY)-tests.jar
 	@touch $@
 
 # Run Autobahn tests
-autobahn:
+autobahn: bin/python
 	PYTHONPATH=src/test/Autobahn/lib/python bin/python src/test/Autobahn/testsuite/websockets/fuzzing_client.py
+
+.PHONY: autobahn
+
+bin/python:
+	python virtualenv.py --no-site-packages .
 
 # Clean up
 clean:
