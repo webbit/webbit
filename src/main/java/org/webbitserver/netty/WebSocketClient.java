@@ -192,7 +192,7 @@ public class WebSocketClient implements WebSocket {
         request.setHeader(HttpHeaders.Names.HOST, host);
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
-        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, 13);
+        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, 17);
 
         base64Nonce = base64Nonce();
         request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
