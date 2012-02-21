@@ -22,9 +22,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.webbitserver.helpers.Hex.toHex;
 
 public abstract class WebSocketClientVerification {
     private EchoWsServer server;
@@ -55,6 +55,11 @@ public abstract class WebSocketClientVerification {
     @Test
     public void server_echoes_1_byte_binary_message_immediately() throws InterruptedException {
         assertEchoed(binaryMessage(10), 0, 1);
+    }
+
+    @Test
+    public void server_echoes_10_byte_binary_message_immediately() throws InterruptedException {
+        assertEchoed(binaryMessage(10), 0, 10);
     }
 
     @Test
@@ -135,7 +140,7 @@ public abstract class WebSocketClientVerification {
     }
 
     private void assertEchoed(final byte[] message, final int offset, final int length) throws InterruptedException {
-        byte[] expected = new byte[length];
+        final byte[] expected = new byte[length];
         System.arraycopy(message, offset, expected, 0, length);
 
         final CountDownLatch countDown = new CountDownLatch(2);
@@ -159,7 +164,7 @@ public abstract class WebSocketClientVerification {
         ws.start();
 
         assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
-        assertArrayEquals(expected, received.get(0));
+        assertEquals(toHex(expected), toHex(received.get(0)));
     }
 
     private String stringMessage(int length) {
