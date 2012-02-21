@@ -1,7 +1,7 @@
-0.4.4 (2012-02-21)
+0.4.5 (2012-02-21)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.3...v0.4.4)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.3...v0.4.5)
 
 * Use `copiedBuffer` instead of `wrappedBuffer` to prevent outbound binary messages from being corrupted (Aslak Hellesøy)
 
