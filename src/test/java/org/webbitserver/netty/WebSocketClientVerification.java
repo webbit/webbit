@@ -143,6 +143,9 @@ public abstract class WebSocketClientVerification {
         final byte[] expected = new byte[length];
         System.arraycopy(message, offset, expected, 0, length);
 
+        final byte[] copy = new byte[message.length];
+        System.arraycopy(message, 0, copy, 0, message.length);
+
         final CountDownLatch countDown = new CountDownLatch(2);
         final List<byte[]> received = Collections.synchronizedList(new ArrayList<byte[]>());
 
@@ -165,6 +168,7 @@ public abstract class WebSocketClientVerification {
 
         assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
         assertEquals(toHex(expected), toHex(received.get(0)));
+        assertEquals(toHex(message), toHex(copy));
     }
 
     private String stringMessage(int length) {

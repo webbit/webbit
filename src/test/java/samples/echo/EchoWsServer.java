@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.ExecutionException;
 
-import static org.webbitserver.WebServers.createWebServer;
-
 public class EchoWsServer {
 
     private final WebServer webServer;
