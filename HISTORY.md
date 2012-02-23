@@ -1,5 +1,7 @@
-In Git
+0.4.6 (2012-02-23)
 ==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.5...v0.4.6)
 
 * WebSocketClient issues HTTP request using abs_path instead of absoluteUri. This is to work around [buggy servers](https://github.com/igrigorik/em-websocket/issues/73). (Aslak Hellesøy)
 * Add missing `Connection: Upgrade` and `Upgrade: websocket` headers to WebSocketClient. (Aslak Hellesøy)
