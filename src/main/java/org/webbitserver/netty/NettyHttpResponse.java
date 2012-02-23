@@ -5,6 +5,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
@@ -95,7 +96,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse cookie(HttpCookie httpCookie) {
-        return header(SET_COOKIE_HEADER, httpCookie.toString());
+        return header(HttpHeaders.Names.SET_COOKIE, httpCookie.toString());
     }
 
     @Override
