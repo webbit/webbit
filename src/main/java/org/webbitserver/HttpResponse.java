@@ -14,8 +14,6 @@ import java.util.Date;
  * @author Joe Walnes
  */
 public interface HttpResponse {
-    String SET_COOKIE_HEADER = "Set-Cookie";
-
     /**
      * For text based responses, sets the Charset to encode the response as.
      * <p/>

@@ -46,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 public class WebSocketClient implements WebSocket {
+    private static final int VERSION = 13;
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final MessageDigest SHA_1;
 
@@ -95,10 +96,15 @@ public class WebSocketClient implements WebSocket {
             }
         }
         remoteAddress = new InetSocketAddress(host, port);
-        request = createNettyHttpRequest(uri.toASCIIString().replaceFirst("http", "ws"), host);
+        request = createNettyHttpRequest(getPath(uri), host);
 
         uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
         connectionExceptionHandler(new SilentExceptionHandler());
+    }
+
+    private String getPath(URI uri) {
+        String path = uri.getPath();
+        return "".equals(path) ? "/" : path;
     }
 
     @Override
@@ -190,9 +196,10 @@ public class WebSocketClient implements WebSocket {
     private HttpRequest createNettyHttpRequest(String uri, String host) {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         request.setHeader(HttpHeaders.Names.HOST, host);
-        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
+        request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
-        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, 17);
+        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);
 
         base64Nonce = base64Nonce();
         request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
@@ -273,7 +280,7 @@ public class WebSocketClient implements WebSocket {
         private void adjustPipelineToWebSocket(ChannelHandlerContext ctx, MessageEvent messageEvent, ChannelHandler webSocketFrameDecoder, ChannelHandler webSocketFrameEncoder) {
             NettyHttpRequest httpRequest = new NettyHttpRequest(messageEvent, request, nextId(), timestamp());
             final NettyWebSocketConnection webSocketConnection = new NettyWebSocketConnection(executor, httpRequest, ctx, outboundMaskingKey);
-            webSocketConnection.setHybiWebSocketVersion(17);
+            webSocketConnection.setHybiWebSocketVersion(VERSION);
 
             ChannelHandler webSocketChannelHandler = new WebSocketConnectionHandler(executor, exceptionHandler, ioExceptionHandler, webSocketConnection, webSocketHandler);
 

@@ -1,3 +1,8 @@
+In Git
+==================
+
+* WebSocketClient issues HTTP request using abs_path instead of absoluteUri. This is to work around [buggy servers](https://github.com/igrigorik/em-websocket/issues/73). (Aslak Hellesøy)
+
 0.4.5 (2012-02-21)
 ==================
 
