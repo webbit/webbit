@@ -31,12 +31,11 @@ public class EmWebSocketTest {
     }
 
     private void assertEchoed(final String stringMessage, final String bytesMessage) throws InterruptedException, ExecutionException {
-        final CountDownLatch latch = new CountDownLatch(2);
-        final List<String> echoed = new ArrayList<String>();
+        final CountDownLatch latch = new CountDownLatch(3);
+        final List<String> received = new ArrayList<String>();
         WebSocket ws = new WebSocketClient(URI.create("ws://0.0.0.0:8080"), new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Throwable {
-                connection.send(stringMessage);
             }
 
             @Override
@@ -45,14 +44,21 @@ public class EmWebSocketTest {
 
             @Override
             public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
-                echoed.add(msg);
-                connection.send(bytesMessage.getBytes("UTF-8"));
+                received.add(msg);
+
+                if(!msg.equals(stringMessage)) {
+                    // It's the initial message from echo.rb
+                    connection.send(stringMessage);
+                } else {
+                    // It's our own message coming back
+                    connection.send(bytesMessage.getBytes("UTF-8"));
+                }
                 latch.countDown();
             }
 
             @Override
             public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-                echoed.add(new String(msg, "UTF-8"));
+                received.add(new String(msg, "UTF-8"));
                 latch.countDown();
             }
 
@@ -67,7 +73,7 @@ public class EmWebSocketTest {
         });
         ws.start().get();
         boolean finished = latch.await(500, TimeUnit.MILLISECONDS);
-        assertEquals(asList(stringMessage, bytesMessage), echoed);
+        assertEquals(asList("Hello Client!", stringMessage, bytesMessage), received);
         assertTrue(finished);
     }
 
