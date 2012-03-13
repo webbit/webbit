@@ -1,16 +1,15 @@
 package org.webbitserver.handler;
 
-import org.junit.After;
-import org.junit.Test;
-import org.webbitserver.WebServer;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
+
+import java.util.concurrent.ExecutionException;
+
+import org.junit.After;
+import org.junit.Test;
+import org.webbitserver.WebServer;
 
 public class AliasHandlerTest {
     private WebServer webServer = createWebServer(59504);

@@ -1,14 +1,13 @@
 package samples.authentication;
 
-import org.webbitserver.*;
+import static org.webbitserver.WebServers.createWebServer;
+
+import java.util.concurrent.ExecutionException;
+
+import org.webbitserver.WebServer;
 import org.webbitserver.handler.StaticFileHandler;
 import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 import org.webbitserver.handler.authentication.InMemoryPasswords;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
-import static org.webbitserver.WebServers.createWebServer;
 
 /**
  * This example demonstrates restricting access using HTTP BASIC authentication.

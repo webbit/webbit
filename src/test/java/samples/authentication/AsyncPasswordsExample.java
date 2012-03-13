@@ -1,16 +1,16 @@
 package samples.authentication;
 
-import org.webbitserver.*;
-import org.webbitserver.handler.StaticFileHandler;
-import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
-import org.webbitserver.handler.authentication.PasswordAuthenticator;
+import static org.webbitserver.WebServers.createWebServer;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static org.webbitserver.WebServers.createWebServer;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.WebServer;
+import org.webbitserver.handler.StaticFileHandler;
+import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
+import org.webbitserver.handler.authentication.PasswordAuthenticator;
 
 /**
  * This example how to verify username/passwords in the background without blocking the
