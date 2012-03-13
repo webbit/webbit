@@ -8,7 +8,7 @@ import org.webbitserver.WebSocketConnection;
 import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 
 /**
- * WebSocket handler that keeps track of whos connected and broadcasts to other users.
+ * WebSocket handler that keeps track of who is connected and broadcasts to other users.
  */
 public class WhoAmIWebSocketHandler extends BaseWebSocketHandler {
 
