@@ -1,12 +1,12 @@
 package samples.flashchatroom;
 
-import com.google.gson.Gson;
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import org.webbitserver.BaseWebSocketHandler;
+import org.webbitserver.WebSocketConnection;
+
+import com.google.gson.Gson;
 
 public class Chatroom extends BaseWebSocketHandler {
 

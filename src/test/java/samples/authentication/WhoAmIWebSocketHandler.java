@@ -1,12 +1,11 @@
 package samples.authentication;
 
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
-import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import org.webbitserver.BaseWebSocketHandler;
+import org.webbitserver.WebSocketConnection;
+import org.webbitserver.handler.authentication.BasicAuthenticationHandler;
 
 /**
  * WebSocket handler that keeps track of whos connected and broadcasts to other users.

@@ -1,13 +1,7 @@
 package org.webbitserver.netty;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebSocket;
-import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
-import samples.echo.EchoWsServer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,9 +11,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.webbitserver.BaseWebSocketHandler;
+import org.webbitserver.WebSocket;
+import org.webbitserver.WebSocketConnection;
+
+import samples.echo.EchoWsServer;
 
 public class ReconnectingWebSocketClientTest {
     private EchoWsServer server;
