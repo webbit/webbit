@@ -135,7 +135,7 @@ public abstract class WebSocketClientVerification {
         configure(ws);
         ws.start();
 
-        assertTrue("Message wasn't echoed", countDown.await(300, TimeUnit.MILLISECONDS));
+        assertTrue("Message wasn't echoed", countDown.await(1000, TimeUnit.MILLISECONDS));
         assertEquals(message, received.get(0));
     }
 
