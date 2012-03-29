@@ -58,7 +58,10 @@ public class Hixie75 implements WebSocketVersion {
     }
 
     private String getWebSocketLocation(HttpRequest req) {
-        // TODO: It should be wss if it was https
-        return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + req.getUri();
+        return  getWebSocketProtocol(req) + req.getHeader(HttpHeaders.Names.HOST) + req.getUri();
+    }
+    
+    private String getWebSocketProtocol(HttpRequest req) {
+  	  if(req.getHeader(HttpHeaders.Names.ORIGIN).matches("/^https:\\/\\//")) { return "wss://"; } else { return "ws://"; }
     }
 }
