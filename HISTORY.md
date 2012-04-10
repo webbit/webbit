@@ -1,9 +1,9 @@
-0.4.7 (2012-03-29)
+0.4.7 (2012-04-10)
 ==================
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.6...v0.4.7)
 
-* Now returns the appropriate protocol when responding to  [secure websockets](https://github.com/igrigorik/em-websocket/issues/82). (Justin Long)
+* Now returns the appropriate protocol when responding to secure websockets. (Justin Long)
 
 0.4.6 (2012-02-23)
 ==================
