@@ -26,7 +26,7 @@ Start a web server on port 8080 and serve some static files:
 ```java
 WebServer webServer = WebServers.createWebServer(8080)
     .add(new StaticFileHandler("/web")); // path to web content
-    .start();
+webServer.start();
 ```
 
 That was easy.
