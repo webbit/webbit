@@ -1,3 +1,10 @@
+0.4.8 (2012-04-10)
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.6...v0.4.7)
+
+* Bug fix for regular expression allowing for more robust test of https:// in HTTP ORIGIN in Hixie 75/76. (Justin Long)
+
 0.4.7 (2012-04-10)
 ==================
 
