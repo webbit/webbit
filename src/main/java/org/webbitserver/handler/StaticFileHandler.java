@@ -88,11 +88,8 @@ public class StaticFileHandler extends AbstractResourceHandler {
           for (File file : this.file.listFiles()) {
             builder
                 .append("<li><a href=\"")
-                .append(file.getName());
-            if (file.isDirectory()) {
-                builder.append("/");
-            }
-            builder.append("\">")
+                .append(file.getName())
+                .append("\">")
                 .append(file.getName())
                 .append("</a></li>");
           }

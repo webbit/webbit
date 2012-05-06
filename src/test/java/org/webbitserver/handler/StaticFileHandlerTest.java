@@ -128,21 +128,21 @@ public class StaticFileHandlerTest {
         mkdir("a");
         mkdir("b");
         assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
-        assertReturnedWithStatus(404, handle(request("/a")));
+        assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatus(404, handle(request("/a/")));
-        assertReturnedWithStatus(404, handle(request("/b")));
+        assertReturnedWithStatus(301, handle(request("/b")));
 
         writeFile("a/index.html", welcomeFileContents);
         assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
-        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a")));
+        assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a/")));
-        assertReturnedWithStatus(404, handle(request("/b")));
+        assertReturnedWithStatus(301, handle(request("/b")));
 
         writeFile("b/index.html", welcomeFileContents);
         assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
-        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a")));
+        assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a/")));
-        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/b")));
+        assertReturnedWithStatus(301, handle(request("/b")));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class StaticFileHandlerTest {
         
         mkdir("a");
         writeFile("a/a.foo", "");
-        assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/a")));
+        assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/a/")));
     }
     

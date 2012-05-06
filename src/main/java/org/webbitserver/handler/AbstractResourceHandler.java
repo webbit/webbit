@@ -206,7 +206,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         @Override
         public void run() {
-            path = withoutTrailingSlashOrQuery(path);
+            path = withoutQuery(path);
 
             // TODO: Cache
             // TODO: If serving directory and trailing slash omitted, perform redirect
@@ -217,6 +217,10 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 } else if ((content = fileBytes()) != null) {
                     serve(guessMimeType(path), content, control, response, request);
                 } else {
+                    if (!path.endsWith("/")) {
+                        response.status(301).header("Location", path + "/").end();
+                        return;
+                    }
                     if ((content = welcomeBytes()) != null) {
                         serve(guessMimeType(welcomeFileName), content, control, response, request);
                     } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
@@ -273,13 +277,10 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             return mimeType;
         }
 
-        protected String withoutTrailingSlashOrQuery(String path) {
+        protected String withoutQuery(String path) {
             int queryStart = path.indexOf('?');
             if (queryStart > -1) {
                 path = path.substring(0, queryStart);
-            }
-            if (path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
             }
             return path;
         }
