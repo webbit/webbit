@@ -209,7 +209,6 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             path = withoutQuery(path);
 
             // TODO: Cache
-            // TODO: If serving directory and trailing slash omitted, perform redirect
             try {
                 ByteBuffer content = null;
                 if (!exists()) {
@@ -217,6 +216,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 } else if ((content = fileBytes()) != null) {
                     serve(guessMimeType(path), content, control, response, request);
                 } else {
+                    // Assumes if path has been changed since the original request,
+                    // its current value with a trailing slash will still resolve properly
                     if (!path.endsWith("/")) {
                         response.status(301).header("Location", path + "/").end();
                         return;
