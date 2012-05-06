@@ -240,7 +240,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected abstract ByteBuffer fileBytes() throws IOException;
 
         protected abstract ByteBuffer welcomeBytes() throws IOException;
-        
+
         protected abstract ByteBuffer directoryListingBytes() throws IOException;
 
         protected ByteBuffer read(int length, InputStream in) throws IOException {
