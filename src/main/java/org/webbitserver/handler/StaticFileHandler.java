@@ -4,6 +4,7 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,14 +38,19 @@ public class StaticFileHandler extends AbstractResourceHandler {
     protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
                                                         HttpResponse response,
                                                         HttpControl control) {
-        return new StaticFileHandler.FileWorker(request, response, control);
+        return new StaticFileHandler.FileWorker(request, response, control, true);
     }
 
     protected class FileWorker extends IOWorker {
-        private File file;
+        private static final String DIRECTORY_LISTING_FORMAT_STRING =
+          "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
 
-        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+        private File file;
+        private final boolean isDirectoryListingEnabled;
+
+        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control, boolean isDirectoryListingEnabled) {
             super(request.uri(), request, response, control);
+            this.isDirectoryListingEnabled = isDirectoryListingEnabled;
         }
 
         @Override
@@ -64,12 +70,41 @@ public class StaticFileHandler extends AbstractResourceHandler {
             return welcome.isFile() ? read(welcome) : null;
         }
 
+        @Override
+        protected ByteBuffer directoryListingBytes() throws IOException {
+            if (file.isDirectory() && isDirectoryListingEnabled) {
+              String directoryListing = String.format(
+                  DIRECTORY_LISTING_FORMAT_STRING,
+                  getFileList());
+              byte[] bytes = directoryListing.getBytes();
+              ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+              return read(bytes.length, inputStream);
+            }
+            return null;
+        }
+
+        private String getFileList() {
+          StringBuilder builder = new StringBuilder();
+          for (File file : this.file.listFiles()) {
+            builder
+                .append("<li><a href=\"")
+                .append(file.getName());
+            if (file.isDirectory()) {
+                builder.append("/");
+            }
+            builder.append("\">")
+                .append(file.getName())
+                .append("</a></li>");
+          }
+          return builder.toString();
+        }
+
         private ByteBuffer read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }
 
         private File resolveFile(String path) throws IOException {
-            // Find file, relative to roo
+            // Find file, relative to root
             File result = new File(dir, path).getCanonicalFile();
 
             // For security, check file really does exist under root.

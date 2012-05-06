@@ -65,6 +65,12 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
             return resourceStream == null ? null : read(resourceStream);
         }
 
+        @Override
+        protected ByteBuffer directoryListingBytes() throws IOException {
+          // TODO Auto-generated method stub
+          return null;
+        }
+
         private ByteBuffer read(InputStream content) throws IOException {
             try {
                 return read(content.available(), content);

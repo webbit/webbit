@@ -49,6 +49,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     protected final Executor ioThread;
     protected final Map<String, String> mimeTypes;
     protected String welcomeFileName;
+    private boolean isDirectoryListingEnabled;
 
     public AbstractResourceHandler(Executor ioThread) {
         this.ioThread = ioThread;
@@ -63,6 +64,11 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
     public AbstractResourceHandler welcomeFile(String welcomeFile) {
         this.welcomeFileName = welcomeFile;
+        return this;
+    }
+
+    public AbstractResourceHandler directoryListingEnabled(boolean isDirectoryListingEnabled) {
+        this.isDirectoryListingEnabled = isDirectoryListingEnabled;
         return this;
     }
 
@@ -213,6 +219,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 } else {
                     if ((content = welcomeBytes()) != null) {
                         serve(guessMimeType(welcomeFileName), content, control, response, request);
+                    } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
+                        serve(guessMimeType("html"), content, control, response, request);
                     } else {
                         notFound();
                     }
@@ -227,6 +235,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected abstract ByteBuffer fileBytes() throws IOException;
 
         protected abstract ByteBuffer welcomeBytes() throws IOException;
+        
+        protected abstract ByteBuffer directoryListingBytes() throws IOException;
 
         protected ByteBuffer read(int length, InputStream in) throws IOException {
             byte[] data = new byte[length];
