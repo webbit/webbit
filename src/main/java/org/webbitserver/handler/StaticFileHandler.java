@@ -47,7 +47,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
         private File file;
 
-        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+        protected FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
             super(request.uri(), request, response, control);
         }
 
@@ -98,7 +98,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
             return read((int) file.length(), new FileInputStream(file));
         }
 
-        private File resolveFile(String path) throws IOException {
+        protected File resolveFile(String path) throws IOException {
             // Find file, relative to root
             File result = new File(dir, path).getCanonicalFile();
 
