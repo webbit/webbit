@@ -38,7 +38,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
     protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
                                                         HttpResponse response,
                                                         HttpControl control) {
-        return new StaticFileHandler.FileWorker(request, response, control, true);
+        return new StaticFileHandler.FileWorker(request, response, control);
     }
 
     protected class FileWorker extends IOWorker {
@@ -46,11 +46,9 @@ public class StaticFileHandler extends AbstractResourceHandler {
           "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
 
         private File file;
-        private final boolean isDirectoryListingEnabled;
 
-        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control, boolean isDirectoryListingEnabled) {
+        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
             super(request.uri(), request, response, control);
-            this.isDirectoryListingEnabled = isDirectoryListingEnabled;
         }
 
         @Override
@@ -72,7 +70,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer directoryListingBytes() throws IOException {
-            if (file.isDirectory() && isDirectoryListingEnabled) {
+            if (file.isDirectory()) {
               String directoryListing = String.format(
                   DIRECTORY_LISTING_FORMAT_STRING,
                   getFileList());
