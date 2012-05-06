@@ -42,8 +42,6 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     protected class FileWorker extends IOWorker {
-        private static final String DIRECTORY_LISTING_FORMAT_STRING =
-          "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
 
         private File file;
 
@@ -70,28 +68,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer directoryListingBytes() throws IOException {
-            if (file.isDirectory()) {
-              String directoryListing = String.format(
-                  DIRECTORY_LISTING_FORMAT_STRING,
-                  getFileList());
-              byte[] bytes = directoryListing.getBytes();
-              ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-              return read(bytes.length, inputStream);
-            }
-            return null;
-        }
-
-        private String getFileList() {
-          StringBuilder builder = new StringBuilder();
-          for (File file : this.file.listFiles()) {
-            builder
-                .append("<li><a href=\"")
-                .append(file.getName())
-                .append("\">")
-                .append(file.getName())
-                .append("</a></li>");
-          }
-          return builder.toString();
+            return file.isDirectory() ? formatFileListAsHtml(file.listFiles()) : null;
         }
 
         private ByteBuffer read(File file) throws IOException {

@@ -5,6 +5,8 @@ import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -46,6 +48,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     private static final Pattern SINGLE_BYTE_RANGE = Pattern.compile("bytes=(\\d+)?-(\\d+)?");
     public static final Map<String, String> DEFAULT_MIME_TYPES;
     protected static final String DEFAULT_WELCOME_FILE_NAME = "index.html";
+    private static final String DIRECTORY_LISTING_FORMAT_STRING =
+        "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
     protected final Executor ioThread;
     protected final Map<String, String> mimeTypes;
     protected String welcomeFileName;
@@ -242,6 +246,22 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected abstract ByteBuffer welcomeBytes() throws IOException;
 
         protected abstract ByteBuffer directoryListingBytes() throws IOException;
+
+        protected ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
+            StringBuilder builder = new StringBuilder();
+            for (File file : files) {
+              builder
+                  .append("<li><a href=\"")
+                  .append(file.getName())
+                  .append("\">")
+                  .append(file.getName())
+                  .append("</a></li>");
+            }
+            String formattedString = String.format(DIRECTORY_LISTING_FORMAT_STRING, builder.toString());
+            byte[] formattedBytes = formattedString.getBytes();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(formattedBytes);
+            return read(formattedBytes.length, inputStream);
+        }
 
         protected ByteBuffer read(int length, InputStream in) throws IOException {
             byte[] data = new byte[length];

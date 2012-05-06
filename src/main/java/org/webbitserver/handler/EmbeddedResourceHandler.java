@@ -8,6 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
@@ -67,8 +69,13 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer directoryListingBytes() throws IOException {
-          // TODO Auto-generated method stub
-          return null;
+            URL resourceURL = getClass().getClassLoader().getResource(getPath(file));
+            try {
+                File directory = new File(resourceURL.toURI());
+                return directory.isDirectory() ? formatFileListAsHtml(directory.listFiles()) : null;
+            } catch (URISyntaxException e) {
+                return null;
+            }
         }
 
         private ByteBuffer read(InputStream content) throws IOException {
@@ -80,11 +87,15 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         private InputStream getResource(File file) throws IOException {
+            return getClass().getClassLoader().getResourceAsStream(getPath(file));
+        }
+
+        private String getPath(File file) {
             String resourcePath = file.getPath();
             if ('/' != File.separatorChar) {
                 resourcePath = resourcePath.replace(File.separatorChar, '/');
             }
-            return getClass().getClassLoader().getResourceAsStream(resourcePath);
+            return resourcePath;
         }
     }
 }

@@ -3,7 +3,6 @@ package org.webbitserver.handler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.stub.StubHttpControl;
 import org.webbitserver.stub.StubHttpRequest;
@@ -15,15 +14,17 @@ import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
 
 public class EmbeddedResourceHandlerTest {
     private WebServer webServer = createWebServer(59504);
-    private HttpHandler handler;
+    private AbstractResourceHandler handler;
 
     @Before
     public void createHandler() {
@@ -47,6 +48,16 @@ public class EmbeddedResourceHandlerTest {
         assertReturnedWithStatus(200, handle(request("/index.html?x=y")));
         assertReturnedWithStatus(404, handle(request("/notfound.html")));
         assertReturnedWithStatus(404, handle(request("/foo/bar")));
+    }
+    
+    @Test
+    public void listsDirectory() throws Exception {
+      handler.directoryListingEnabled(true).welcomeFile("doesnotexist");
+
+      StubHttpResponse response = handle(request("/"));
+      assertEquals(200, response.status());
+      assertThat(response.contentsString(), containsString("index.html"));
+      assertThat(response.contentsString(), containsString("jquery-1.5.2.js"));
     }
 
     @Test
