@@ -229,7 +229,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                     if ((content = welcomeBytes()) != null) {
                         serve(guessMimeType(welcomeFileName), content, control, response, request);
                     } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
-                        serve(guessMimeType("html"), content, control, response, request);
+                        serve(guessMimeType(".html"), content, control, response, request);
                     } else {
                         notFound();
                     }
