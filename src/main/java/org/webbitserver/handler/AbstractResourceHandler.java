@@ -69,10 +69,10 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     }
 
     public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled) {
-        return enableDirectoryListingWithFormatter(isDirectoryListingEnabled, new DefaultDirectoryListingFormatter());
+        return enableDirectoryListing(isDirectoryListingEnabled, new DefaultDirectoryListingFormatter());
     }
     
-    public AbstractResourceHandler enableDirectoryListingWithFormatter(boolean isDirectoryListingEnabled, DirectoryListingFormatter directoryListingFormatter) {
+    public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled, DirectoryListingFormatter directoryListingFormatter) {
         this.isDirectoryListingEnabled = isDirectoryListingEnabled;
         this.directoryListingFormatter = directoryListingFormatter;
         return this;

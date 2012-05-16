@@ -178,7 +178,7 @@ public class StaticFileHandlerTest {
     @Test
     public void allowsCustomDirectoryListingFormatters() throws Exception {
         mkdir("a");
-        handler.enableDirectoryListingWithFormatter(true, new DirectoryListingFormatter() {
+        handler.enableDirectoryListing(true, new DirectoryListingFormatter() {
             @Override
             public ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
                 return ByteBuffer.wrap("Monkeys".getBytes());
