@@ -5,8 +5,6 @@ import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -48,12 +46,11 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     private static final Pattern SINGLE_BYTE_RANGE = Pattern.compile("bytes=(\\d+)?-(\\d+)?");
     public static final Map<String, String> DEFAULT_MIME_TYPES;
     protected static final String DEFAULT_WELCOME_FILE_NAME = "index.html";
-    private static final String DIRECTORY_LISTING_FORMAT_STRING =
-        "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
     protected final Executor ioThread;
     protected final Map<String, String> mimeTypes;
     protected String welcomeFileName;
-    private boolean isDirectoryListingEnabled;
+    protected DirectoryListingFormatter directoryListingFormatter;
+    private boolean isDirectoryListingEnabled = false;
 
     public AbstractResourceHandler(Executor ioThread) {
         this.ioThread = ioThread;
@@ -71,8 +68,13 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         return this;
     }
 
-    public AbstractResourceHandler directoryListingEnabled(boolean isDirectoryListingEnabled) {
+    public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled) {
+        return enableDirectoryListingWithFormatter(isDirectoryListingEnabled, new DefaultDirectoryListingFormatter());
+    }
+    
+    public AbstractResourceHandler enableDirectoryListingWithFormatter(boolean isDirectoryListingEnabled, DirectoryListingFormatter directoryListingFormatter) {
         this.isDirectoryListingEnabled = isDirectoryListingEnabled;
+        this.directoryListingFormatter = directoryListingFormatter;
         return this;
     }
 
@@ -166,6 +168,24 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 .position(contents.position() + start);
         response.content(contents).end();
     }
+    
+    static ByteBuffer consumeInputStreamToByteBuffer(int length, InputStream in) throws IOException {
+        byte[] data = new byte[length];
+        try {
+            int read = 0;
+            while (read < length) {
+                int more = in.read(data, read, data.length - read);
+                if (more == -1) {
+                    break;
+                } else {
+                    read += more;
+                }
+            }
+        } finally {
+            in.close();
+        }
+        return ByteBuffer.wrap(data);
+    }
 
     protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
                                                                  HttpResponse response,
@@ -210,6 +230,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         @Override
         public void run() {
+            String pathWithQuery = path;
             path = withoutQuery(path);
 
             // TODO: Cache
@@ -223,7 +244,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                     // Assumes if path has been changed since the original request,
                     // its current value with a trailing slash will still resolve properly
                     if (!path.endsWith("/")) {
-                        response.status(301).header("Location", path + "/").end();
+                        response.status(301).header("Location", path + "/" + extractQuery(pathWithQuery)).end();
                         return;
                     }
                     if ((content = welcomeBytes()) != null) {
@@ -247,40 +268,10 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         protected abstract ByteBuffer directoryListingBytes() throws IOException;
 
-        protected ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
-            StringBuilder builder = new StringBuilder();
-            for (File file : files) {
-              builder
-                  .append("<li><a href=\"")
-                  .append(file.getName())
-                  .append("\">")
-                  .append(file.getName())
-                  .append("</a></li>");
-            }
-            String formattedString = String.format(DIRECTORY_LISTING_FORMAT_STRING, builder.toString());
-            byte[] formattedBytes = formattedString.getBytes();
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(formattedBytes);
-            return read(formattedBytes.length, inputStream);
-        }
-
         protected ByteBuffer read(int length, InputStream in) throws IOException {
-            byte[] data = new byte[length];
-            try {
-                int read = 0;
-                while (read < length) {
-                    int more = in.read(data, read, data.length - read);
-                    if (more == -1) {
-                        break;
-                    } else {
-                        read += more;
-                    }
-                }
-            } finally {
-                in.close();
-            }
-            return ByteBuffer.wrap(data);
+            return AbstractResourceHandler.consumeInputStreamToByteBuffer(length, in);
         }
-
+        
         // TODO: Don't respond with a mime type that violates the request's Accept header
         private String guessMimeType(String path) {
             int lastDot = path.lastIndexOf('.');
@@ -304,6 +295,14 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 path = path.substring(0, queryStart);
             }
             return path;
+        }
+
+        protected String extractQuery(String path) {
+            int queryStart = path.indexOf('?');
+            if (queryStart > -1) {
+                return path.substring(queryStart);
+            }
+            return "";
         }
 
     }

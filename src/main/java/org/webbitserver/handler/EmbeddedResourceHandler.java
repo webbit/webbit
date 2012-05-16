@@ -72,7 +72,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
             URL resourceURL = getClass().getClassLoader().getResource(getPath(file));
             try {
                 File directory = new File(resourceURL.toURI());
-                return directory.isDirectory() ? formatFileListAsHtml(directory.listFiles()) : null;
+                return directory.isDirectory() ? directoryListingFormatter.formatFileListAsHtml(directory.listFiles()) : null;
             } catch (URISyntaxException e) {
                 return null;
             }

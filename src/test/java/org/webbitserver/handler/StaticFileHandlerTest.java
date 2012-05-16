@@ -11,6 +11,7 @@ import org.webbitserver.stub.StubHttpResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -148,7 +149,7 @@ public class StaticFileHandlerTest {
     @Test
     public void shouldServeDirectoryListingForDirectories() throws Exception {
         writeFile("a.foo", "");
-        handler.directoryListingEnabled(true);
+        handler.enableDirectoryListing(true);
         assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/")));
         
         mkdir("a");
@@ -156,12 +157,41 @@ public class StaticFileHandlerTest {
         assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/a/")));
     }
+
+    @Test
+    public void redirectAddingSlashPreservesQuery() throws Exception {
+        mkdir("a");
+        handler.enableDirectoryListing(true);
+        assertReturnedLocationHeaderEqualTo("/a/", handle(request("/a")));
+        assertReturnedLocationHeaderEqualTo("/a/?", handle(request("/a?")));
+        assertReturnedLocationHeaderEqualTo("/a/?foo=bar?baz", handle(request("/a?foo=bar?baz")));
+    }
+
+    @Test
+    public void escapesFilenames() throws Exception {
+        writeFile("&<>\"'", "");
+        handler.enableDirectoryListing(true);
+        String response = handle(request("/")).contentsString();
+        assertThat(response, containsString("&amp;&lt;&gt;&quot;&#x27"));
+    }
+
+    @Test
+    public void allowsCustomDirectoryListingFormatters() throws Exception {
+        mkdir("a");
+        handler.enableDirectoryListingWithFormatter(true, new DirectoryListingFormatter() {
+            @Override
+            public ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
+                return ByteBuffer.wrap("Monkeys".getBytes());
+            }
+        });
+        assertReturnedWithStatusAndContainsContent(200, "Monkeys", handle(request("/a/")));
+    }
     
     @Test
     public void prefersWelcomeFileToDirectoryListing() throws Exception {
         writeFile("a.foo", "");
         writeFile("index.html", "hi");
-        handler.directoryListingEnabled(true);
+        handler.enableDirectoryListing(true);
         assertReturnedWithStatusAndContainsContent(200, "hi", handle(request("/")));
     }
 
@@ -301,8 +331,11 @@ public class StaticFileHandlerTest {
     }
 
     private void assertReturnedWithStatusAndContainsContent(int expectedStatus, String content, StubHttpResponse response) {
-      assertReturnedWithStatus(expectedStatus, response);
-      assertThat(response.contentsString(), containsString(content));
+        assertReturnedWithStatus(expectedStatus, response);
+        assertThat(response.contentsString(), containsString(content));
     }
 
+    private void assertReturnedLocationHeaderEqualTo(String locationHeaderValue, StubHttpResponse response) {
+      assertEquals(locationHeaderValue, response.header("Location"));
+    }
 }

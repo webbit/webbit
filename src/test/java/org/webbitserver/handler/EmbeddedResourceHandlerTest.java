@@ -52,7 +52,7 @@ public class EmbeddedResourceHandlerTest {
     
     @Test
     public void listsDirectory() throws Exception {
-      handler.directoryListingEnabled(true).welcomeFile("doesnotexist");
+      handler.enableDirectoryListing(true).welcomeFile("doesnotexist");
 
       StubHttpResponse response = handle(request("/"));
       assertEquals(200, response.status());

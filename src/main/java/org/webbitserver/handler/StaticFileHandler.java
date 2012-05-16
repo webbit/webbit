@@ -4,7 +4,6 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -68,7 +67,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer directoryListingBytes() throws IOException {
-            return file.isDirectory() ? formatFileListAsHtml(file.listFiles()) : null;
+            return file.isDirectory() ? directoryListingFormatter.formatFileListAsHtml(file.listFiles()) : null;
         }
 
         private ByteBuffer read(File file) throws IOException {
