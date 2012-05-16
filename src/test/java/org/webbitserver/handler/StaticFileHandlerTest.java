@@ -336,6 +336,6 @@ public class StaticFileHandlerTest {
     }
 
     private void assertReturnedLocationHeaderEqualTo(String locationHeaderValue, StubHttpResponse response) {
-      assertEquals(locationHeaderValue, response.header("Location"));
+        assertEquals(locationHeaderValue, response.header("Location"));
     }
 }
