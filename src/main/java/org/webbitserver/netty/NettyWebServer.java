@@ -49,7 +49,6 @@ import static org.jboss.netty.channel.Channels.pipeline;
 public class NettyWebServer implements WebServer {
     private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
 
-    private final Executor startStopExecutor = Executors.newSingleThreadExecutor();
     private final SocketAddress socketAddress;
     private final URI publicUri;
     private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
@@ -219,7 +218,10 @@ public class NettyWebServer implements WebServer {
                 return NettyWebServer.this;
             }
         });
-        startStopExecutor.execute(future);
+        // don't use Executor here - it's just another resource we need to manage -
+        // thread creation on startup should be fine
+        final Thread thread = new Thread(future, "WEBBIT-STARTUP-THREAD");
+        thread.start();
         return future;
     }
 
@@ -254,7 +256,10 @@ public class NettyWebServer implements WebServer {
                 return NettyWebServer.this;
             }
         });
-        startStopExecutor.execute(future);
+        // don't use Executor here - it's just another resource we need to manage -
+        // thread creation on shutdown should be fine
+        final Thread thread = new Thread(future, "WEBBIT-SHUTDOW-THREAD");
+        thread.start();
         return future;
     }
 
