@@ -206,10 +206,8 @@ public class WebSocketClient implements WebSocket {
     private HttpRequest createNettyHttpRequest(String uri, String host) {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         request.setHeader(HttpHeaders.Names.HOST, host);
-        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
-        request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
-        request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
-        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);
+
+        // some cookies (such as SSO related cookies) must be set before the upgrade headers)
         StringBuilder builder = new StringBuilder();
         boolean first = true;
         for(HttpCookie cookie : cookies){
@@ -222,6 +220,11 @@ public class WebSocketClient implements WebSocket {
         if(!first){
             request.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builder.toString());
         }
+
+        request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
+        request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
+        request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
+        request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);
 
         base64Nonce = base64Nonce();
         request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
