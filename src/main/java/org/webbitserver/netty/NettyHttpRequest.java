@@ -11,9 +11,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.util.*;
 
-import static java.util.Collections.singletonList;
-import static org.webbitserver.netty.WebSocketClient.appendCookie;
-
 public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     private final HttpRequest httpRequest;
@@ -177,12 +174,6 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public long timestamp() {
         return timestamp;
-    }
-
-    @Override
-    public NettyHttpRequest cookie(HttpCookie httpCookie) {
-        appendCookie(httpRequest, cookies(), singletonList(httpCookie));
-        return this;
     }
 
     @Override

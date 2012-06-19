@@ -107,7 +107,7 @@ public class WebSocketClient implements WebSocket {
         connectionExceptionHandler(new SilentExceptionHandler());
     }
 
-    public WebSocketClient with(HttpCookie httpCookie){
+    public WebSocketClient cookie(HttpCookie httpCookie){
         cookies.add(httpCookie);
         return this;
     }
@@ -207,21 +207,12 @@ public class WebSocketClient implements WebSocket {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         request.setHeader(HttpHeaders.Names.HOST, host);
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
-        appendCookie(request, new ArrayList<HttpCookie>(), cookies);
         request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
         request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);
-
-        base64Nonce = base64Nonce();
-        request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
-        return request;
-    }
-
-    static void appendCookie(HttpRequest httpRequest, List<HttpCookie> current, List<HttpCookie> additional) {
         StringBuilder builder = new StringBuilder();
-        current.addAll(additional);
         boolean first = true;
-        for(HttpCookie cookie : current){
+        for(HttpCookie cookie : cookies){
             if(!first){
                 builder.append("; ");
             }
@@ -229,8 +220,12 @@ public class WebSocketClient implements WebSocket {
             first = false;
         }
         if(!first){
-            httpRequest.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builder.toString());
+            request.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builder.toString());
         }
+
+        base64Nonce = base64Nonce();
+        request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
+        return request;
     }
 
     private String base64Nonce() {

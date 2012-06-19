@@ -155,11 +155,4 @@ public interface HttpRequest extends DataHolder {
      * Timestamp (millis since epoch) of when this request was first received by the server.
      */
     long timestamp();
-
-    /**
-     * Adds a cookie
-     *
-     * @param httpCookie the cookie
-     */
-    HttpRequest cookie(HttpCookie httpCookie);
 }
