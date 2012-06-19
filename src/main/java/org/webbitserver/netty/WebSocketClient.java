@@ -37,12 +37,16 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.Map.Entry;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 public class WebSocketClient implements WebSocket {
@@ -76,10 +80,18 @@ public class WebSocketClient implements WebSocket {
     private SslFactory sslFactory;
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler) {
-        this(uri, webSocketHandler, Executors.newSingleThreadExecutor());
+        this(uri, webSocketHandler, newSingleThreadExecutor());
     }
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
+        this(uri, webSocketHandler, executor, new HashMap<String, String>());
+    }
+
+    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Map<String, String> cookies) {
+        this(uri, webSocketHandler, newSingleThreadExecutor(), cookies);
+    }
+
+    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor, Map<String, String> cookies){
         this.uri = uri;
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
@@ -96,7 +108,7 @@ public class WebSocketClient implements WebSocket {
             }
         }
         remoteAddress = new InetSocketAddress(host, port);
-        request = createNettyHttpRequest(getPath(uri), host);
+        request = createNettyHttpRequest(getPath(uri), host, cookies);
 
         uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
         connectionExceptionHandler(new SilentExceptionHandler());
@@ -193,10 +205,24 @@ public class WebSocketClient implements WebSocket {
         return future;
     }
 
-    private HttpRequest createNettyHttpRequest(String uri, String host) {
+    private HttpRequest createNettyHttpRequest(String uri, String host, Map<String, String> cookies) {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         request.setHeader(HttpHeaders.Names.HOST, host);
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
+        StringBuilder builders = new StringBuilder();
+        boolean seenCookie = false;
+        for(Entry<String, String> entry : cookies.entrySet()){
+            if (seenCookie) {
+                builders.append("; ");
+            }
+            seenCookie = true;
+            builders.append(entry.getKey())
+                    .append('=')
+                    .append(entry.getValue());
+        }
+        if (seenCookie) {
+            request.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builders.toString());
+        }
         request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
         request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);

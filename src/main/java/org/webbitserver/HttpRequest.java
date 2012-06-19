@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public interface HttpRequest extends DataHolder {
 
-    String COOKIE_HEADER = "Cookie";
+    public String COOKIE_HEADER = "Cookie";
 
     String uri();
 
