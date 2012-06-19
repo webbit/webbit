@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public interface HttpRequest extends DataHolder {
 
-    String COOKIE_HEADER = "Cookie";
+    public String COOKIE_HEADER = "Cookie";
 
     String uri();
 
@@ -155,5 +155,4 @@ public interface HttpRequest extends DataHolder {
      * Timestamp (millis since epoch) of when this request was first received by the server.
      */
     long timestamp();
-
 }
