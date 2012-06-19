@@ -9,10 +9,10 @@ import org.webbitserver.helpers.QueryParameters;
 import java.net.HttpCookie;
 import java.net.SocketAddress;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static java.util.Collections.singletonList;
+import static org.webbitserver.netty.WebSocketClient.appendCookie;
 
 public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
@@ -177,6 +177,12 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     @Override
     public long timestamp() {
         return timestamp;
+    }
+
+    @Override
+    public NettyHttpRequest cookie(HttpCookie httpCookie) {
+        appendCookie(httpRequest, cookies(), singletonList(httpCookie));
+        return this;
     }
 
     @Override

@@ -156,4 +156,10 @@ public interface HttpRequest extends DataHolder {
      */
     long timestamp();
 
+    /**
+     * Adds a cookie
+     *
+     * @param httpCookie the cookie
+     */
+    HttpRequest cookie(HttpCookie httpCookie);
 }

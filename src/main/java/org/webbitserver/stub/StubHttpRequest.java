@@ -189,6 +189,12 @@ public class StubHttpRequest extends StubDataHolder implements HttpRequest {
         return timestamp;
     }
 
+    @Override
+    public HttpRequest cookie(HttpCookie httpCookie) {
+        headers.add(new AbstractMap.SimpleEntry<String, String>(org.webbitserver.HttpRequest.COOKIE_HEADER, httpCookie.toString()));
+        return this;
+    }
+
     public StubHttpRequest timestamp(long timestamp) {
         this.timestamp = timestamp;
         return this;

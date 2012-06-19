@@ -33,18 +33,18 @@ import org.webbitserver.helpers.SslFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
+import java.net.HttpCookie;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.Map.Entry;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.jboss.netty.channel.Channels.pipeline;
@@ -78,20 +78,13 @@ public class WebSocketClient implements WebSocket {
     private Thread.UncaughtExceptionHandler exceptionHandler;
     private Thread.UncaughtExceptionHandler ioExceptionHandler;
     private SslFactory sslFactory;
+    private final List<HttpCookie> cookies = new ArrayList<HttpCookie>();
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler) {
         this(uri, webSocketHandler, newSingleThreadExecutor());
     }
 
-    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor) {
-        this(uri, webSocketHandler, executor, new HashMap<String, String>());
-    }
-
-    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Map<String, String> cookies) {
-        this(uri, webSocketHandler, newSingleThreadExecutor(), cookies);
-    }
-
-    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor, Map<String, String> cookies){
+    public WebSocketClient(URI uri, WebSocketHandler webSocketHandler, Executor executor){
         this.uri = uri;
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
@@ -108,10 +101,15 @@ public class WebSocketClient implements WebSocket {
             }
         }
         remoteAddress = new InetSocketAddress(host, port);
-        request = createNettyHttpRequest(getPath(uri), host, cookies);
+        request = createNettyHttpRequest(getPath(uri), host);
 
         uncaughtExceptionHandler(new PrintStackTraceExceptionHandler());
         connectionExceptionHandler(new SilentExceptionHandler());
+    }
+
+    public WebSocketClient with(HttpCookie httpCookie){
+        cookies.add(httpCookie);
+        return this;
     }
 
     private String getPath(URI uri) {
@@ -205,24 +203,11 @@ public class WebSocketClient implements WebSocket {
         return future;
     }
 
-    private HttpRequest createNettyHttpRequest(String uri, String host, Map<String, String> cookies) {
+    private HttpRequest createNettyHttpRequest(String uri, String host) {
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri);
         request.setHeader(HttpHeaders.Names.HOST, host);
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.UPGRADE);
-        StringBuilder builders = new StringBuilder();
-        boolean seenCookie = false;
-        for(Entry<String, String> entry : cookies.entrySet()){
-            if (seenCookie) {
-                builders.append("; ");
-            }
-            seenCookie = true;
-            builders.append(entry.getKey())
-                    .append('=')
-                    .append(entry.getValue());
-        }
-        if (seenCookie) {
-            request.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builders.toString());
-        }
+        appendCookie(request, new ArrayList<HttpCookie>(), cookies);
         request.setHeader(HttpHeaders.Names.UPGRADE, "websocket");
         request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
         request.setHeader(Hybi.SEC_WEBSOCKET_VERSION, VERSION);
@@ -230,6 +215,22 @@ public class WebSocketClient implements WebSocket {
         base64Nonce = base64Nonce();
         request.setHeader(Hybi.SEC_WEBSOCKET_KEY, base64Nonce);
         return request;
+    }
+
+    static void appendCookie(HttpRequest httpRequest, List<HttpCookie> current, List<HttpCookie> additional) {
+        StringBuilder builder = new StringBuilder();
+        current.addAll(additional);
+        boolean first = true;
+        for(HttpCookie cookie : current){
+            if(!first){
+                builder.append("; ");
+            }
+            builder.append(cookie.toString());
+            first = false;
+        }
+        if(!first){
+            httpRequest.setHeader(org.webbitserver.HttpRequest.COOKIE_HEADER, builder.toString());
+        }
     }
 
     private String base64Nonce() {

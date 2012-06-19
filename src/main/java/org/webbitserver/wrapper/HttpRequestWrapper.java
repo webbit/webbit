@@ -160,4 +160,9 @@ public class HttpRequestWrapper implements HttpRequest {
     public long timestamp() {
         return request.timestamp();
     }
+
+    @Override
+    public HttpRequest cookie(HttpCookie httpCookie) {
+        return request.cookie(httpCookie);
+    }
 }
