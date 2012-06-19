@@ -1,3 +1,10 @@
+HEAD
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.7...master)
+
+* WebSocketClient can have cookies passed in. (Dennis Byrne)
+
 0.4.7 (2012-04-10)
 ==================
 
