@@ -29,7 +29,7 @@ public class NettyWebServerTest {
         server.stop().get();
     }
 
-    @Ignore // See https://github.com/webbit/webbit/issues/41
+    @Ignore // This spuriously fails :-(
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();

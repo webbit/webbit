@@ -1,3 +1,12 @@
+0.4.8 (2012-06-20)
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.7...v0.4.8)
+
+* Release all Threads on Webserver#stop() ([#88](https://github.com/webbit/webbit/pull/88) Simon Willnauer)
+* WebSocketClient can have cookies passed in. ([#89](https://github.com/webbit/webbit/pull/89), [#90](https://github.com/webbit/webbit/pull/90) Dennis Byrne)
+* Bug fix for regular expression allowing for more robust test of https:// in HTTP ORIGIN in Hixie 75/76. ([#86](https://github.com/webbit/webbit/pull/86) Justin Long)
+
 0.4.7 (2012-04-10)
 ==================
 
