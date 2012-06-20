@@ -1,8 +1,7 @@
-<<<<<<< HEAD
-HEAD
+0.4.8 (2012-06-20)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.7...master)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.7...v0.4.8)
 
 * Release all Threads on Webserver#stop() ([#88](https://github.com/webbit/webbit/pull/88) Simon Willnauer)
 * WebSocketClient can have cookies passed in. ([#89](https://github.com/webbit/webbit/pull/89), [#90](https://github.com/webbit/webbit/pull/90) Dennis Byrne)
