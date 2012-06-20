@@ -62,6 +62,6 @@ public class Hixie75 implements WebSocketVersion {
     }
     
     private String getWebSocketProtocol(HttpRequest req) {
-  	  if(req.getHeader(HttpHeaders.Names.ORIGIN).matches("/^https:\\/\\//")) { return "wss://"; } else { return "ws://"; }
+  	  if(req.getHeader(HttpHeaders.Names.ORIGIN).matches("(?s)https://.*")) { return "wss://"; } else { return "ws://"; }
     }
 }
