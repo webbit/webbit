@@ -94,7 +94,7 @@ public class EmbeddedResourceHandlerTest {
     public void shouldWorkWithBiggerFilesUsingEmbedded() throws IOException, InterruptedException, ExecutionException {
         webServer.add(handler).start().get();
         String jquery = contents(httpGet(webServer, "/jquery-1.5.2.js"));
-        if (!jquery.endsWith("})(window);\n")) {
+        if (!jquery.trim().endsWith("})(window);")) {
             fail("Ended with:[" + jquery.substring(jquery.length() - 200, jquery.length()) + "]");
         }
     }
@@ -105,7 +105,7 @@ public class EmbeddedResourceHandlerTest {
         webServer.add(handler).start().get();
 
         String jquery = contents(httpGet(webServer, "/jquery-1.5.2.js"));
-        if (!jquery.endsWith("})(window);\n")) {
+        if (!jquery.trim().endsWith("})(window);")) {
             fail("Ended with:[" + jquery.substring(jquery.length() - 200, jquery.length()) + "]");
         }
     }

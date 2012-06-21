@@ -35,10 +35,6 @@ public class ClassloaderResourceHelper {
         if (src == null) {
             return list;
         }
-        subdirectory = subdirectory.replace(File.separatorChar, '/');
-        if (!subdirectory.endsWith("/")) {
-            subdirectory = subdirectory + "/";
-        }
         URL classpathEntry = src.getLocation();
         try {
             // Check if we're loaded from a folder
@@ -50,7 +46,13 @@ public class ClassloaderResourceHelper {
             // Should never happen, because we know classpathentry is valid
             throw new RuntimeException(e);
         }
+
         // We're not in a folder, so we must be in a jar or similar
+        subdirectory = subdirectory.replace(File.separatorChar, '/');
+        if (!subdirectory.endsWith("/")) {
+            subdirectory = subdirectory + "/";
+        }
+
         ZipInputStream jarStream = new ZipInputStream(classpathEntry.openStream());
         ZipEntry zipEntry = null;
         while ((zipEntry = jarStream.getNextEntry()) != null) {

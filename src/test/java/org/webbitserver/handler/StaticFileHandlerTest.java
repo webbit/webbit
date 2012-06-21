@@ -169,10 +169,16 @@ public class StaticFileHandlerTest {
 
     @Test
     public void escapesFilenames() throws Exception {
-        writeFile("&<>\"'", "");
+        String filename = "'";
+        String escapedFilename = "&#x27;";
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+            filename += "&<>\"";
+            escapedFilename += "&amp;&lt;&gt;&quot;";
+        }
+        writeFile(filename, "");
         handler.enableDirectoryListing(true);
         String response = handle(request("/")).contentsString();
-        assertThat(response, containsString("&amp;&lt;&gt;&quot;&#x27"));
+        assertThat(response, containsString(escapedFilename));
     }
 
     @Test
