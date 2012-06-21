@@ -49,6 +49,8 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     protected final Executor ioThread;
     protected final Map<String, String> mimeTypes;
     protected String welcomeFileName;
+    protected DirectoryListingFormatter directoryListingFormatter;
+    private boolean isDirectoryListingEnabled = false;
 
     public AbstractResourceHandler(Executor ioThread) {
         this.ioThread = ioThread;
@@ -63,6 +65,16 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
     public AbstractResourceHandler welcomeFile(String welcomeFile) {
         this.welcomeFileName = welcomeFile;
+        return this;
+    }
+
+    public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled) {
+        return enableDirectoryListing(isDirectoryListingEnabled, new DefaultDirectoryListingFormatter());
+    }
+    
+    public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled, DirectoryListingFormatter directoryListingFormatter) {
+        this.isDirectoryListingEnabled = isDirectoryListingEnabled;
+        this.directoryListingFormatter = directoryListingFormatter;
         return this;
     }
 
@@ -156,6 +168,24 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 .position(contents.position() + start);
         response.content(contents).end();
     }
+    
+    static ByteBuffer consumeInputStreamToByteBuffer(int length, InputStream in) throws IOException {
+        byte[] data = new byte[length];
+        try {
+            int read = 0;
+            while (read < length) {
+                int more = in.read(data, read, data.length - read);
+                if (more == -1) {
+                    break;
+                } else {
+                    read += more;
+                }
+            }
+        } finally {
+            in.close();
+        }
+        return ByteBuffer.wrap(data);
+    }
 
     protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
                                                                  HttpResponse response,
@@ -200,23 +230,37 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         @Override
         public void run() {
-            path = withoutTrailingSlashOrQuery(path);
+            String pathWithQuery = path;
+            path = withoutQuery(path);
 
             // TODO: Cache
-            // TODO: If serving directory and trailing slash omitted, perform redirect
             try {
                 ByteBuffer content = null;
                 if (!exists()) {
                     notFound();
+                    return;
+                } if (isDirectory()) {
+                    // Assumes if path has been changed since the original request,
+                    // its current value with a trailing slash will still resolve properly
+                    if (!path.endsWith("/")) {
+                        response.status(301).header("Location", path + "/" + extractQuery(pathWithQuery)).end();
+                        return;
+                    } else if ((content = welcomeBytes()) != null) {
+                        serve(guessMimeType(welcomeFileName), content, control, response, request);
+                        return;
+                    } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
+                        serve(guessMimeType(".html"), content, control, response, request);
+                        return;
+                    }
+                    // TODO: Do something other than 404 if directory listing is disabled
                 } else if ((content = fileBytes()) != null) {
                     serve(guessMimeType(path), content, control, response, request);
-                } else {
-                    if ((content = welcomeBytes()) != null) {
-                        serve(guessMimeType(welcomeFileName), content, control, response, request);
-                    } else {
-                        notFound();
-                    }
+                    return;
+                } else if ((content = welcomeBytes()) != null) {
+                  serve(guessMimeType(welcomeFileName), content, control, response, request);
+                  return;
                 }
+                notFound();
             } catch (IOException e) {
                 error(e);
             }
@@ -224,28 +268,18 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         protected abstract boolean exists() throws IOException;
 
+        protected abstract boolean isDirectory() throws IOException;
+
         protected abstract ByteBuffer fileBytes() throws IOException;
 
         protected abstract ByteBuffer welcomeBytes() throws IOException;
 
-        protected ByteBuffer read(int length, InputStream in) throws IOException {
-            byte[] data = new byte[length];
-            try {
-                int read = 0;
-                while (read < length) {
-                    int more = in.read(data, read, data.length - read);
-                    if (more == -1) {
-                        break;
-                    } else {
-                        read += more;
-                    }
-                }
-            } finally {
-                in.close();
-            }
-            return ByteBuffer.wrap(data);
-        }
+        protected abstract ByteBuffer directoryListingBytes() throws IOException;
 
+        protected ByteBuffer read(int length, InputStream in) throws IOException {
+            return AbstractResourceHandler.consumeInputStreamToByteBuffer(length, in);
+        }
+        
         // TODO: Don't respond with a mime type that violates the request's Accept header
         private String guessMimeType(String path) {
             int lastDot = path.lastIndexOf('.');
@@ -263,15 +297,20 @@ public abstract class AbstractResourceHandler implements HttpHandler {
             return mimeType;
         }
 
-        protected String withoutTrailingSlashOrQuery(String path) {
+        protected String withoutQuery(String path) {
             int queryStart = path.indexOf('?');
             if (queryStart > -1) {
                 path = path.substring(0, queryStart);
             }
-            if (path.endsWith("/")) {
-                path = path.substring(0, path.length() - 1);
-            }
             return path;
+        }
+
+        protected String extractQuery(String path) {
+            int queryStart = path.indexOf('?');
+            if (queryStart > -1) {
+                return path.substring(queryStart);
+            }
+            return "";
         }
 
     }

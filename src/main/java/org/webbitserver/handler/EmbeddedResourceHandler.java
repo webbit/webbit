@@ -3,8 +3,8 @@ package org.webbitserver.handler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.helpers.ClassloaderResourceHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,14 +17,24 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 public class EmbeddedResourceHandler extends AbstractResourceHandler {
     // We're using File because it's good at dealing with path concatenation and slashes. Not actually opening the file.
     private final File root;
+    private Class<?> clazz;
 
-    public EmbeddedResourceHandler(String root, Executor ioThread) {
+    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
         super(ioThread);
         this.root = new File(root);
+        this.clazz = clazz;
+    }
+
+    public EmbeddedResourceHandler(String root, Executor ioThread) {
+        this(root, ioThread, EmbeddedResourceHandler.class);
+    }
+
+    public EmbeddedResourceHandler(String root, Class<?> clazz) {
+        this(root, newFixedThreadPool(4), clazz);
     }
 
     public EmbeddedResourceHandler(String root) {
-        this(root, newFixedThreadPool(4));
+        this(root, EmbeddedResourceHandler.class);
     }
 
     @Override
@@ -34,28 +44,34 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
     protected class ResourceWorker extends IOWorker {
         private InputStream resource;
-        private InputStream content;
         private File file;
+        private final String pathWithoutTrailingSlash;
+        private final boolean isDirectory;
 
         protected ResourceWorker(HttpRequest request, HttpResponse response, HttpControl control) {
             super(request.uri(), request, response, control);
+            isDirectory = path.endsWith("/");
+            pathWithoutTrailingSlash = withoutQuery(isDirectory ? path.substring(0, path.length() - 1) : path);
         }
 
         @Override
         protected boolean exists() throws IOException {
-            file = new File(root, path);
+            file = new File(root, pathWithoutTrailingSlash);
             resource = getResource(file);
             return resource != null;
         }
 
         @Override
+        protected boolean isDirectory() throws IOException {
+            return isDirectory;
+        }
+
+        @Override
         protected ByteBuffer fileBytes() throws IOException {
-            content = resource;
-            if (content == null || (content instanceof ByteArrayInputStream)) {
-                // It seems that directory listings are reported as BAOS, while files are not. Seems fragile, but works...
+            if (resource == null || isDirectory()) {
                 return null;
             } else {
-                return read(content);
+                return read(resource);
             }
         }
 
@@ -63,6 +79,13 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         protected ByteBuffer welcomeBytes() throws IOException {
             InputStream resourceStream = getResource(new File(file, welcomeFileName));
             return resourceStream == null ? null : read(resourceStream);
+        }
+
+        @Override
+        protected ByteBuffer directoryListingBytes() throws IOException {
+            String subdirectory = file.getPath();
+            Iterable<FileEntry> files = ClassloaderResourceHelper.listFilesRelativeToClass(clazz, subdirectory);
+            return isDirectory() ? directoryListingFormatter.formatFileListAsHtml(files) : null;
         }
 
         private ByteBuffer read(InputStream content) throws IOException {
@@ -78,7 +101,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
             if ('/' != File.separatorChar) {
                 resourcePath = resourcePath.replace(File.separatorChar, '/');
             }
-            return getClass().getClassLoader().getResourceAsStream(resourcePath);
+            return clazz.getClassLoader().getResourceAsStream(resourcePath);
         }
     }
 }

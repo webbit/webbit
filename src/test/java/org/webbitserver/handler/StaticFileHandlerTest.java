@@ -3,7 +3,6 @@ package org.webbitserver.handler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.stub.StubHttpControl;
 import org.webbitserver.stub.StubHttpRequest;
@@ -12,12 +11,15 @@ import org.webbitserver.stub.StubHttpResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
@@ -25,7 +27,7 @@ import static org.webbitserver.testutil.HttpClient.httpGet;
 public class StaticFileHandlerTest {
 
     private File dir;
-    private HttpHandler handler;
+    private StaticFileHandler handler;
 
     @Test
     public void should404ForMissingFiles() throws Exception {
@@ -116,30 +118,87 @@ public class StaticFileHandlerTest {
         assertReturnedWithStatus(404, handle(request("/a/")));
         assertReturnedWithStatus(404, handle(request("/b")));
 
-        writeFile("index.html", "hi");
-        assertReturnedWithStatus(200, handle(request("/")));
+        String welcomeFileContents = "hi";
+
+        writeFile("index.html", welcomeFileContents);
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
         assertReturnedWithStatus(404, handle(request("/a")));
         assertReturnedWithStatus(404, handle(request("/a/")));
         assertReturnedWithStatus(404, handle(request("/b")));
 
         mkdir("a");
         mkdir("b");
-        assertReturnedWithStatus(200, handle(request("/")));
-        assertReturnedWithStatus(404, handle(request("/a")));
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
+        assertReturnedWithStatus(301, handle(request("/a")));
         assertReturnedWithStatus(404, handle(request("/a/")));
-        assertReturnedWithStatus(404, handle(request("/b")));
+        assertReturnedWithStatus(301, handle(request("/b")));
 
-        writeFile("a/index.html", "hi");
-        assertReturnedWithStatus(200, handle(request("/")));
-        assertReturnedWithStatus(200, handle(request("/a")));
-        assertReturnedWithStatus(200, handle(request("/a/")));
-        assertReturnedWithStatus(404, handle(request("/b")));
+        writeFile("a/index.html", welcomeFileContents);
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
+        assertReturnedWithStatus(301, handle(request("/a")));
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a/")));
+        assertReturnedWithStatus(301, handle(request("/b")));
 
-        writeFile("b/index.html", "hi");
-        assertReturnedWithStatus(200, handle(request("/")));
-        assertReturnedWithStatus(200, handle(request("/a")));
-        assertReturnedWithStatus(200, handle(request("/a/")));
-        assertReturnedWithStatus(200, handle(request("/b")));
+        writeFile("b/index.html", welcomeFileContents);
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/")));
+        assertReturnedWithStatus(301, handle(request("/a")));
+        assertReturnedWithStatusAndContainsContent(200, welcomeFileContents, handle(request("/a/")));
+        assertReturnedWithStatus(301, handle(request("/b")));
+    }
+
+    @Test
+    public void shouldServeDirectoryListingForDirectories() throws Exception {
+        writeFile("a.foo", "");
+        handler.enableDirectoryListing(true);
+        assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/")));
+        
+        mkdir("a");
+        writeFile("a/a.foo", "");
+        assertReturnedWithStatus(301, handle(request("/a")));
+        assertReturnedWithStatusAndContainsContent(200, "a.foo", handle(request("/a/")));
+    }
+
+    @Test
+    public void redirectAddingSlashPreservesQuery() throws Exception {
+        mkdir("a");
+        handler.enableDirectoryListing(true);
+        assertReturnedLocationHeaderEqualTo("/a/", handle(request("/a")));
+        assertReturnedLocationHeaderEqualTo("/a/?", handle(request("/a?")));
+        assertReturnedLocationHeaderEqualTo("/a/?foo=bar?baz", handle(request("/a?foo=bar?baz")));
+    }
+
+    @Test
+    public void escapesFilenames() throws Exception {
+        String filename = "'";
+        String escapedFilename = "&#x27;";
+        if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+            filename += "&<>\"";
+            escapedFilename += "&amp;&lt;&gt;&quot;";
+        }
+        writeFile(filename, "");
+        handler.enableDirectoryListing(true);
+        String response = handle(request("/")).contentsString();
+        assertThat(response, containsString(escapedFilename));
+    }
+
+    @Test
+    public void allowsCustomDirectoryListingFormatters() throws Exception {
+        mkdir("a");
+        handler.enableDirectoryListing(true, new DirectoryListingFormatter() {
+            @Override
+            public ByteBuffer formatFileListAsHtml(Iterable<FileEntry> files) throws IOException {
+                return ByteBuffer.wrap("Monkeys".getBytes());
+            }
+        });
+        assertReturnedWithStatusAndContainsContent(200, "Monkeys", handle(request("/a/")));
+    }
+    
+    @Test
+    public void prefersWelcomeFileToDirectoryListing() throws Exception {
+        writeFile("a.foo", "");
+        writeFile("index.html", "hi");
+        handler.enableDirectoryListing(true);
+        assertReturnedWithStatusAndContainsContent(200, "hi", handle(request("/")));
     }
 
     @Test
@@ -277,4 +336,12 @@ public class StaticFileHandlerTest {
         assertNull(response.error());
     }
 
+    private void assertReturnedWithStatusAndContainsContent(int expectedStatus, String content, StubHttpResponse response) {
+        assertReturnedWithStatus(expectedStatus, response);
+        assertThat(response.contentsString(), containsString(content));
+    }
+
+    private void assertReturnedLocationHeaderEqualTo(String locationHeaderValue, StubHttpResponse response) {
+        assertEquals(locationHeaderValue, response.header("Location"));
+    }
 }

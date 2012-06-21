@@ -3,6 +3,7 @@ package org.webbitserver.handler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.helpers.ClassloaderResourceHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,9 +42,10 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     protected class FileWorker extends IOWorker {
+
         private File file;
 
-        private FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+        protected FileWorker(HttpRequest request, HttpResponse response, HttpControl control) {
             super(request.uri(), request, response, control);
         }
 
@@ -51,6 +53,11 @@ public class StaticFileHandler extends AbstractResourceHandler {
         protected boolean exists() throws IOException {
             file = resolveFile(path);
             return file != null && file.exists();
+        }
+
+        @Override
+        protected boolean isDirectory() throws IOException {
+            return file.isDirectory();
         }
 
         @Override
@@ -64,12 +71,21 @@ public class StaticFileHandler extends AbstractResourceHandler {
             return welcome.isFile() ? read(welcome) : null;
         }
 
+        @Override
+        protected ByteBuffer directoryListingBytes() throws IOException {
+            if (!isDirectory()) {
+                return null;
+            }
+            Iterable<FileEntry> files = ClassloaderResourceHelper.fileEntriesFor(file.listFiles());
+            return directoryListingFormatter.formatFileListAsHtml(files);
+        }
+
         private ByteBuffer read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }
 
-        private File resolveFile(String path) throws IOException {
-            // Find file, relative to roo
+        protected File resolveFile(String path) throws IOException {
+            // Find file, relative to root
             File result = new File(dir, path).getCanonicalFile();
 
             // For security, check file really does exist under root.
