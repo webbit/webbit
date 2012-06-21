@@ -238,29 +238,37 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 ByteBuffer content = null;
                 if (!exists()) {
                     notFound();
-                } else if ((content = fileBytes()) != null) {
-                    serve(guessMimeType(path), content, control, response, request);
-                } else {
+                    return;
+                } if (isDirectory()) {
                     // Assumes if path has been changed since the original request,
                     // its current value with a trailing slash will still resolve properly
                     if (!path.endsWith("/")) {
                         response.status(301).header("Location", path + "/" + extractQuery(pathWithQuery)).end();
                         return;
-                    }
-                    if ((content = welcomeBytes()) != null) {
+                    } else if ((content = welcomeBytes()) != null) {
                         serve(guessMimeType(welcomeFileName), content, control, response, request);
+                        return;
                     } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
                         serve(guessMimeType(".html"), content, control, response, request);
-                    } else {
-                        notFound();
+                        return;
                     }
+                    // TODO: Do something other than 404 if directory listing is disabled
+                } else if ((content = fileBytes()) != null) {
+                    serve(guessMimeType(path), content, control, response, request);
+                    return;
+                } else if ((content = welcomeBytes()) != null) {
+                  serve(guessMimeType(welcomeFileName), content, control, response, request);
+                  return;
                 }
+                notFound();
             } catch (IOException e) {
                 error(e);
             }
         }
 
         protected abstract boolean exists() throws IOException;
+
+        protected abstract boolean isDirectory() throws IOException;
 
         protected abstract ByteBuffer fileBytes() throws IOException;
 

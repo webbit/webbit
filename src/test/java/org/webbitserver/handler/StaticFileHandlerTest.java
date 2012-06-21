@@ -180,7 +180,7 @@ public class StaticFileHandlerTest {
         mkdir("a");
         handler.enableDirectoryListing(true, new DirectoryListingFormatter() {
             @Override
-            public ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
+            public ByteBuffer formatFileListAsHtml(Iterable<FileEntry> files) throws IOException {
                 return ByteBuffer.wrap("Monkeys".getBytes());
             }
         });

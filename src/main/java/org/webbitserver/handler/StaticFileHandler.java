@@ -3,6 +3,7 @@ package org.webbitserver.handler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.helpers.ClassloaderResourceHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,6 +56,11 @@ public class StaticFileHandler extends AbstractResourceHandler {
         }
 
         @Override
+        protected boolean isDirectory() throws IOException {
+            return file.isDirectory();
+        }
+
+        @Override
         protected ByteBuffer fileBytes() throws IOException {
             return file.isFile() ? read(file) : null;
         }
@@ -67,7 +73,11 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer directoryListingBytes() throws IOException {
-            return file.isDirectory() ? directoryListingFormatter.formatFileListAsHtml(file.listFiles()) : null;
+            if (!isDirectory()) {
+                return null;
+            }
+            Iterable<FileEntry> files = ClassloaderResourceHelper.fileEntriesFor(file.listFiles());
+            return directoryListingFormatter.formatFileListAsHtml(files);
         }
 
         private ByteBuffer read(File file) throws IOException {

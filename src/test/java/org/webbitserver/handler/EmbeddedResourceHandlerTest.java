@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -34,7 +35,7 @@ public class EmbeddedResourceHandlerTest {
                 command.run();
             }
         };
-        handler = new EmbeddedResourceHandler("web", immediateExecutor);
+        handler = new EmbeddedResourceHandler("web", immediateExecutor, getClass());
     }
 
     @After
@@ -49,15 +50,32 @@ public class EmbeddedResourceHandlerTest {
         assertReturnedWithStatus(404, handle(request("/notfound.html")));
         assertReturnedWithStatus(404, handle(request("/foo/bar")));
     }
-    
+
     @Test
     public void listsDirectory() throws Exception {
+        handler.enableDirectoryListing(true).welcomeFile("doesnotexist");
+
+        StubHttpResponse response = handle(request("/"));
+        assertEquals(200, response.status());
+        assertThat(response.contentsString(), containsString("index.html"));
+        assertThat(response.contentsString(), containsString("jquery-1.5.2.js"));
+        assertThat(response.contentsString(), not(containsString("EmbeddedResourceHandlerTest")));
+    }
+
+    @Test
+    public void listsSubDirectory() throws Exception {
       handler.enableDirectoryListing(true).welcomeFile("doesnotexist");
 
       StubHttpResponse response = handle(request("/"));
       assertEquals(200, response.status());
-      assertThat(response.contentsString(), containsString("index.html"));
-      assertThat(response.contentsString(), containsString("jquery-1.5.2.js"));
+      // &#x2F; is a /
+      assertThat(response.contentsString(), containsString("href=\"subdir&#x2F;\""));
+      assertThat(response.contentsString(), not(containsString("subfile.txt")));
+
+      response = handle(request("/subdir/"));
+      assertEquals(200, response.status());
+      assertThat(response.contentsString(), containsString("subfile.txt"));
+      assertThat(response.contentsString(), not(containsString("index.html")));
     }
 
     @Test

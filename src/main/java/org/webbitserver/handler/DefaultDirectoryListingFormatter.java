@@ -1,7 +1,6 @@
 package org.webbitserver.handler;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -11,16 +10,16 @@ public class DefaultDirectoryListingFormatter implements DirectoryListingFormatt
     private static final String DIRECTORY_LISTING_FORMAT_STRING =
         "<html><body><ol style='list-style-type: none; padding-left: 0px; margin-left: 0px;'>%s</ol></body></html>";
 
-    public ByteBuffer formatFileListAsHtml(File[] files) throws IOException {
+    public ByteBuffer formatFileListAsHtml(Iterable<FileEntry> files) throws IOException {
         StringBuilder builder = new StringBuilder();
-        for (File file : files) {
-          String fileName = XssCharacterEscaper.escape(file.getName());
-          builder
-              .append("<li><a href=\"")
-              .append(fileName)
-              .append("\">")
-              .append(fileName)
-              .append("</a></li>");
+        for (FileEntry file : files) {
+            String fileName = XssCharacterEscaper.escape(file.name);
+            builder
+                .append("<li><a href=\"")
+                .append(fileName)
+                .append("\">")
+                .append(fileName)
+                .append("</a></li>");
         }
         String formattedString = String.format(getDirectoryListingFormatString(), builder.toString());
         byte[] formattedBytes = formattedString.getBytes();
@@ -29,6 +28,6 @@ public class DefaultDirectoryListingFormatter implements DirectoryListingFormatt
     }
 
     protected String getDirectoryListingFormatString() {
-      return DIRECTORY_LISTING_FORMAT_STRING;
+        return DIRECTORY_LISTING_FORMAT_STRING;
     }
 }

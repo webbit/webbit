@@ -1,6 +1,5 @@
 package org.webbitserver.handler;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -13,5 +12,5 @@ public interface DirectoryListingFormatter {
    * @return A ByteBuffer containing an entire HTML page to display, presenting information about files.
    * @throws IOException
    */
-  ByteBuffer formatFileListAsHtml(File[] files) throws IOException;
+  ByteBuffer formatFileListAsHtml(Iterable<FileEntry> files) throws IOException;
 }
