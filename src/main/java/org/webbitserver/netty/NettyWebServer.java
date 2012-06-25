@@ -322,7 +322,7 @@ public class NettyWebServer implements WebServer {
             return URI.create("http://" + InetAddress.getLocalHost()
                     .getHostName() + (port == 80 ? "" : (":" + port)) + "/");
         } catch (UnknownHostException e) {
-            return null;
+          throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
         }
     }
 
