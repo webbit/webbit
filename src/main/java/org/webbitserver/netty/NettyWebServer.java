@@ -244,14 +244,23 @@ public class NettyWebServer implements WebServer {
                 if (bootstrap != null) {
                     bootstrap.releaseExternalResources();
                 }
+                
+                // shut down all services & give them a chance to terminate
                 for (ExecutorService executorService : executorServices) {
                     executorService.shutdown();
                 }
-
+                
                 bootstrap = null;
 
                 if (channel != null) {
                     channel.getCloseFuture().await();
+                }
+                
+                // try best-effort to leave no resources running
+                for (ExecutorService executorService : executorServices) {
+                    boolean shutdown = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                    // fail in tests only 
+                    assert shutdown : "Could not shut down ExecutorService - took more than 5 seconds to terminate";    
                 }
                 return NettyWebServer.this;
             }
@@ -323,5 +332,5 @@ public class NettyWebServer implements WebServer {
     protected Object nextId() {
         return nextId++;
     }
-
+    
 }
