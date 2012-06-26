@@ -1,7 +1,6 @@
 package org.webbitserver.netty;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
@@ -29,7 +28,6 @@ public class NettyWebServerTest {
         server.stop().get();
     }
 
-    @Ignore // This spuriously fails :-(
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
         int threadCountStart = getCurrentThreadCount();
