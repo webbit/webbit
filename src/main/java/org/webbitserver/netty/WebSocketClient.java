@@ -65,20 +65,20 @@ public class WebSocketClient implements WebSocket {
     private static long nextId = 1;
 
     private final URI uri;
-    private WebSocketHandler webSocketHandler;
     private final Executor executor;
     private final InetSocketAddress remoteAddress;
-    private HttpRequest request;
     private final boolean ssl;
-    private ConnectionHelper connectionHelper;
+    private final List<HttpCookie> cookies = new ArrayList<HttpCookie>();
 
+    private HttpRequest request;
+    private WebSocketHandler webSocketHandler;
+    private ConnectionHelper connectionHelper;
     private ClientBootstrap bootstrap;
     private Channel channel;
     private String base64Nonce;
     private Thread.UncaughtExceptionHandler exceptionHandler;
     private Thread.UncaughtExceptionHandler ioExceptionHandler;
     private SslFactory sslFactory;
-    private final List<HttpCookie> cookies = new ArrayList<HttpCookie>();
 
     public WebSocketClient(URI uri, WebSocketHandler webSocketHandler) {
         this(uri, webSocketHandler, newSingleThreadExecutor());

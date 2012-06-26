@@ -3,6 +3,7 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.8...master)
 
+* Bug fixes for client side cookie setting & Host header in WSClient ([#92](https://github.com/webbit/webbit/pull/92) Dennis Byrne)
 * Adding redirects for folders from /foo to /foo/, adding optional directory listings for folders, and opening up a few classes for extension ([#87](https://github.com/webbit/webbit/pull/87) Daniel Wagner-Hall)
 
 0.4.8 (2012-06-20)
