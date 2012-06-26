@@ -1,7 +1,7 @@
-Git master
+0.4.9 (2012-06-26)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.8...master)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.8...v0.4.9)
 
 * Wait for executor services to shut down and "name" internally controlled threads. ([#93](https://github.com/webbit/webbit/pull/93) Simon Willnauer)
 * Broken InetAddress...getHostName() implementation can cause NPE in NettyWebServer#start() ([#94](https://github.com/webbit/webbit/pull/94) Simon Willnauer)
