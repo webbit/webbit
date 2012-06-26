@@ -23,6 +23,7 @@ import org.webbitserver.handler.PathMatchHandler;
 import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
 import org.webbitserver.handler.exceptions.SilentExceptionHandler;
+import org.webbitserver.helpers.NamedThreadFactory;
 import org.webbitserver.helpers.SslFactory;
 
 import javax.net.ssl.SSLContext;
@@ -199,7 +200,7 @@ public class NettyWebServer implements WebServer {
                 });
 
                 staleConnectionTrackingHandler = new StaleConnectionTrackingHandler(staleConnectionTimeout, executor);
-                ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor();
+                ScheduledExecutorService staleCheckExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("WEBBIT-STALE-CONNECTION-CHECK-THREAD"));
                 staleCheckExecutor.scheduleWithFixedDelay(new Runnable() {
                     @Override
                     public void run() {
@@ -209,9 +210,9 @@ public class NettyWebServer implements WebServer {
                 executorServices.add(staleCheckExecutor);
 
                 connectionTrackingHandler = new ConnectionTrackingHandler();
-                ExecutorService bossExecutor = Executors.newSingleThreadExecutor();
+                ExecutorService bossExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory("WEBBIT-BOSS-THREAD"));
                 executorServices.add(bossExecutor);
-                ExecutorService workerExecutor = Executors.newSingleThreadExecutor();
+                ExecutorService workerExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory("WEBBIT-WORKER-THREAD"));
                 executorServices.add(workerExecutor);
                 bootstrap.setFactory(new NioServerSocketChannelFactory(bossExecutor, workerExecutor, 1));
                 channel = bootstrap.bind(socketAddress);
@@ -244,14 +245,23 @@ public class NettyWebServer implements WebServer {
                 if (bootstrap != null) {
                     bootstrap.releaseExternalResources();
                 }
+                
+                // shut down all services & give them a chance to terminate
                 for (ExecutorService executorService : executorServices) {
                     executorService.shutdown();
                 }
-
+                
                 bootstrap = null;
 
                 if (channel != null) {
                     channel.getCloseFuture().await();
+                }
+                
+                // try best-effort to leave no resources running
+                for (ExecutorService executorService : executorServices) {
+                    boolean shutdown = executorService.awaitTermination(5, TimeUnit.SECONDS);
+                    // fail in tests only 
+                    assert shutdown : "Could not shut down ExecutorService - took more than 5 seconds to terminate";    
                 }
                 return NettyWebServer.this;
             }
@@ -323,5 +333,5 @@ public class NettyWebServer implements WebServer {
     protected Object nextId() {
         return nextId++;
     }
-
+    
 }
