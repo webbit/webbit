@@ -17,7 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NettyWebServerTest {
 
@@ -30,11 +32,17 @@ public class NettyWebServerTest {
 
     @Test
     public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
-        int threadCountStart = getCurrentThreadCount();
+        int threadsBeforeStart = getCurrentThreadCount();
         server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
+        int threadsAfterStart = getCurrentThreadCount();
+        if(threadsAfterStart <= threadsBeforeStart) {
+            fail(String.format("Expected more threads after starting. Before start: %d, After start: %d", threadsBeforeStart, threadsAfterStart));
+        }
         server.stop().get();
-        sleep(200);
-        assertEquals(threadCountStart, getCurrentThreadCount());
+        int threadsAfterStop = getCurrentThreadCount();
+        if(threadsAfterStop > threadsBeforeStart) {
+            fail(String.format("Expected more threads after stopping. Before start: %d, After stop: %d", threadsBeforeStart, threadsAfterStop));
+        }
     }
 
     @Test
@@ -78,7 +86,7 @@ public class NettyWebServerTest {
     }
 
     private int getCurrentThreadCount() {
-        return Thread.getAllStackTraces().keySet().size();
+        return Thread.getAllStackTraces().size();
     }
 
 }
