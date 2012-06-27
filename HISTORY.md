@@ -1,7 +1,7 @@
-0.4.10 (2012-06-27)
+0.4.11 (2012-06-27)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.9...v0.4.10)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.9...v0.4.11)
 
 * Fixed regression in 0.4.9 where Webbit created daemon threads ([#95](https://github.com/webbit/webbit/issues/95) Aslak Hellesøy)
 
