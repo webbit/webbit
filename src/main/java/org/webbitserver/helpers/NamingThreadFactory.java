@@ -2,6 +2,7 @@ package org.webbitserver.helpers;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Wraps a ThreadFactory and assigns a name to each newly created thread, that includes two
@@ -9,8 +10,8 @@ import java.util.concurrent.ThreadFactory;
  * created by the factory.
  */
 public class NamingThreadFactory implements ThreadFactory {
-    private static volatile int factoryCount;
-    private volatile int threadCount;
+    private static final AtomicInteger factoryCount = new AtomicInteger();
+    private final AtomicInteger threadCount = new AtomicInteger();
 
     private final ThreadFactory factory;
     private final String prefix;
@@ -18,7 +19,7 @@ public class NamingThreadFactory implements ThreadFactory {
     public NamingThreadFactory(ThreadFactory factory, String prefix) {
         this.factory = factory;
         this.prefix = prefix;
-        factoryCount++;
+        factoryCount.incrementAndGet();
     }
 
     public NamingThreadFactory(String prefix) {
@@ -27,7 +28,7 @@ public class NamingThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable r) {
-        this.threadCount++;
+        threadCount.incrementAndGet();
         Thread thread = factory.newThread(r);
         thread.setName(threadName());
         return thread;
@@ -37,6 +38,6 @@ public class NamingThreadFactory implements ThreadFactory {
      * Override this method to customize thread name.
      */
     protected String threadName() {
-        return String.format("%s-%d-%d-thread", prefix, factoryCount, threadCount);
+        return String.format("%s-%d-%d-thread", prefix, factoryCount.intValue(), threadCount.intValue());
     }
 }
