@@ -1,25 +1,5 @@
 package org.webbitserver.helpers;
 
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-// Based on https://svn.apache.org/repos/asf/lucene/dev/trunk/lucene/core/src/java/org/apache/lucene/util/NamedThreadFactory.java
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,11 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@link Executors#defaultThreadFactory()}.
  */
 public class NamedThreadFactory implements ThreadFactory {
-    private static final AtomicInteger threadPoolNumber = new AtomicInteger(1);
-    private final ThreadGroup group;
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private static final AtomicInteger poolNumber = new AtomicInteger(1);
     private static final String NAME_PATTERN = "%s-%d-thread";
+
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String threadNamePrefix;
+    private final ThreadFactory delegate;
 
     /**
      * Creates a new {@link NamedThreadFactory} instance
@@ -43,13 +24,8 @@ public class NamedThreadFactory implements ThreadFactory {
      * @param threadNamePrefix the name prefix assigned to each thread created.
      */
     public NamedThreadFactory(String threadNamePrefix) {
-        final SecurityManager s = System.getSecurityManager();
-        group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-        this.threadNamePrefix = String.format(NAME_PATTERN, checkPrefix(threadNamePrefix), threadPoolNumber.getAndIncrement());
-    }
-
-    private static String checkPrefix(String prefix) {
-        return prefix == null || prefix.length() == 0 ? "Webbit" : prefix;
+        this.delegate = Executors.defaultThreadFactory();
+        this.threadNamePrefix = String.format(NAME_PATTERN, threadNamePrefix, poolNumber.getAndIncrement());
     }
 
     /**
@@ -58,15 +34,8 @@ public class NamedThreadFactory implements ThreadFactory {
      * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
      */
     public Thread newThread(Runnable r) {
-        final Thread t = new Thread(group, r, String.format("%s-%d",
-                this.threadNamePrefix, threadNumber.getAndIncrement()), 0);
-        if (t.isDaemon()) {
-            t.setDaemon(false);
-        }
-        if (t.getPriority() != Thread.NORM_PRIORITY) {
-            t.setPriority(Thread.NORM_PRIORITY);
-        }
+        Thread t = delegate.newThread(r);
+        t.setName(String.format("%s-%d", this.threadNamePrefix, threadNumber.getAndIncrement()));
         return t;
     }
-
 }
