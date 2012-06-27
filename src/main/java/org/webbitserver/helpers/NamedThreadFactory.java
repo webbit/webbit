@@ -18,8 +18,7 @@ package org.webbitserver.helpers;
  */
 
 
-// copied from Apache Lucene
-// https://svn.apache.org/repos/asf/lucene/dev/trunk/lucene/core/src/java/org/apache/lucene/util/NamedThreadFactory.java
+// Based on https://svn.apache.org/repos/asf/lucene/dev/trunk/lucene/core/src/java/org/apache/lucene/util/NamedThreadFactory.java
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -45,14 +44,12 @@ public class NamedThreadFactory implements ThreadFactory {
      */
     public NamedThreadFactory(String threadNamePrefix) {
         final SecurityManager s = System.getSecurityManager();
-        group = (s != null) ? s.getThreadGroup() : Thread.currentThread()
-                .getThreadGroup();
-        this.threadNamePrefix = String.format(NAME_PATTERN,
-                checkPrefix(threadNamePrefix), threadPoolNumber.getAndIncrement());
+        group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        this.threadNamePrefix = String.format(NAME_PATTERN, checkPrefix(threadNamePrefix), threadPoolNumber.getAndIncrement());
     }
 
     private static String checkPrefix(String prefix) {
-        return prefix == null || prefix.length() == 0 ? "Lucene" : prefix;
+        return prefix == null || prefix.length() == 0 ? "Webbit" : prefix;
     }
 
     /**
@@ -63,8 +60,12 @@ public class NamedThreadFactory implements ThreadFactory {
     public Thread newThread(Runnable r) {
         final Thread t = new Thread(group, r, String.format("%s-%d",
                 this.threadNamePrefix, threadNumber.getAndIncrement()), 0);
-        t.setDaemon(true);
-        t.setPriority(Thread.NORM_PRIORITY);
+        if (t.isDaemon()) {
+            t.setDaemon(false);
+        }
+        if (t.getPriority() != Thread.NORM_PRIORITY) {
+            t.setPriority(Thread.NORM_PRIORITY);
+        }
         return t;
     }
 
