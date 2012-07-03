@@ -7,6 +7,9 @@ import java.nio.ByteBuffer;
 /**
  * Abstract interface for template engines. It can be passed as an argument to the constructors of
  * {@link StaticFileHandler} and {@link EmbeddedResourceHandler}.
+ *
+ * Webbit itself doesn't provide any template engines. Look at <a href="https://github.com/webbit/webbit-rest">Webbit-REST</a>
+ * for implementations.
  */
 public interface TemplateEngine {
     String TEMPLATE_CONTEXT = "TEMPLATE_CONTEXT";
