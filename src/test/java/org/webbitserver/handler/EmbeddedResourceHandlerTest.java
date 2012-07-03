@@ -102,8 +102,8 @@ public class EmbeddedResourceHandlerTest {
     public void canUseTemplateEngine() throws IOException, InterruptedException, ExecutionException {
         handler = new EmbeddedResourceHandler("web", immediateExecutor, getClass(), new TemplateEngine() {
             @Override
-            public ByteBuffer process(int length, InputStream in, String path, Object templateContext) throws IOException {
-                String templateSource = new String(NullEngine.readBytes(length, in), Charset.forName("UTF-8"));
+            public ByteBuffer process(int length, InputStream template, String templatePath, Object templateContext) throws IOException {
+                String templateSource = new String(NullEngine.readBytes(length, template), Charset.forName("UTF-8"));
                 String context = templateContext.toString();
                 return ByteBuffer.wrap((templateSource+context).getBytes("UTF-8"));
             }

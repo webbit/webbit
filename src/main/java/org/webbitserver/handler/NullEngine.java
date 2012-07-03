@@ -6,8 +6,8 @@ import java.nio.ByteBuffer;
 
 public class NullEngine implements TemplateEngine {
     @Override
-    public ByteBuffer process(int length, InputStream in, String path, Object templateContext) throws IOException {
-        return ByteBuffer.wrap(readBytes(length, in));
+    public ByteBuffer process(int length, InputStream template, String templatePath, Object templateContext) throws IOException {
+        return ByteBuffer.wrap(readBytes(length, template));
     }
 
     public static byte[] readBytes(int length, InputStream in) throws IOException {
