@@ -50,12 +50,19 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     protected final Map<String, String> mimeTypes;
     protected String welcomeFileName;
     protected DirectoryListingFormatter directoryListingFormatter;
+    protected final TemplateEngine templateEngine;
+
     private boolean isDirectoryListingEnabled = false;
 
-    public AbstractResourceHandler(Executor ioThread) {
+    public AbstractResourceHandler(Executor ioThread, TemplateEngine templateEngine) {
         this.ioThread = ioThread;
+        this.templateEngine = templateEngine;
         this.mimeTypes = new HashMap<String, String>(DEFAULT_MIME_TYPES);
         this.welcomeFileName = DEFAULT_WELCOME_FILE_NAME;
+    }
+
+    public AbstractResourceHandler(Executor ioThread) {
+        this(ioThread, new NullEngine());
     }
 
     public AbstractResourceHandler addMimeType(String extension, String mimeType) {
@@ -168,24 +175,6 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 .position(contents.position() + start);
         response.content(contents).end();
     }
-    
-    static ByteBuffer consumeInputStreamToByteBuffer(int length, InputStream in) throws IOException {
-        byte[] data = new byte[length];
-        try {
-            int read = 0;
-            while (read < length) {
-                int more = in.read(data, read, data.length - read);
-                if (more == -1) {
-                    break;
-                } else {
-                    read += more;
-                }
-            }
-        } finally {
-            in.close();
-        }
-        return ByteBuffer.wrap(data);
-    }
 
     protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
                                                                  HttpResponse response,
@@ -277,7 +266,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         protected abstract ByteBuffer directoryListingBytes() throws IOException;
 
         protected ByteBuffer read(int length, InputStream in) throws IOException {
-            return AbstractResourceHandler.consumeInputStreamToByteBuffer(length, in);
+            return templateEngine.process(length, in, path, request.data(TemplateEngine.TEMPLATE_CONTEXT));
         }
         
         // TODO: Don't respond with a mime type that violates the request's Accept header

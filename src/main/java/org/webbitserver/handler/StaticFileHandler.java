@@ -17,17 +17,33 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
     private final File dir;
 
-    public StaticFileHandler(File dir, Executor ioThread) {
-        super(ioThread);
+    public StaticFileHandler(File dir, Executor ioThread, TemplateEngine templateEngine) {
+        super(ioThread, templateEngine);
         this.dir = dir;
     }
 
+    public StaticFileHandler(File dir, Executor ioThread) {
+        this(dir, ioThread, new NullEngine());
+    }
+
+    public StaticFileHandler(String dir, Executor ioThread, TemplateEngine templateEngine) {
+        this(new File(dir), ioThread, templateEngine);
+    }
+
     public StaticFileHandler(String dir, Executor ioThread) {
-        this(new File(dir), ioThread);
+        this(dir, ioThread, new NullEngine());
+    }
+
+    public StaticFileHandler(File dir, TemplateEngine templateEngine) {
+        this(dir, newFixedThreadPool(4), templateEngine);
     }
 
     public StaticFileHandler(File dir) {
-        this(dir, newFixedThreadPool(4));
+        this(dir, new NullEngine());
+    }
+
+    public StaticFileHandler(String dir, TemplateEngine templateEngine) {
+        this(new File(dir), templateEngine);
     }
 
     public StaticFileHandler(String dir) {

@@ -19,18 +19,34 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     private final File root;
     private Class<?> clazz;
 
-    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
-        super(ioThread);
+    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz, TemplateEngine templateEngine) {
+        super(ioThread, templateEngine);
         this.root = new File(root);
         this.clazz = clazz;
+    }
+
+    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
+        this(root, ioThread, clazz, new NullEngine());
+    }
+
+    public EmbeddedResourceHandler(String root, Executor ioThread, TemplateEngine templateEngine) {
+        this(root, ioThread, EmbeddedResourceHandler.class, templateEngine);
     }
 
     public EmbeddedResourceHandler(String root, Executor ioThread) {
         this(root, ioThread, EmbeddedResourceHandler.class);
     }
 
+    public EmbeddedResourceHandler(String root, Class<?> clazz, TemplateEngine templateEngine) {
+        this(root, newFixedThreadPool(4), clazz, templateEngine);
+    }
+
     public EmbeddedResourceHandler(String root, Class<?> clazz) {
         this(root, newFixedThreadPool(4), clazz);
+    }
+
+    public EmbeddedResourceHandler(String root, TemplateEngine templateEngine) {
+        this(root, EmbeddedResourceHandler.class, templateEngine);
     }
 
     public EmbeddedResourceHandler(String root) {
@@ -77,7 +93,8 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
 
         @Override
         protected ByteBuffer welcomeBytes() throws IOException {
-            InputStream resourceStream = getResource(new File(file, welcomeFileName));
+            File welcomeFile = new File(file, welcomeFileName);
+            InputStream resourceStream = getResource(welcomeFile);
             return resourceStream == null ? null : read(resourceStream);
         }
 

@@ -1,10 +1,9 @@
 package org.webbitserver.handler;
 
-import java.io.ByteArrayInputStream;
+import org.webbitserver.helpers.XssCharacterEscaper;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import org.webbitserver.helpers.XssCharacterEscaper;
 
 public class DefaultDirectoryListingFormatter implements DirectoryListingFormatter {
     private static final String DIRECTORY_LISTING_FORMAT_STRING =
@@ -22,9 +21,7 @@ public class DefaultDirectoryListingFormatter implements DirectoryListingFormatt
                 .append("</a></li>");
         }
         String formattedString = String.format(getDirectoryListingFormatString(), builder.toString());
-        byte[] formattedBytes = formattedString.getBytes();
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(formattedBytes);
-        return AbstractResourceHandler.consumeInputStreamToByteBuffer(formattedBytes.length, inputStream);
+        return ByteBuffer.wrap(formattedString.getBytes("UTF-8"));
     }
 
     protected String getDirectoryListingFormatString() {
