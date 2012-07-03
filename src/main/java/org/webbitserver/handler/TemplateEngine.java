@@ -21,9 +21,11 @@ public interface TemplateEngine {
      * context is template-engine specific.
      * <p/>
      * Webbit will pass the request data value keyed with {@link #TEMPLATE_CONTEXT} as the {@code templateContext} argument.
-     * It's the programmer's responsibility to make sure the data value is set before the tempalte is rendered,
+     * It's the programmer's responsibility to make sure the data value is set before the template is rendered,
      * i.e. before the {@link StaticFileHandler} or {@link EmbeddedResourceHandler} handler instance handles a request.
      *
+     * @see org.webbitserver.HttpRequest#data(String)
+     * @see org.webbitserver.HttpRequest#data(String, Object)
      * @param length          number of bytes in the template
      * @param template        the template source
      * @param templatePath    the path the template is read from. Allows implementations to cache compiled templates.
