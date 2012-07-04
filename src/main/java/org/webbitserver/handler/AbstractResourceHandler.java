@@ -178,7 +178,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         response.content(contents).end();
     }
 
-    protected abstract StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
+    protected abstract IOWorker createIOWorker(HttpRequest request,
                                                                  HttpResponse response,
                                                                  HttpControl control);
 

@@ -16,6 +16,11 @@ public interface TemplateEngine {
      * Most template engines merge a {@code templateContext} with a template to produce output. What constitutes a valid
      * context is template-engine specific.
      * <p/>
+     * Rendering happens on your main thread, so it is important that this method is not IO-bound. For example,
+     * rendering a template using a context that is some sort of <a href="http://en.wikipedia.org/wiki/Active_record_pattern">active record</a>
+     * that makes trips to the database will block Webbit preventing it from handling other requests. It's important to
+     * make sure any remote data is pre-fetched.
+     * <p/>
      * Webbit will pass the request data value keyed with {@link #TEMPLATE_CONTEXT} as the {@code templateContext} argument.
      * It's the programmer's responsibility to make sure the data value is set before the template is rendered,
      * i.e. before the {@link StaticFileHandler} or {@link EmbeddedResourceHandler} handler instance handles a request.

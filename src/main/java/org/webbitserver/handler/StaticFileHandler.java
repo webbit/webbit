@@ -50,10 +50,10 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     @Override
-    protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
+    protected FileWorker createIOWorker(HttpRequest request,
                                                         HttpResponse response,
                                                         HttpControl control) {
-        return new StaticFileHandler.FileWorker(request, response, control);
+        return new FileWorker(request, response, control);
     }
 
     protected class FileWorker extends IOWorker {

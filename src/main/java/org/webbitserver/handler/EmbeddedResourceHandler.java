@@ -54,7 +54,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    protected IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+    protected ResourceWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
         return new ResourceWorker(request, response, control);
     }
 
