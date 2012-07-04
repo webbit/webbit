@@ -8,7 +8,6 @@ import org.webbitserver.helpers.ClassloaderResourceHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -23,7 +22,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     public StaticFileHandler(File dir, Executor ioThread) {
-        this(dir, ioThread, new NullEngine());
+        this(dir, ioThread, new StaticFile());
     }
 
     public StaticFileHandler(String dir, Executor ioThread, TemplateEngine templateEngine) {
@@ -31,7 +30,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     public StaticFileHandler(String dir, Executor ioThread) {
-        this(dir, ioThread, new NullEngine());
+        this(dir, ioThread, new StaticFile());
     }
 
     public StaticFileHandler(File dir, TemplateEngine templateEngine) {
@@ -39,7 +38,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     public StaticFileHandler(File dir) {
-        this(dir, new NullEngine());
+        this(dir, new StaticFile());
     }
 
     public StaticFileHandler(String dir, TemplateEngine templateEngine) {
@@ -77,18 +76,18 @@ public class StaticFileHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer fileBytes() throws IOException {
+        protected byte[] fileBytes() throws IOException {
             return file.isFile() ? read(file) : null;
         }
 
         @Override
-        protected ByteBuffer welcomeBytes() throws IOException {
+        protected byte[] welcomeBytes() throws IOException {
             File welcome = new File(file, welcomeFileName);
             return welcome.isFile() ? read(welcome) : null;
         }
 
         @Override
-        protected ByteBuffer directoryListingBytes() throws IOException {
+        protected byte[] directoryListingBytes() throws IOException {
             if (!isDirectory()) {
                 return null;
             }
@@ -96,7 +95,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
             return directoryListingFormatter.formatFileListAsHtml(files);
         }
 
-        private ByteBuffer read(File file) throws IOException {
+        private byte[] read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }
 

@@ -26,7 +26,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     }
 
     public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
-        this(root, ioThread, clazz, new NullEngine());
+        this(root, ioThread, clazz, new StaticFile());
     }
 
     public EmbeddedResourceHandler(String root, Executor ioThread, TemplateEngine templateEngine) {
@@ -83,7 +83,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer fileBytes() throws IOException {
+        protected byte[] fileBytes() throws IOException {
             if (resource == null || isDirectory()) {
                 return null;
             } else {
@@ -92,20 +92,20 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer welcomeBytes() throws IOException {
+        protected byte[] welcomeBytes() throws IOException {
             File welcomeFile = new File(file, welcomeFileName);
             InputStream resourceStream = getResource(welcomeFile);
             return resourceStream == null ? null : read(resourceStream);
         }
 
         @Override
-        protected ByteBuffer directoryListingBytes() throws IOException {
+        protected byte[] directoryListingBytes() throws IOException {
             String subdirectory = file.getPath();
             Iterable<FileEntry> files = ClassloaderResourceHelper.listFilesRelativeToClass(clazz, subdirectory);
             return isDirectory() ? directoryListingFormatter.formatFileListAsHtml(files) : null;
         }
 
-        private ByteBuffer read(InputStream content) throws IOException {
+        private byte[] read(InputStream content) throws IOException {
             try {
                 return read(content.available(), content);
             } catch (NullPointerException happensWhenReadingDirectoryPathInJar) {

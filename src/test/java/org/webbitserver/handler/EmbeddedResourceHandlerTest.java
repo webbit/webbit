@@ -14,6 +14,7 @@ import org.webbitserver.stub.StubHttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
@@ -102,10 +103,14 @@ public class EmbeddedResourceHandlerTest {
     public void canUseTemplateEngine() throws IOException, InterruptedException, ExecutionException {
         handler = new EmbeddedResourceHandler("web", immediateExecutor, getClass(), new TemplateEngine() {
             @Override
-            public ByteBuffer process(int length, InputStream template, String templatePath, Object templateContext) throws IOException {
-                String templateSource = new String(NullEngine.readBytes(length, template), Charset.forName("UTF-8"));
+            public byte[] process(byte[] template, String templatePath, Object templateContext) {
+                String templateSource = new String(template, Charset.forName("UTF-8"));
                 String context = templateContext.toString();
-                return ByteBuffer.wrap((templateSource+context).getBytes("UTF-8"));
+                try {
+                    return (templateSource+context).getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException();
+                }
             }
         });
         webServer.add(new HttpHandler() {

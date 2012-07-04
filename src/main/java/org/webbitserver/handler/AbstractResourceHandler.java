@@ -62,7 +62,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     }
 
     public AbstractResourceHandler(Executor ioThread) {
-        this(ioThread, new NullEngine());
+        this(ioThread, new StaticFile());
     }
 
     public AbstractResourceHandler addMimeType(String extension, String mimeType) {
@@ -78,7 +78,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled) {
         return enableDirectoryListing(isDirectoryListingEnabled, new DefaultDirectoryListingFormatter());
     }
-    
+
     public AbstractResourceHandler enableDirectoryListing(boolean isDirectoryListingEnabled, DirectoryListingFormatter directoryListingFormatter) {
         this.isDirectoryListingEnabled = isDirectoryListingEnabled;
         this.directoryListingFormatter = directoryListingFormatter;
@@ -86,17 +86,17 @@ public abstract class AbstractResourceHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control)
-            throws Exception {
+    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, final HttpControl control) throws Exception {
         // Switch from web thead to IO thread, so we don't block web server when we access the filesystem.
         ioThread.execute(createIOWorker(request, response, control));
     }
 
     protected void serve(final String mimeType,
-                         final ByteBuffer contents,
+                         final byte[] staticContents,
                          HttpControl control,
                          final HttpResponse response,
-                         final HttpRequest request) {
+                         final HttpRequest request,
+                         final String path) {
         // Switch back from IO thread to web thread.
         control.execute(new Runnable() {
             @Override
@@ -104,10 +104,12 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                 // TODO: Check bytes read match expected encoding of mime-type
                 response.header("Content-Type", mimeType);
 
+                byte[] dynamicContents = templateEngine.process(staticContents, path, request.data(TemplateEngine.TEMPLATE_CONTEXT));
+                ByteBuffer contents = ByteBuffer.wrap(dynamicContents);
+
                 if (maybeServeRange(request, contents, response)) {
                     return;
                 }
-
 
                 // TODO: Don't read all into memory, instead use zero-copy.
                 response.header("Content-Length", contents.remaining())
@@ -224,30 +226,31 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
             // TODO: Cache
             try {
-                ByteBuffer content = null;
+                byte[] content = null;
                 if (!exists()) {
                     notFound();
                     return;
-                } if (isDirectory()) {
+                }
+                if (isDirectory()) {
                     // Assumes if path has been changed since the original request,
                     // its current value with a trailing slash will still resolve properly
                     if (!path.endsWith("/")) {
                         response.status(301).header("Location", path + "/" + extractQuery(pathWithQuery)).end();
                         return;
                     } else if ((content = welcomeBytes()) != null) {
-                        serve(guessMimeType(welcomeFileName), content, control, response, request);
+                        serve(guessMimeType(welcomeFileName), content, control, response, request, path);
                         return;
                     } else if (isDirectoryListingEnabled && (content = directoryListingBytes()) != null) {
-                        serve(guessMimeType(".html"), content, control, response, request);
+                        serve(guessMimeType(".html"), content, control, response, request, path);
                         return;
                     }
                     // TODO: Do something other than 404 if directory listing is disabled
                 } else if ((content = fileBytes()) != null) {
-                    serve(guessMimeType(path), content, control, response, request);
+                    serve(guessMimeType(path), content, control, response, request, path);
                     return;
                 } else if ((content = welcomeBytes()) != null) {
-                  serve(guessMimeType(welcomeFileName), content, control, response, request);
-                  return;
+                    serve(guessMimeType(welcomeFileName), content, control, response, request, path);
+                    return;
                 }
                 notFound();
             } catch (IOException e) {
@@ -259,16 +262,30 @@ public abstract class AbstractResourceHandler implements HttpHandler {
 
         protected abstract boolean isDirectory() throws IOException;
 
-        protected abstract ByteBuffer fileBytes() throws IOException;
+        protected abstract byte[] fileBytes() throws IOException;
 
-        protected abstract ByteBuffer welcomeBytes() throws IOException;
+        protected abstract byte[] welcomeBytes() throws IOException;
 
-        protected abstract ByteBuffer directoryListingBytes() throws IOException;
+        protected abstract byte[] directoryListingBytes() throws IOException;
 
-        protected ByteBuffer read(int length, InputStream in) throws IOException {
-            return templateEngine.process(length, in, path, request.data(TemplateEngine.TEMPLATE_CONTEXT));
+        protected byte[] read(int length, InputStream in) throws IOException {
+            byte[] data = new byte[length];
+            try {
+                int read = 0;
+                while (read < length) {
+                    int more = in.read(data, read, data.length - read);
+                    if (more == -1) {
+                        break;
+                    } else {
+                        read += more;
+                    }
+                }
+            } finally {
+                in.close();
+            }
+            return data;
         }
-        
+
         // TODO: Don't respond with a mime type that violates the request's Accept header
         private String guessMimeType(String path) {
             int lastDot = path.lastIndexOf('.');
