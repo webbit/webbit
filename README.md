@@ -2,7 +2,7 @@
 
 ## Getting it
 
-[Prebuilt JARs are available](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) from the central Maven repository.
+Prebuilt JARs are available from the [central Maven repository](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) or the [Sontatype Maven repository](https://oss.sonatype.org/content/repositories/releases/org/webbitserver/webbit/).
 
 Alternatively, you can get the latest code from Git and build it yourself:
 
