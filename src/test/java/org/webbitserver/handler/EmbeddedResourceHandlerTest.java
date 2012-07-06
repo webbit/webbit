@@ -3,12 +3,20 @@ package org.webbitserver.handler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
 import org.webbitserver.WebServer;
 import org.webbitserver.stub.StubHttpControl;
 import org.webbitserver.stub.StubHttpRequest;
 import org.webbitserver.stub.StubHttpResponse;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -26,10 +34,11 @@ import static org.webbitserver.testutil.HttpClient.httpGet;
 public class EmbeddedResourceHandlerTest {
     private WebServer webServer = createWebServer(59504);
     private AbstractResourceHandler handler;
+    private Executor immediateExecutor;
 
     @Before
     public void createHandler() {
-        Executor immediateExecutor = new Executor() {
+        immediateExecutor = new Executor() {
             @Override
             public void execute(Runnable command) {
                 command.run();
@@ -88,6 +97,31 @@ public class EmbeddedResourceHandlerTest {
         webServer.add(handler).start().get();
         assertEquals("Hello world", contents(httpGet(webServer, "/index.html")));
         assertEquals("Hello world", contents(httpGet(webServer, "/index.html?x=y")));
+    }
+
+    @Test
+    public void canUseTemplateEngine() throws IOException, InterruptedException, ExecutionException {
+        handler = new EmbeddedResourceHandler("web", immediateExecutor, getClass(), new TemplateEngine() {
+            @Override
+            public byte[] process(byte[] template, String templatePath, Object templateContext) {
+                String templateSource = new String(template, Charset.forName("UTF-8"));
+                String context = templateContext.toString();
+                try {
+                    return (templateSource+context).getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException();
+                }
+            }
+        });
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                request.data(TemplateEngine.TEMPLATE_CONTEXT, "THE CONTEXT");
+                control.nextHandler();
+            }
+        });
+        webServer.add(handler).start().get();
+        assertEquals("Hello worldTHE CONTEXT", contents(httpGet(webServer, "/index.html")));
     }
 
     @Test

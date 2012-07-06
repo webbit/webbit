@@ -8,7 +8,6 @@ import org.webbitserver.helpers.ClassloaderResourceHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -17,17 +16,33 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
     private final File dir;
 
-    public StaticFileHandler(File dir, Executor ioThread) {
-        super(ioThread);
+    public StaticFileHandler(File dir, Executor ioThread, TemplateEngine templateEngine) {
+        super(ioThread, templateEngine);
         this.dir = dir;
     }
 
+    public StaticFileHandler(File dir, Executor ioThread) {
+        this(dir, ioThread, new StaticFile());
+    }
+
+    public StaticFileHandler(String dir, Executor ioThread, TemplateEngine templateEngine) {
+        this(new File(dir), ioThread, templateEngine);
+    }
+
     public StaticFileHandler(String dir, Executor ioThread) {
-        this(new File(dir), ioThread);
+        this(dir, ioThread, new StaticFile());
+    }
+
+    public StaticFileHandler(File dir, TemplateEngine templateEngine) {
+        this(dir, newFixedThreadPool(4), templateEngine);
     }
 
     public StaticFileHandler(File dir) {
-        this(dir, newFixedThreadPool(4));
+        this(dir, new StaticFile());
+    }
+
+    public StaticFileHandler(String dir, TemplateEngine templateEngine) {
+        this(new File(dir), templateEngine);
     }
 
     public StaticFileHandler(String dir) {
@@ -35,10 +50,10 @@ public class StaticFileHandler extends AbstractResourceHandler {
     }
 
     @Override
-    protected StaticFileHandler.IOWorker createIOWorker(HttpRequest request,
+    protected FileWorker createIOWorker(HttpRequest request,
                                                         HttpResponse response,
                                                         HttpControl control) {
-        return new StaticFileHandler.FileWorker(request, response, control);
+        return new FileWorker(request, response, control);
     }
 
     protected class FileWorker extends IOWorker {
@@ -61,18 +76,18 @@ public class StaticFileHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer fileBytes() throws IOException {
+        protected byte[] fileBytes() throws IOException {
             return file.isFile() ? read(file) : null;
         }
 
         @Override
-        protected ByteBuffer welcomeBytes() throws IOException {
+        protected byte[] welcomeBytes() throws IOException {
             File welcome = new File(file, welcomeFileName);
             return welcome.isFile() ? read(welcome) : null;
         }
 
         @Override
-        protected ByteBuffer directoryListingBytes() throws IOException {
+        protected byte[] directoryListingBytes() throws IOException {
             if (!isDirectory()) {
                 return null;
             }
@@ -80,7 +95,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
             return directoryListingFormatter.formatFileListAsHtml(files);
         }
 
-        private ByteBuffer read(File file) throws IOException {
+        private byte[] read(File file) throws IOException {
             return read((int) file.length(), new FileInputStream(file));
         }
 

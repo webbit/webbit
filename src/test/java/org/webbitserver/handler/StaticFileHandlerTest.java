@@ -186,8 +186,8 @@ public class StaticFileHandlerTest {
         mkdir("a");
         handler.enableDirectoryListing(true, new DirectoryListingFormatter() {
             @Override
-            public ByteBuffer formatFileListAsHtml(Iterable<FileEntry> files) throws IOException {
-                return ByteBuffer.wrap("Monkeys".getBytes());
+            public byte[] formatFileListAsHtml(Iterable<FileEntry> files) throws IOException {
+                return "Monkeys".getBytes("UTF-8");
             }
         });
         assertReturnedWithStatusAndContainsContent(200, "Monkeys", handle(request("/a/")));

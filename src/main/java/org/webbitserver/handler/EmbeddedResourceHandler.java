@@ -19,18 +19,34 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     private final File root;
     private Class<?> clazz;
 
-    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
-        super(ioThread);
+    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz, TemplateEngine templateEngine) {
+        super(ioThread, templateEngine);
         this.root = new File(root);
         this.clazz = clazz;
+    }
+
+    public EmbeddedResourceHandler(String root, Executor ioThread, Class<?> clazz) {
+        this(root, ioThread, clazz, new StaticFile());
+    }
+
+    public EmbeddedResourceHandler(String root, Executor ioThread, TemplateEngine templateEngine) {
+        this(root, ioThread, EmbeddedResourceHandler.class, templateEngine);
     }
 
     public EmbeddedResourceHandler(String root, Executor ioThread) {
         this(root, ioThread, EmbeddedResourceHandler.class);
     }
 
+    public EmbeddedResourceHandler(String root, Class<?> clazz, TemplateEngine templateEngine) {
+        this(root, newFixedThreadPool(4), clazz, templateEngine);
+    }
+
     public EmbeddedResourceHandler(String root, Class<?> clazz) {
         this(root, newFixedThreadPool(4), clazz);
+    }
+
+    public EmbeddedResourceHandler(String root, TemplateEngine templateEngine) {
+        this(root, EmbeddedResourceHandler.class, templateEngine);
     }
 
     public EmbeddedResourceHandler(String root) {
@@ -38,7 +54,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    protected IOWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
+    protected ResourceWorker createIOWorker(HttpRequest request, HttpResponse response, HttpControl control) {
         return new ResourceWorker(request, response, control);
     }
 
@@ -67,7 +83,7 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer fileBytes() throws IOException {
+        protected byte[] fileBytes() throws IOException {
             if (resource == null || isDirectory()) {
                 return null;
             } else {
@@ -76,19 +92,20 @@ public class EmbeddedResourceHandler extends AbstractResourceHandler {
         }
 
         @Override
-        protected ByteBuffer welcomeBytes() throws IOException {
-            InputStream resourceStream = getResource(new File(file, welcomeFileName));
+        protected byte[] welcomeBytes() throws IOException {
+            File welcomeFile = new File(file, welcomeFileName);
+            InputStream resourceStream = getResource(welcomeFile);
             return resourceStream == null ? null : read(resourceStream);
         }
 
         @Override
-        protected ByteBuffer directoryListingBytes() throws IOException {
+        protected byte[] directoryListingBytes() throws IOException {
             String subdirectory = file.getPath();
             Iterable<FileEntry> files = ClassloaderResourceHelper.listFilesRelativeToClass(clazz, subdirectory);
             return isDirectory() ? directoryListingFormatter.formatFileListAsHtml(files) : null;
         }
 
-        private ByteBuffer read(InputStream content) throws IOException {
+        private byte[] read(InputStream content) throws IOException {
             try {
                 return read(content.available(), content);
             } catch (NullPointerException happensWhenReadingDirectoryPathInJar) {
