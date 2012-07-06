@@ -1,3 +1,21 @@
+0.4.12 (2012-07-06)
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.11...v0.4.12)
+
+This release adds an API to plug in an arbitrary template engine (such as mustache, freemarker etc) into Webbit.
+This is done via `EmbeddedResourceHandler` or `StaticFileHandler`'s constructor, which now accepts an additional
+`TemplateEngine` argument.
+
+Webbit itself only provides a default implementation of `TemplateEngine` - a `StaticFile` which does nothing - it just
+passes the bytes straight through. The files are read on the `EmbeddedResourceHandler`/`StaticFileHandler`'s IO thread
+and the template is rendered on the main thread. If you use this feature it is important that rendering your template
+does *not* block the main thread. (For example, passing an active record style object to a template is likely to take blocking trips
+to a database).
+
+The [webbit-rest](https://github.com/webbit/webbit-rest) library uses this new API and comes with a built-in engine for
+[JMustache](https://github.com/samskivert/jmustache).
+
 0.4.11 (2012-06-27)
 ==================
 
