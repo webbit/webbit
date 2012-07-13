@@ -1,7 +1,7 @@
-Git master
+0.4.13 (2012-07-13)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.12...master)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.12...v0.4.13)
 
 * Upgraded to io.netty:netty:3.5.1.Final ([#97](https://github.com/webbit/webbit/issues/97) Aslak Hellesøy)
 
