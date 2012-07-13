@@ -1,3 +1,10 @@
+0.4.14 (2012-07-13)
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.13...v0.4.14)
+
+* Upgraded to io.netty:netty:3.5.2.Final, fixing corrupt POST data ([#99](https://github.com/webbit/webbit/pull/99) Norman Maurer)
+
 0.4.13 (2012-07-13)
 ==================
 
