@@ -1,5 +1,6 @@
 package org.webbitserver.netty;
 
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
@@ -137,7 +138,10 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public byte[] bodyAsBytes() {
-        return httpRequest.getContent().array();
+        ChannelBuffer buffer = httpRequest.getContent();
+        byte[] body = new byte[buffer.readableBytes()];
+        buffer.getBytes(buffer.readerIndex(), body);
+        return body;
     }
 
     @Override
