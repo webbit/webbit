@@ -1,6 +1,7 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.webbitserver.HttpConnection;
@@ -20,8 +21,8 @@ public abstract class AbstractHttpConnection implements HttpConnection {
         this.executor = executor;
     }
 
-    protected void writeMessage(Object message) {
-        ctx.getChannel().write(message);
+    protected ChannelFuture writeMessage(Object message) {
+        return ctx.getChannel().write(message);
     }
 
     protected void closeChannel() {

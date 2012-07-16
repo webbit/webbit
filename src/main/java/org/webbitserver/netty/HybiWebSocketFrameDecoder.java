@@ -3,6 +3,7 @@ package org.webbitserver.netty;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
@@ -58,7 +59,7 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
     }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
+    protected Object decode(ChannelHandlerContext ctx, final Channel channel, ChannelBuffer buffer, State state) throws Exception {
         switch (state) {
             case FRAME_START: {
                 inboundMaskingKey = null;
@@ -166,8 +167,12 @@ public class HybiWebSocketFrameDecoder extends ReplayingDecoder<HybiWebSocketFra
 
                 if (frameOpcode == OPCODE_CLOSE) {
                     EncodingHybiFrame close = new EncodingHybiFrame(OPCODE_CLOSE, true, 0, outboundMaskingKey, ChannelBuffers.buffer(0));
-                    channel.write(close);
-                    channel.close();
+                    channel.write(close).addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                            channel.close();
+                        }
+                    });
                     return null;
                 } else if (frameOpcode == OPCODE_CONT) {
                     try {

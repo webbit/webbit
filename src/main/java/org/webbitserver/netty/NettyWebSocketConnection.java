@@ -1,6 +1,8 @@
 package org.webbitserver.netty;
 
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
@@ -54,7 +56,16 @@ public class NettyWebSocketConnection extends AbstractHttpConnection implements 
 
     @Override
     public NettyWebSocketConnection close() {
-        closeChannel();
+        if (hybi) {
+            writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_CLOSE, true, 0, outboundMaskingKey, ChannelBuffers.buffer(0))).addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    closeChannel();
+                }
+            });
+        } else {
+            closeChannel();
+        }
         return this;
     }
 

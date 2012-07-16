@@ -1,3 +1,10 @@
+Git master
+==================
+
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
+
+* Write a close frame before closing the socket when a WebSocket connection is closed (Aslak Hellesøy)
+
 0.4.14 (2012-07-13)
 ==================
 
