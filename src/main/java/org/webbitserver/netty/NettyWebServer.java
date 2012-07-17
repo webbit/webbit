@@ -72,7 +72,7 @@ public class NettyWebServer implements WebServer {
     private int maxContentLength = 65536;
 
     public NettyWebServer(int port) {
-        this(Executors.newSingleThreadScheduledExecutor(), port);
+        this(Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory("WEBBIT-HANDLER-THREAD")), port);
     }
 
     private NettyWebServer(ExecutorService executorService, int port) {
