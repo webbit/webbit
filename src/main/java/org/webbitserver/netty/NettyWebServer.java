@@ -245,24 +245,18 @@ public class NettyWebServer implements WebServer {
                 if (bootstrap != null) {
                     bootstrap.releaseExternalResources();
                 }
-                
+
                 // shut down all services & give them a chance to terminate
                 for (ExecutorService executorService : executorServices) {
-                    executorService.shutdown();
+                    shutdownAndAwaitTermination(executorService);
                 }
-                
+
                 bootstrap = null;
 
                 if (channel != null) {
                     channel.getCloseFuture().await();
                 }
-                
-                // try best-effort to leave no resources running
-                for (ExecutorService executorService : executorServices) {
-                    boolean shutdown = executorService.awaitTermination(5, TimeUnit.SECONDS);
-                    // fail in tests only 
-                    assert shutdown : "Could not shut down ExecutorService - took more than 5 seconds to terminate";    
-                }
+
                 return NettyWebServer.this;
             }
         });
@@ -271,6 +265,26 @@ public class NettyWebServer implements WebServer {
         final Thread thread = new Thread(future, "WEBBIT-SHUTDOW-THREAD");
         thread.start();
         return future;
+    }
+
+    // See JavaDoc for ExecutorService
+    private void shutdownAndAwaitTermination(ExecutorService executorService) {
+        executorService.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                    System.err.println("ExecutorService did not terminate");
+                }
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executorService.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -322,7 +336,7 @@ public class NettyWebServer implements WebServer {
             return URI.create("http://" + InetAddress.getLocalHost()
                     .getHostName() + (port == 80 ? "" : (":" + port)) + "/");
         } catch (UnknownHostException e) {
-          throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
+            throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
         }
     }
 
@@ -333,5 +347,5 @@ public class NettyWebServer implements WebServer {
     protected Object nextId() {
         return nextId++;
     }
-    
+
 }
