@@ -103,7 +103,7 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     private QueryParameters parsedQueryParams() {
         if (queryParameters == null) {
-            queryParameters = new QueryParameters(URI.create(uri()).getQuery());
+            queryParameters = new QueryParameters(URI.create(uri()).getRawQuery());
         }
         return queryParameters;
     }
