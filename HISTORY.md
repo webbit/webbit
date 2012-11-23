@@ -337,6 +337,8 @@ As of this release, both `WebServer.start()` and `WebServer.stop()` are asynchro
 0.1.11 (2011-03-30)
 ==================
 
+[Full changelog](https://github.com/webbit/webbit/compare/v0.1.10...v0.1.11)
+
 * Fixed a bug where static (embedded) resources were served improperly if they were of a certain size (Aslak Hellesøy)
 
 0.1.10 (2011-03-30)
