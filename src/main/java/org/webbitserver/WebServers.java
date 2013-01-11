@@ -24,7 +24,8 @@ public class WebServers {
      * and adds the executor to the List of executor services to be called when
      * the server is running.
      *
-     * @param executor
+     * @param executor Since Webbit is designed to be a single threaded non-blocking server,<br />
+     * it is assumed that the user supplied executor will provide only a single thread.
      * @param port
      * @return {@link WebServer} object
      * @see NettyWebServer
@@ -38,7 +39,8 @@ public class WebServers {
      * of executor services, running on the stated socket address and accessible
      * from the provided public URI.
      *
-     * @param executor
+     * @param executor Since Webbit is designed to be a single threaded non-blocking server,<br />
+     * it is assumed that the user supplied executor will provide only a single thread.
      * @param socketAddress
      * @param publicUri
      * @return {@link WebServer} object
