@@ -1,11 +1,19 @@
 // Copyright: Hiroshi Ichikawa <http://gimite.net/en/>
 // License: New BSD License
 // Reference: http://dev.w3.org/html5/websockets/
-// Reference: http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol
+// Reference: http://tools.ietf.org/html/rfc6455
 
 (function() {
   
-  if (window.WebSocket && !window.WEB_SOCKET_FORCE_FLASH) return;
+  if (window.WEB_SOCKET_FORCE_FLASH) {
+    // Keeps going.
+  } else if (window.WebSocket) {
+    return;
+  } else if (window.MozWebSocket) {
+    // Firefox.
+    window.WebSocket = MozWebSocket;
+    return;
+  }
   
   var logger;
   if (window.WEB_SOCKET_LOGGER) {
@@ -30,14 +38,14 @@
   }
 
   /**
-   * This class represents a faux web socket.
+   * Our own implementation of WebSocket class using Flash.
    * @param {string} url
    * @param {array or string} protocols
    * @param {string} proxyHost
    * @param {int} proxyPort
    * @param {string} headers
    */
-  WebSocket = function(url, protocols, proxyHost, proxyPort, headers) {
+  window.WebSocket = function(url, protocols, proxyHost, proxyPort, headers) {
     var self = this;
     self.__id = WebSocket.__nextId++;
     WebSocket.__instances[self.__id] = self;
@@ -91,10 +99,10 @@
    */
   WebSocket.prototype.close = function() {
     if (this.__createTask) {
-        clearTimeout(this.__createTask);
-        this.__createTask = null;
-        this.readyState = WebSocket.CLOSED;
-        return;
+      clearTimeout(this.__createTask);
+      this.__createTask = null;
+      this.readyState = WebSocket.CLOSED;
+      return;
     }
     if (this.readyState == WebSocket.CLOSED || this.readyState == WebSocket.CLOSING) {
       return;
@@ -157,6 +165,7 @@
    * @param {Object} flashEvent
    */
   WebSocket.prototype.__handleEvent = function(flashEvent) {
+    
     if ("readyState" in flashEvent) {
       this.readyState = flashEvent.readyState;
     }
@@ -168,8 +177,10 @@
     if (flashEvent.type == "open" || flashEvent.type == "error") {
       jsEvent = this.__createSimpleEvent(flashEvent.type);
     } else if (flashEvent.type == "close") {
-      // TODO implement jsEvent.wasClean
       jsEvent = this.__createSimpleEvent("close");
+      jsEvent.wasClean = flashEvent.wasClean ? true : false;
+      jsEvent.code = flashEvent.code;
+      jsEvent.reason = flashEvent.reason;
     } else if (flashEvent.type == "message") {
       var data = decodeURIComponent(flashEvent.message);
       jsEvent = this.__createMessageEvent("message", data);
@@ -178,6 +189,7 @@
     }
     
     this.dispatchEvent(jsEvent);
+    
   };
   
   WebSocket.prototype.__createSimpleEvent = function(type) {
@@ -209,6 +221,9 @@
   WebSocket.CLOSING = 2;
   WebSocket.CLOSED = 3;
 
+  // Field to check implementation of WebSocket.
+  WebSocket.__isFlashImplementation = true;
+  WebSocket.__initialized = false;
   WebSocket.__flash = null;
   WebSocket.__instances = {};
   WebSocket.__tasks = [];
@@ -228,7 +243,9 @@
    * Loads WebSocketMain.swf and creates WebSocketMain object in Flash.
    */
   WebSocket.__initialize = function() {
-    if (WebSocket.__flash) return;
+    
+    if (WebSocket.__initialized) return;
+    WebSocket.__initialized = true;
     
     if (WebSocket.__swfLocation) {
       // For backword compatibility.
@@ -286,7 +303,9 @@
         if (!e.success) {
           logger.error("[WebSocket] swfobject.embedSWF failed");
         }
-      });
+      }
+    );
+    
   };
   
   /**
@@ -361,15 +380,12 @@
   };
   
   if (!window.WEB_SOCKET_DISABLE_AUTO_INITIALIZATION) {
-    if (window.addEventListener) {
-      window.addEventListener("load", function(){
-        WebSocket.__initialize();
-      }, false);
-    } else {
-      window.attachEvent("onload", function(){
-        WebSocket.__initialize();
-      });
-    }
+    // NOTE:
+    //   This fires immediately if web_socket.js is dynamically loaded after
+    //   the document is loaded.
+    swfobject.addDomLoadEvent(function() {
+      WebSocket.__initialize();
+    });
   }
   
 })();
