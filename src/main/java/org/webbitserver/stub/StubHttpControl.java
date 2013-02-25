@@ -5,6 +5,7 @@ import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.HttpListener;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 
@@ -34,6 +35,7 @@ public class StubHttpControl implements HttpControl {
         this.response = response;
         this.webSocketConnection = connection;
     }
+  
 
     public HttpRequest request() {
         return request;
@@ -61,6 +63,10 @@ public class StubHttpControl implements HttpControl {
     @Override
     public void nextHandler(HttpRequest request, HttpResponse response) {
         nextHandler(request, response, this);
+    }
+    @Override
+    public void listener(HttpListener listener) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
