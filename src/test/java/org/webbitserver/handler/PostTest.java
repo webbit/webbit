@@ -82,7 +82,7 @@ public class PostTest {
     }
 
     @Test
-    public void request_body_longer_than_max_content_length_causes_500() throws IOException, ExecutionException, InterruptedException {
+    public void request_body_longer_than_max_content_length_causes_500_and_does_not_invoke_handlers() throws IOException, ExecutionException, InterruptedException {
         webServer.connectionExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
@@ -96,7 +96,7 @@ public class PostTest {
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-                response.content("length:" + request.bodyAsBytes().length).end();
+                response.error(new RuntimeException("Should never get here"));
             }
         }).start().get();
         StringBuilder body = new StringBuilder();

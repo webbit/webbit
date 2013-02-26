@@ -25,7 +25,6 @@ import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
 
 public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
-    private static final Object FLUSHED = new Object();
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
     private final ChannelHandlerContext ctx;
     private final HttpResponse response;
@@ -159,9 +158,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     private void flushResponse() {
-        if(ctx.getAttachment() == FLUSHED) {
-            return;
-        }
         try {
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", (String) null);
@@ -170,7 +166,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
-            ctx.setAttachment(FLUSHED);
+//            ctx.setAttachment(FLUSHED);
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(),
                     WebbitException.fromException(e, ctx.getChannel()));
