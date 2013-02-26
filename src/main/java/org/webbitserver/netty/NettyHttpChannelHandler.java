@@ -10,11 +10,13 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebbitException;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
@@ -59,10 +61,12 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     private void handleHttpRequest(final ChannelHandlerContext ctx, MessageEvent messageEvent, HttpRequest httpRequest) {
         final NettyHttpRequest nettyHttpRequest = new NettyHttpRequest(messageEvent, httpRequest, id, timestamp);
+        DefaultHttpResponse ok_200 = new DefaultHttpResponse(HTTP_1_1, OK);
         final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(
-                ctx, new DefaultHttpResponse(HTTP_1_1, OK), isKeepAlive(httpRequest), exceptionHandler);
-        final HttpControl control = new NettyHttpControl(httpHandlers.iterator(), executor, ctx,
-                nettyHttpRequest, nettyHttpResponse, httpRequest, new DefaultHttpResponse(HTTP_1_1, OK),
+                ctx, ok_200, isKeepAlive(httpRequest), exceptionHandler);
+        Iterator<HttpHandler> httpHandlers = this.httpHandlers.iterator();
+        final HttpControl control = new NettyHttpControl(httpHandlers, executor, ctx,
+                nettyHttpRequest, nettyHttpResponse, httpRequest, ok_200,
                 exceptionHandler, ioExceptionHandler);
 
         executor.execute(new Runnable() {
@@ -78,8 +82,19 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, final ExceptionEvent e) {
+    public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         connectionHelper.fireConnectionException(e);
+        final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    nettyHttpResponse.error(e.getCause());
+                } catch (Exception exception) {
+                    exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(exception, ctx.getChannel()));
+                }
+            }
+        });
     }
 
 }
