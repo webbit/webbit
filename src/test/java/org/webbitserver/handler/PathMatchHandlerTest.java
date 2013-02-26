@@ -41,6 +41,19 @@ public class PathMatchHandlerTest {
     }
 
     @Test
+    public void matchesRequestWithRegexpPath() throws Exception {
+        HttpHandler handler = mock(HttpHandler.class);
+        PathMatchHandler pmh = new PathMatchHandler("/hello/.*", handler);
+
+        HttpRequest req = new StubHttpRequest("/hello/world");
+        HttpResponse res = new StubHttpResponse();
+        HttpControl ctl = new StubHttpControl();
+
+        pmh.handleHttpRequest(req, res, ctl);
+        verify(handler).handleHttpRequest(req, res, ctl);
+    }
+
+    @Test
     public void handsOffWhenNoMatch() throws Exception {
         HttpHandler handler = mock(HttpHandler.class);
         PathMatchHandler pmh = new PathMatchHandler("/hello", handler);
