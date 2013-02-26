@@ -76,4 +76,20 @@ public class PostTest {
         String result = contents(httpPost(webServer, "/", new String(byteArray)));
         assertEquals(Arrays.toString(byteArray), result);
     }
+
+    @Test
+    public void canPostBiggerThan64kBody() throws IOException, ExecutionException, InterruptedException {
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                response.content("length:" + request.bodyAsBytes().length).end();
+            }
+        }).start().get();
+        StringBuilder body = new StringBuilder();
+        for (int i = 0; i < 65537; i++) {
+            body.append(".");
+        }
+        String result = contents(httpPost(webServer, "/", body.toString()));
+        assertEquals("length:65537", result);
+    }
 }
