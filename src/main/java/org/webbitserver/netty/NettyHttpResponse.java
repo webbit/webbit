@@ -127,7 +127,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse error(Throwable error) {
-        if(error instanceof TooLongFrameException) {
+        if (error instanceof TooLongFrameException) {
             response.setStatus(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE);
         } else {
             response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -166,7 +166,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
-//            ctx.setAttachment(FLUSHED);
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(),
                     WebbitException.fromException(e, ctx.getChannel()));
