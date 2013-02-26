@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
+    private static final Object IGNORE_REQUEST = new Object();
 
     private final Executor executor;
     private final List<HttpHandler> httpHandlers;
@@ -52,7 +53,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, MessageEvent messageEvent) throws Exception {
-        if (messageEvent.getMessage() instanceof HttpRequest) {
+        if (messageEvent.getMessage() instanceof HttpRequest && ctx.getAttachment() != IGNORE_REQUEST) {
             handleHttpRequest(ctx, messageEvent, (HttpRequest) messageEvent.getMessage());
         } else {
             super.messageReceived(ctx, messageEvent);
@@ -89,6 +90,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             @Override
             public void run() {
                 try {
+                    ctx.setAttachment(IGNORE_REQUEST);
                     nettyHttpResponse.error(e.getCause());
                 } catch (Exception exception) {
                     exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(exception, ctx.getChannel()));
