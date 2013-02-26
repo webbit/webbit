@@ -5,6 +5,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -24,8 +25,8 @@ import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
 
 public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
+    private static final Object FLUSHED = new Object();
     private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
-
     private final ChannelHandlerContext ctx;
     private final HttpResponse response;
     private final boolean isKeepAlive;
@@ -127,7 +128,11 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse error(Throwable error) {
-        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        if(error instanceof TooLongFrameException) {
+            response.setStatus(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE);
+        } else {
+            response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        }
         String message = getStackTrace(error);
         header("Content-Type", "text/plain");
         content(message);
@@ -154,6 +159,9 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     private void flushResponse() {
+        if(ctx.getAttachment() == FLUSHED) {
+            return;
+        }
         try {
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", (String) null);
@@ -162,6 +170,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }
+            ctx.setAttachment(FLUSHED);
         } catch (Exception e) {
             exceptionHandler.uncaughtException(Thread.currentThread(),
                     WebbitException.fromException(e, ctx.getChannel()));

@@ -2,22 +2,27 @@ package org.webbitserver.handler;
 
 import org.junit.After;
 import org.junit.Test;
-import org.webbitserver.*;
+import org.webbitserver.HttpControl;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
+import org.webbitserver.netty.NettyWebServer;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
-import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpPost;
 
 public class PostTest {
 
-    private WebServer webServer = createWebServer(59504);
+    private NettyWebServer webServer = new NettyWebServer(59504);
 
     @After
     public void die() throws InterruptedException, ExecutionException {
@@ -48,7 +53,6 @@ public class PostTest {
         assertEquals("a=hello world, b=foo", result);
     }
 
-
     @Test
     public void exposesPostParamKeys() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
@@ -72,13 +76,23 @@ public class PostTest {
                 response.content(Arrays.toString(request.bodyAsBytes())).end();
             }
         }).start().get();
-        byte[] byteArray = new byte[] {87, 79, 87, 46, 46, 46};
+        byte[] byteArray = new byte[]{87, 79, 87, 46, 46, 46};
         String result = contents(httpPost(webServer, "/", new String(byteArray)));
         assertEquals(Arrays.toString(byteArray), result);
     }
 
     @Test
-    public void canPostBiggerThan64kBody() throws IOException, ExecutionException, InterruptedException {
+    public void request_body_longer_than_max_content_length_causes_500() throws IOException, ExecutionException, InterruptedException {
+        webServer.connectionExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+            }
+        });
+        webServer.uncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+            }
+        });
         webServer.add(new HttpHandler() {
             @Override
             public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
@@ -89,7 +103,28 @@ public class PostTest {
         for (int i = 0; i < 65537; i++) {
             body.append(".");
         }
-        String result = contents(httpPost(webServer, "/", body.toString()));
+        URLConnection urlConnection = httpPost(webServer, "/", body.toString());
+        HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+        assertEquals(413, httpURLConnection.getResponseCode());
+    }
+
+    @Test
+    public void max_content_length_can_be_increased() throws IOException, ExecutionException, InterruptedException {
+        webServer.maxContentLength(65537);
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                response.content("length:" + request.bodyAsBytes().length).end();
+            }
+        }).start().get();
+        StringBuilder body = new StringBuilder();
+        for (int i = 0; i < 65537; i++) {
+            body.append(".");
+        }
+        URLConnection urlConnection = httpPost(webServer, "/", body.toString());
+        String result = contents(urlConnection);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+        assertEquals(200, httpURLConnection.getResponseCode());
         assertEquals("length:65537", result);
     }
 }

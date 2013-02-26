@@ -3,6 +3,7 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
 
+* HTTP requests with body larger than max content length (default is 64Kb) now fail with 413 Request Entity too large (Aslak Hellesøy)
 * Trying a little harder to shut down all threads on `WebServer#stop()` (Aslak Hellesøy)
 * Write a close frame before closing the socket when a WebSocket connection is closed (Aslak Hellesøy)
 

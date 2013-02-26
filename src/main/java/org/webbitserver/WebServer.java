@@ -109,7 +109,6 @@ public interface WebServer extends Endpoint<WebServer> {
      * @return current WebServer instance
      * @throws org.webbitserver.WebbitException
      *          A problem loading the keystore
-     * @see #setupSsl(String, String, String)
      */
     WebServer setupSsl(InputStream keyStore, String storePass, String keyPass) throws WebbitException;
 }
