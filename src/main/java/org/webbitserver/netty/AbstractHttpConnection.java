@@ -22,7 +22,9 @@ public abstract class AbstractHttpConnection implements HttpConnection {
     }
 
     protected ChannelFuture writeMessage(Object message) {
-        return ctx.getChannel().write(message);
+        final ChannelFuture write = ctx.getChannel().write(message);
+        write.addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+        return write;
     }
 
     protected void closeChannel() {
