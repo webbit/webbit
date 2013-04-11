@@ -52,20 +52,12 @@ import static org.jboss.netty.channel.Channels.pipeline;
 public class WebSocketClient implements WebSocket {
     private static final int VERSION = 13;
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private static final MessageDigest SHA_1;
-
-    static {
-        try {
-            SHA_1 = MessageDigest.getInstance("SHA1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new InternalError("SHA-1 not supported on this platform");
-        }
-    }
 
     private static long nextId = 1;
 
     private final URI uri;
     private final Executor executor;
+    private final MessageDigest sha1;
     private final InetSocketAddress remoteAddress;
     private final boolean ssl;
     private final List<HttpCookie> cookies = new ArrayList<HttpCookie>();
@@ -88,6 +80,12 @@ public class WebSocketClient implements WebSocket {
         this.uri = uri;
         this.webSocketHandler = webSocketHandler;
         this.executor = executor;
+
+        try {
+            sha1 = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("SHA-1 not supported on this platform");
+        }
 
         String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
         String host = uri.getHost() == null ? "localhost" : uri.getHost();
@@ -288,10 +286,10 @@ public class WebSocketClient implements WebSocket {
 
         private void verifySecWebSocketAccept(String webSocketAccept) {
             if (webSocketAccept != null) {
-                SHA_1.reset();
-                SHA_1.update(base64Nonce.getBytes());
-                SHA_1.update(ACCEPT_GUID.getBytes());
-                String expectedKey = Base64.encode(SHA_1.digest());
+                sha1.reset();
+                sha1.update(base64Nonce.getBytes());
+                sha1.update(ACCEPT_GUID.getBytes());
+                String expectedKey = Base64.encode(sha1.digest());
                 if (!webSocketAccept.equals(expectedKey)) {
                     throw new WebbitException("Sec-WebSocket-Accept header from server didn't match expected value of " + expectedKey);
                 }
