@@ -27,7 +27,9 @@ public class NettyWebServerTest {
 
     @After
     public void stopServer() throws ExecutionException, InterruptedException {
-        server.stop().get();
+        if (server != null) {
+            server.stop().get();
+        }
     }
 
     @Test
