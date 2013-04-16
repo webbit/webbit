@@ -1,3 +1,0 @@
-[submodule "src/test/Autobahn"]
-	path = src/test/Autobahn
-	url = git://github.com/oberstet/Autobahn.git
