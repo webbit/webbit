@@ -1,5 +1,8 @@
 package org.webbitserver.handler;
 
+import org.jboss.netty.handler.codec.http.Cookie;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.junit.After;
 import org.junit.Test;
 import org.webbitserver.HttpControl;
@@ -22,9 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
-import org.jboss.netty.handler.codec.http.CookieEncoder;
-import org.jboss.netty.handler.codec.http.DefaultCookie;
-import org.jboss.netty.handler.codec.http.Cookie;
 
 public class CookieTest {
     private WebServer webServer = createWebServer(59504);
@@ -102,7 +102,8 @@ public class CookieTest {
         urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "d").toString() + "; " + new HttpCookie("e", "f").toString());
         assertEquals("Your cookies: a=b c=d e=f", contents(urlConnection));
     }
-       @Test
+
+    @Test
     public void parsesCookiesWithExtraAttributes() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
@@ -111,8 +112,8 @@ public class CookieTest {
                 List<HttpCookie> cookies = sort(request.cookies());
                 for (HttpCookie cookie : cookies) {
                     String path = "";
-                    if (cookie.getPath() != null) path = "; path:"+ cookie.getPath();
-                    body += " " + cookie.getName() + "=" + cookie.getValue()+"; age:" +cookie.getMaxAge() +"; secure:"+cookie.getSecure()+ path + "|";
+                    if (cookie.getPath() != null) path = "; path:" + cookie.getPath();
+                    body += " " + cookie.getName() + "=" + cookie.getValue() + "; age:" + cookie.getMaxAge() + "; secure:" + cookie.getSecure() + path + "|";
                 }
                 response.header("Content-Length", body.length())
                         .content(body)
@@ -127,7 +128,8 @@ public class CookieTest {
         CookieEncoder e = new CookieEncoder(true);
         e.addCookie(t);
         urlConnection.addRequestProperty("Cookie", e.encode());
-        urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "d").toString() + "; " + new HttpCookie("e", "f").toString());
+        String s = new HttpCookie("c", "d").toString();
+        urlConnection.addRequestProperty("Cookie", s + "; " + new HttpCookie("e", "f").toString());
         assertEquals("Your cookies: a=b; age:5000; secure:true; path:/path| c=d; age:-1; secure:false| e=f; age:-1; secure:false|", contents(urlConnection));
     }
 
