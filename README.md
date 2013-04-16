@@ -1,5 +1,7 @@
 # Webbit - A Java event based WebSocket and HTTP server
 
+[![Build Status](https://secure.travis-ci.org/webbit/webbit.png)](http://travis-ci.org/webbit/webbit)
+
 ## Getting it
 
 Prebuilt JARs are available from the [central Maven repository](http://search.maven.org/#search%7Cga%7C1%7Cwebbit) or the [Sonatype Maven repository](https://oss.sonatype.org/content/repositories/releases/org/webbitserver/webbit/).
