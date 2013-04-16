@@ -18,6 +18,8 @@ public class Hybi implements WebSocketVersion {
     public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
     public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
     public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
+    public static final String SEC_WEBSOCKET_PROTOCOL = "Sec-WebSocket-Protocol";
+
     private static final Charset ASCII = Charset.forName("ASCII");
     private static final String ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final int MIN_HYBI_VERSION = 8;
@@ -66,6 +68,11 @@ public class Hybi implements WebSocketVersion {
         res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
         res.addHeader(CONNECTION, UPGRADE);
         res.addHeader(SEC_WEBSOCKET_ACCEPT, accept);
+
+        String webSocketProtocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
+        if (webSocketProtocol != null) {
+            res.addHeader(SEC_WEBSOCKET_PROTOCOL, webSocketProtocol);
+        }
     }
 
     @Override
