@@ -12,6 +12,9 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebbitException;
 import org.webbitserver.helpers.DateHelper;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.DefaultCookie;
+import org.jboss.netty.handler.codec.http.Cookie;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -96,7 +99,17 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse cookie(HttpCookie httpCookie) {
-        return header(HttpHeaders.Names.SET_COOKIE, httpCookie.toString());
+        Cookie nettyCookie = new DefaultCookie(httpCookie.getName(),httpCookie.getValue());
+        nettyCookie.setDomain(httpCookie.getDomain());
+        nettyCookie.setPath(httpCookie.getPath());
+        nettyCookie.setSecure(httpCookie.getSecure());
+        nettyCookie.setMaxAge((int)httpCookie.getMaxAge());
+        nettyCookie.setVersion(httpCookie.getVersion());
+        nettyCookie.setDiscard(httpCookie.getDiscard());
+        nettyCookie.setHttpOnly(true);
+        CookieEncoder encoder = new CookieEncoder(true);
+        encoder.addCookie(nettyCookie);
+        return header(HttpHeaders.Names.SET_COOKIE, encoder.encode());
     }
 
     @Override

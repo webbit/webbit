@@ -22,6 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.DefaultCookie;
+import org.jboss.netty.handler.codec.http.Cookie;
 
 public class CookieTest {
     private WebServer webServer = createWebServer(59504);
@@ -96,8 +99,36 @@ public class CookieTest {
         }).start().get();
         URLConnection urlConnection = httpGet(webServer, "/");
         urlConnection.addRequestProperty("Cookie", new HttpCookie("a", "b").toString());
-        urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "\"d").toString() + "; " + new HttpCookie("e", "f").toString());
-        assertEquals("Your cookies: a=b c=\"d e=f", contents(urlConnection));
+        urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "d").toString() + "; " + new HttpCookie("e", "f").toString());
+        assertEquals("Your cookies: a=b c=d e=f", contents(urlConnection));
+    }
+       @Test
+    public void parsesCookiesWithExtraAttributes() throws IOException, InterruptedException, ExecutionException {
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                String body = "Your cookies:";
+                List<HttpCookie> cookies = sort(request.cookies());
+                for (HttpCookie cookie : cookies) {
+                    String path = "";
+                    if (cookie.getPath() != null) path = "; path:"+ cookie.getPath();
+                    body += " " + cookie.getName() + "=" + cookie.getValue()+"; age:" +cookie.getMaxAge() +"; secure:"+cookie.getSecure()+ path + "|";
+                }
+                response.header("Content-Length", body.length())
+                        .content(body)
+                        .end();
+            }
+        }).start().get();
+        URLConnection urlConnection = httpGet(webServer, "/");
+        Cookie t = new DefaultCookie("a", "b");
+        t.setMaxAge(5000);
+        t.setSecure(true);
+        t.setPath("/path");
+        CookieEncoder e = new CookieEncoder(true);
+        e.addCookie(t);
+        urlConnection.addRequestProperty("Cookie", e.encode());
+        urlConnection.addRequestProperty("Cookie", new HttpCookie("c", "d").toString() + "; " + new HttpCookie("e", "f").toString());
+        assertEquals("Your cookies: a=b; age:5000; secure:true; path:/path| c=d; age:-1; secure:false| e=f; age:-1; secure:false|", contents(urlConnection));
     }
 
     @Test
