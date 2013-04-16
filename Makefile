@@ -53,7 +53,7 @@ dist/$(LIBRARY)-src.jar: $(call find,src/main/java,java)
 build/$(LIBRARY)-tests.jar: dist/$(LIBRARY).jar $(call find,src/test/java,java)
 	@mkdir -p build/test/classes
 	cp -R src/test/resources/* build/test/classes
-	javac -g -cp $(CLASSPATH):dist/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
+	javac -encoding UTF-8 -g -cp $(CLASSPATH):dist/$(LIBRARY).jar -d build/test/classes $(call find,src/test/java,java)
 	jar cf $@ -C build/test/classes .
 
 # Run tests, and create .tests-pass if they succeed
