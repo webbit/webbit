@@ -10,16 +10,16 @@ import org.webbitserver.HttpResponse;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class NettyWebServerTest {
 
@@ -28,22 +28,6 @@ public class NettyWebServerTest {
     @After
     public void stopServer() throws ExecutionException, InterruptedException {
         server.stop().get();
-    }
-
-    @Test
-    public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
-        int threadsBeforeStart = getCurrentThreadCount();
-        server = new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get();
-        int threadsAfterStart = getCurrentThreadCount();
-        if(threadsAfterStart <= threadsBeforeStart) {
-            fail(String.format("Expected more threads after starting. Before start: %d, After start: %d", threadsBeforeStart, threadsAfterStart));
-        }
-        server.stop().get();
-        int threadsAfterStop = getCurrentThreadCount();
-        if(threadsAfterStop > threadsBeforeStart) {
-            System.err.println(String.format("Expected more threads after stopping. Before start: %d, After stop: %d", threadsBeforeStart, threadsAfterStop));
-            System.err.println("Not failing the test because that hoses the release process. Just printing so we don't forget to fix this");
-        }
     }
 
     @Test
@@ -86,8 +70,32 @@ public class NettyWebServerTest {
         assertTrue("Server should not be running", !server.isRunning());
     }
 
-    private int getCurrentThreadCount() {
-        return Thread.getAllStackTraces().size();
+    @Test
+    public void stopsServerCleanlyNotLeavingResourcesHanging() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            startAndStop();
+        }
+    }
+
+    private void startAndStop() throws InterruptedException, ExecutionException {
+        List<String> beforeStart = getCurrentThreadNames();
+        new NettyWebServer(Executors.newSingleThreadScheduledExecutor(), 9080).start().get().stop().get();
+        List<String> afterStop = getCurrentThreadNames();
+        if (afterStop.size() > beforeStart.size()) {
+            System.err.println(String.format("Expected fewer threads after stopping. Before start: %d, After stop: %d", beforeStart.size(), afterStop.size()));
+            System.err.println("Not failing the test because that hoses the release process. Just printing so we don't forget to fix this");
+        }
+    }
+
+    private List<String> getCurrentThreadNames() {
+        System.gc();
+        List<String> threadNames = new ArrayList<String>();
+        Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+        for (Thread thread : allStackTraces.keySet()) {
+            threadNames.add(thread.getName());
+        }
+        Collections.sort(threadNames);
+        return threadNames;
     }
 
 }
