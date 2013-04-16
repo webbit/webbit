@@ -3,6 +3,7 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
 
+* Hybi09 protocol fix ([#114](https://github.com/webbit/webbit/pull/114))
 * Fixed issue when multiple WebSocketClients are used in a process ([#115](https://github.com/webbit/webbit/pull/115) Mike Ward)
 * Upgraded to netty 3.6.5 (Aslak Hellesøy)
 * gzip compression on JDK 1.7 and Netty 3.5.2 is broken ([#104](https://github.com/webbit/webbit/issues/104) Aslak Hellesøy)
