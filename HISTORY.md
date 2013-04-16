@@ -3,6 +3,8 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
 
+* Upgraded to netty 3.6.5 (Aslak Hellesøy)
+* gzip compression on JDK 1.7 and Netty 3.5.2 is broken ([#104](https://github.com/webbit/webbit/issues/104) Aslak Hellesøy)
 * HTTP requests with body larger than max content length (default is 64Kb) now fail with 413 Request Entity too large (Aslak Hellesøy)
 * Trying a little harder to shut down all threads on `WebServer#stop()` (Aslak Hellesøy)
 * Write a close frame before closing the socket when a WebSocket connection is closed (Aslak Hellesøy)
