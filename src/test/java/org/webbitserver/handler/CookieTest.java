@@ -156,7 +156,12 @@ public class CookieTest {
             if ("Set-Cookie".equals(header.getKey())) {
                 List<String> value = header.getValue();
                 for (String cookie : value) {
-                    cookies.addAll(HttpCookie.parse(cookie));
+                    try {
+                        cookies.addAll(HttpCookie.parse(cookie));
+                    } catch(IllegalArgumentException e) {
+                        // http://bugs.sun.com/view_bug.do?bug_id=6790677
+                        throw new RuntimeException("Can't parse cookie: " + cookie, e);
+                    }
                 }
             }
         }
