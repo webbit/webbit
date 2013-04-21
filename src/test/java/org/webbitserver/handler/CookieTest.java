@@ -2,6 +2,7 @@ package org.webbitserver.handler;
 
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.junit.After;
 import org.junit.Test;
@@ -156,12 +157,10 @@ public class CookieTest {
             if ("Set-Cookie".equals(header.getKey())) {
                 List<String> value = header.getValue();
                 for (String cookie : value) {
-                    try {
-                        cookies.addAll(HttpCookie.parse(cookie));
-                    } catch(IllegalArgumentException e) {
-                        // http://bugs.sun.com/view_bug.do?bug_id=6790677
-                        throw new RuntimeException("Can't parse cookie: " + cookie, e);
-                    }
+                    //since this processing is per header, there is only one cookie to parse
+                    Cookie nettCookie = new CookieDecoder().decode(cookie).iterator().next();
+                    HttpCookie c  = new HttpCookie(nettCookie.getName(),nettCookie.getValue());
+                    cookies.add(c);
                 }
             }
         }

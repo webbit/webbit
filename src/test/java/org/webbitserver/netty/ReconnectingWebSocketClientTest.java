@@ -53,11 +53,11 @@ public class ReconnectingWebSocketClientTest {
         });
         ws.reconnectEvery(10);
 
-        ws.start().get(100, TimeUnit.MILLISECONDS);
-        assertTrue("Should have closed", closed.await(50, TimeUnit.MILLISECONDS));
+        ws.start().get(4000, TimeUnit.MILLISECONDS);
+        assertTrue("Should have closed", closed.await(100, TimeUnit.MILLISECONDS));
 
         server.start();
-        assertTrue("Should have reconnected", connected.await(200, TimeUnit.MILLISECONDS));
+        assertTrue("Should have reconnected", connected.await(400, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -76,10 +76,10 @@ public class ReconnectingWebSocketClientTest {
             }
         });
 
-        ws.start().get(100, TimeUnit.MILLISECONDS);
-        assertTrue("Should have closed", closed.await(50, TimeUnit.MILLISECONDS));
+        ws.start().get(4000, TimeUnit.MILLISECONDS);
+        assertTrue("Should have closed", closed.await(100, TimeUnit.MILLISECONDS));
 
         server.start();
-        assertFalse("Shouldn't have reconnected", connected.await(200, TimeUnit.MILLISECONDS));
+        assertFalse("Shouldn't have reconnected", connected.await(400, TimeUnit.MILLISECONDS));
     }
 }
