@@ -68,6 +68,19 @@ public class CookieTest {
     }
 
     @Test
+    public void doesntSetMaxAgeIfUnspecified() throws IOException, InterruptedException, ExecutionException {
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                response.cookie(new HttpCookie("a", "b")).end();
+            }
+        }).start().get();
+        URLConnection urlConnection = httpGet(webServer, "/");
+        List<HttpCookie> cookies = cookies(urlConnection);
+        assertEquals(-1, cookies.get(0).getMaxAge());
+    }
+
+    @Test
     public void parsesOneInboundCookie() throws IOException, InterruptedException, ExecutionException {
         webServer.add(new HttpHandler() {
             @Override
