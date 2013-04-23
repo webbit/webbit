@@ -23,6 +23,10 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.webbitserver.WebServers.createWebServer;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpGet;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+import java.util.Locale;
+import java.util.Date;
 
 public class StaticFileHandlerTest {
 
@@ -201,11 +205,27 @@ public class StaticFileHandlerTest {
         assertReturnedWithStatusAndContainsContent(200, "hi", handle(request("/")));
     }
 
+    @Test 
+    public void shouldHandleCacheHeaders() throws Exception {
+        mkdir("a/b");
+        writeFile("index_cache.html", "Blah");
+        Long  aYearAgo = (new Date()).getTime() - (365 * 24 * 60 * 60 * 1000); 
+        Long  aYearFromNow = (new Date()).getTime() + (365 * 24 * 60 * 60 * 1000); 
+        assertEquals(true, handle(request("/index_cache.html")).header("Last-Modified") != null);
+        assertEquals(true, handle(request("/index_cache.html")).header("ETag") != null);
+        assertEquals(true, handle(request("/index_cache.html")).header("Cache-Control") != null);
+        assertEquals(true, handle(request("/index_cache.html")).header("Cache-Control").contains("max-age=3600, public"));
+        assertEquals(true, handle(request("/index_cache.html")).header("Expires") != null);
+        assertEquals(true, handleWithHeader(request("/index_cache.html"), "If-Modified-Since", toDateHeader(new Date(aYearAgo))).status() == 200);
+        assertEquals(true, handleWithHeader(request("/index_cache.html"), "If-Modified-Since", toDateHeader(new Date(aYearFromNow))).status() == 304);
+    }
+
     @Test
     public void shouldGuessMimeTypeFromExtension() throws Exception {
         mkdir("a/b");
         writeFile("index.html", "Blah");
         writeFile("file.HTML", "Blah");
+        writeFile("file.swf", "Blah");
         writeFile("file2.hTM", "Blah");
         writeFile("foo.txt", "Blah");
         writeFile("foo.png", "Blah");
@@ -217,6 +237,7 @@ public class StaticFileHandlerTest {
         writeFile(".x", "Blah");
         writeFile("x.", "Blah");
 
+        assertEquals("application/x-shockwave-flash", handle(request("/file.swf")).header("Content-Type"));
         assertEquals("text/html; charset=UTF-8", handle(request("/index.html")).header("Content-Type"));
         assertEquals("text/html; charset=UTF-8", handle(request("/file.HTML")).header("Content-Type"));
         assertEquals("text/html; charset=UTF-8", handle(request("/file2.hTM")).header("Content-Type"));
@@ -275,7 +296,7 @@ public class StaticFileHandlerTest {
                 command.run();
             }
         };
-        handler = new StaticFileHandler(dir, immediateExecutor);
+        handler = new StaticFileHandler(dir, immediateExecutor, 3600);
     }
 
     /**
@@ -328,6 +349,17 @@ public class StaticFileHandlerTest {
         StubHttpResponse response = new StubHttpResponse();
         handler.handleHttpRequest(request, response, new StubHttpControl(request, response));
         return response;
+    }
+    private StubHttpResponse handleWithHeader(StubHttpRequest request, String headerName, String headerValue) throws Exception {
+        StubHttpResponse response = new StubHttpResponse();
+        request.header(headerName, headerValue);
+        handler.handleHttpRequest(request, response, new StubHttpControl(request, response));
+        return response;
+    }
+    private String toDateHeader(Date date) {
+            SimpleDateFormat httpDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+            httpDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return httpDateFormat.format(date);
     }
 
     private void assertReturnedWithStatus(int expectedStatus, StubHttpResponse response) {
