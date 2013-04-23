@@ -3,6 +3,7 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
 
+* Introducing cache control headers ([#112](https://github.com/webbit/webbit/pull/112) Peter Hausel)
 * Add support for chunked responses ([#106](https://github.com/webbit/webbit/pull/106) Peter Hausel)
 * Adding support for cookie attributes ([#108](https://github.com/webbit/webbit/pull/108) Peter Hausel)
 * Fix for decoding query parameters containing special characters. ([#102](https://github.com/webbit/webbit/pull/102) Joe Freeman)
