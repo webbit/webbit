@@ -19,6 +19,11 @@ chatroom: test dist/$(LIBRARY)-all-in-one.jar
 	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.chatroom.Main
 .PHONY: chatroom
 
+# Run sample chatroom
+flashroom: test dist/$(LIBRARY)-all-in-one.jar
+	java -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.flashchatroom.Main
+.PHONY: chatroom
+
 # Run echo server - used by Autobahn
 echo: test dist/$(LIBRARY)-all-in-one.jar
 	java -Xmx256m -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.echo.Main
@@ -31,7 +36,7 @@ find = $(shell find $(1) -name '*.$(2)')
 extracttests = $(shell jar tf $(1) | grep 'Test.class$$' | sed -e 's|/|.|g;s|.class$$||')
 
 # Compile core Jar (just classes, no dependencies)
-dist/$(LIBRARY).jar: $(call find,src/main/java,java)
+dist/$(LIBRARY).jar: $(call find,.,java)
 	@mkdir -p build/main/classes
 	@mkdir -p dist
 	javac -g -cp $(CLASSPATH) -d build/main/classes $(call find,src/main/java,java)

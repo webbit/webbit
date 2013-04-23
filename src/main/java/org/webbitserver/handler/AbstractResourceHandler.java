@@ -25,8 +25,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         mimeTypes.put("htm", "text/html");
         mimeTypes.put("html", "text/html");
         mimeTypes.put("xml", "text/xml");
-        mimeTypes.put("js",
-                "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
+        mimeTypes.put("js", "text/javascript"); // Technically it should be application/javascript (RFC 4329), but IE8 struggles with that
         mimeTypes.put("xhtml", "application/xhtml+xml");
         mimeTypes.put("json", "application/json");
         mimeTypes.put("pdf", "application/pdf");
@@ -38,6 +37,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
         mimeTypes.put("tiff", "image/tiff");
         mimeTypes.put("tif", "image/tiff");
         mimeTypes.put("png", "image/png");
+        mimeTypes.put("swf", "application/x-shockwave-flash");
         mimeTypes.put("svg", "image/svg+xml");
         mimeTypes.put("ico", "image/vnd.microsoft.icon");
         DEFAULT_MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
