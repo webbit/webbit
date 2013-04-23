@@ -3,6 +3,7 @@ Git master
 
 [Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
 
+* Add support for chunked responses ([#106](https://github.com/webbit/webbit/pull/106) Peter Hausel)
 * Adding support for cookie attributes ([#108](https://github.com/webbit/webbit/pull/108) Peter Hausel)
 * Fix for decoding query parameters containing special characters. ([#102](https://github.com/webbit/webbit/pull/102) Joe Freeman)
 * Hybi09 protocol fix ([#114](https://github.com/webbit/webbit/pull/114))
