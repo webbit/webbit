@@ -2,6 +2,8 @@ package org.webbitserver.stub;
 
 import org.webbitserver.HttpResponse;
 import org.webbitserver.helpers.DateHelper;
+import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
+import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +30,7 @@ public class StubHttpResponse implements HttpResponse {
     private ByteArrayOutputStream contents = new ByteArrayOutputStream();
     private List<HttpCookie> cookies = new ArrayList<HttpCookie>();
 
+
     @Override
     public StubHttpResponse charset(Charset charset) {
         this.charset = charset;
@@ -37,6 +40,12 @@ public class StubHttpResponse implements HttpResponse {
     @Override
     public Charset charset() {
         return charset;
+    }
+
+    @Override
+    public StubHttpResponse chunked() {
+        header(Names.TRANSFER_ENCODING, Values.CHUNKED);
+        return this;
     }
 
     @Override

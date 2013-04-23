@@ -21,6 +21,13 @@ public interface HttpResponse {
      */
     HttpResponse charset(Charset charset);
 
+     /**
+     * Turns the response into a chunked response
+     * <p/>
+     * after this method is called, {@link #write(String)} should be used to send chunks
+     */
+    HttpResponse chunked();
+
     /**
      * Current Charset used to encode to response as.
      *

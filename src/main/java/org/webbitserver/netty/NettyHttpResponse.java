@@ -9,12 +9,15 @@ import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
+import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebbitException;
 import org.webbitserver.helpers.DateHelper;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.jboss.netty.handler.codec.http.Cookie;
+import org.jboss.netty.handler.codec.http.DefaultHttpChunk;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -62,6 +65,14 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse status(int status) {
         response.setStatus(HttpResponseStatus.valueOf(status));
+        return this;
+    }
+
+    @Override
+    public NettyHttpResponse chunked() {
+        response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
+        response.setChunked(true);
+        ctx.getChannel().write(response);
         return this;
     }
 
@@ -128,13 +139,20 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     private NettyHttpResponse content(ChannelBuffer content) {
+        if (response.isChunked()) {
+            throw new UnsupportedOperationException();
+        }
         responseBuffer.writeBytes(content);
         return this;
     }
 
     @Override
     public NettyHttpResponse write(String content) {
-        write(copiedBuffer(content, CharsetUtil.UTF_8));
+        if (response.isChunked()) {
+            ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));  
+        } else {
+            write(copiedBuffer(content, CharsetUtil.UTF_8));
+        }    
         return this;
     }
 
@@ -175,7 +193,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", (String) null);
             header("Content-Length", responseBuffer.readableBytes());
-            ChannelFuture future = write(responseBuffer);
+            ChannelFuture  future = response.isChunked() ? ctx.getChannel().write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER)) : write(responseBuffer);
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
             }

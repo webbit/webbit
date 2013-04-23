@@ -45,6 +45,12 @@ public class HttpResponseWrapper implements HttpResponse {
     }
 
     @Override
+    public HttpResponseWrapper chunked() {
+         response.chunked();
+         return this;
+    }
+
+    @Override
     public HttpResponseWrapper status(int status) {
         response.status(status);
         return this;
