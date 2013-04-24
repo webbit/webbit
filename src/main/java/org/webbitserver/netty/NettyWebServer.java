@@ -184,7 +184,9 @@ public class NettyWebServer implements WebServer {
                         if (sslContext != null) {
                             SSLEngine sslEngine = sslContext.createSSLEngine();
                             sslEngine.setUseClientMode(false);
-                            pipeline.addLast("ssl", new SslHandler(sslEngine));
+                            SslHandler ssl = new SslHandler(sslEngine);
+                            ssl.setCloseOnSSLException(true);
+                            pipeline.addLast("ssl", ssl);
                         }
                         pipeline.addLast("staleconnectiontracker", staleConnectionTrackingHandler);
                         pipeline.addLast("connectiontracker", connectionTrackingHandler);
