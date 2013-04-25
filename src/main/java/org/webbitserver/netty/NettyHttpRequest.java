@@ -20,8 +20,8 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
     private final Object id;
     private final long timestamp;
 
-    public QueryParameters queryParameters;
-    public QueryParameters postParameters;
+    private QueryParameters queryParameters;
+    private QueryParameters postParameters;
 
     public NettyHttpRequest(MessageEvent messageEvent, HttpRequest httpRequest, Object id, long timestamp) {
         this.messageEvent = messageEvent;

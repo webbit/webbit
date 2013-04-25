@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 public class QueryParameters {
-    private final Map<String, List<String>> params = new HashMap<String, List<String>>();
     private static final List<String> EMPTY = Collections.emptyList();
+    private final Map<String, List<String>> params = new HashMap<String, List<String>>();
 
     public QueryParameters(String query) {
         if (query != null) {
