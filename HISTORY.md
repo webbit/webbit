@@ -1,7 +1,7 @@
-Git master
+0.4.15 (2013-04-26)
 ==================
 
-[Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...master)
+[Full changelog](https://github.com/webbit/webbit/compare/v0.4.14...v0.4.15)
 
 * Introducing cache control headers ([#112](https://github.com/webbit/webbit/pull/112) Peter Hausel)
 * Add support for chunked responses ([#106](https://github.com/webbit/webbit/pull/106) Peter Hausel)
@@ -9,9 +9,9 @@ Git master
 * Fix for decoding query parameters containing special characters. ([#102](https://github.com/webbit/webbit/pull/102) Joe Freeman)
 * Hybi09 protocol fix ([#114](https://github.com/webbit/webbit/pull/114))
 * Fixed issue when multiple WebSocketClients are used in a process ([#115](https://github.com/webbit/webbit/pull/115) Mike Ward)
-* Upgraded to netty 3.5.5. Netty versions above this suffer from [memory leaks](https://github.com/netty/netty/issues/1301) (Aslak Hellesøy)
+* Upgraded to io.netty:netty:3.5.2.Final. Netty versions above this suffer from [memory leaks](https://github.com/netty/netty/issues/1301) (Aslak Hellesøy)
 * gzip compression on JDK 1.7 and Netty 3.5.2 is broken ([#104](https://github.com/webbit/webbit/issues/104) Aslak Hellesøy)
-* HTTP requests with body larger than max content length (default is 64Kb) now fail with 413 Request Entity too large (Aslak Hellesøy)
+* HTTP PUT/POST requests with body larger than max content length (default is 64Kb) now fail with 413 Request Entity too large (Aslak Hellesøy)
 * Trying a little harder to shut down all threads on `WebServer#stop()` (Aslak Hellesøy)
 * Write a close frame before closing the socket when a WebSocket connection is closed (Aslak Hellesøy)
 
