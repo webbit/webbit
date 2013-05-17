@@ -2,7 +2,6 @@ package org.webbitserver.netty;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.webbitserver.WebSocket;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 
@@ -12,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -33,9 +33,11 @@ public class EmWebSocketTest {
     private void assertEchoed(final String stringMessage, final String bytesMessage) throws InterruptedException, ExecutionException {
         final CountDownLatch latch = new CountDownLatch(3);
         final List<String> received = new ArrayList<String>();
-        WebSocket ws = new WebSocketClient(URI.create("ws://0.0.0.0:8080"), new WebSocketHandler() {
+        final AtomicReference<WebSocketConnection> conn = new AtomicReference<WebSocketConnection>();
+        WebSocketClient ws = new WebSocketClient(URI.create("ws://0.0.0.0:8080"), new WebSocketHandler() {
             @Override
             public void onOpen(WebSocketConnection connection) throws Throwable {
+                conn.set(connection);
             }
 
             @Override
@@ -71,10 +73,15 @@ public class EmWebSocketTest {
             public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
             }
         });
-        ws.start().get();
-        boolean finished = latch.await(500, TimeUnit.MILLISECONDS);
-        assertEquals(asList("Hello Client!", stringMessage, bytesMessage), received);
-        assertTrue(finished);
+        try {
+            ws.start().get();
+            boolean finished = latch.await(500, TimeUnit.MILLISECONDS);
+            assertEquals(asList("Hello Client!", stringMessage, bytesMessage), received);
+            assertTrue(finished);
+        } finally {
+            conn.get().close();
+            ws.stop().get();
+        }
     }
 
 }
