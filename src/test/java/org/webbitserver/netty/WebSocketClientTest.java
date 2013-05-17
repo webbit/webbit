@@ -6,6 +6,8 @@ import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -50,6 +52,7 @@ public class WebSocketClientTest {
 
         URI uri = new URI("ws://localhost:44444/");
 
+        List<WebSocketClient> clients = new ArrayList<WebSocketClient>();
         for (int i = 0; i < iterations; i++) {
             final WebSocketClient client = new WebSocketClient(uri, new WebSocketHandler() {
                 @Override
@@ -93,9 +96,21 @@ public class WebSocketClientTest {
                 }
             });
             client.start().get();
+            clients.add(client);
         }
 
         countDownLatch.await(5, SECONDS);
-        assertNull(uncaughtException);
+        try {
+            assertNull(uncaughtException);
+        } finally {
+            webServer.stop();
+            for (WebSocketClient client: clients) {
+                try {
+                    client.stop().get();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
     }
 }
