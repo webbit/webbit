@@ -21,12 +21,12 @@ public class EmWebSocketTest {
     @Test
     @Ignore
     public void can_talk_to_em_websocket_with_ascii() throws ExecutionException, InterruptedException {
-        assertEchoed("Hellesøy", "Gøy");
     }
 
     @Test
     @Ignore
     public void can_talk_to_em_websocket_with_unicode() throws ExecutionException, InterruptedException {
+        assertEchoed("Hellesøy", "Gøy");
         assertEchoed("Hellesoy", "Goy");
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
 import static org.webbitserver.WebServers.createWebServer;
 
 public class WebSocketClientTest {
@@ -104,12 +104,8 @@ public class WebSocketClientTest {
             assertNull(uncaughtException);
         } finally {
             webServer.stop();
-            for (WebSocketClient client: clients) {
-                try {
-                    client.stop().get();
-                } catch (Exception e) {
-                    // ignore
-                }
+            for (WebSocketClient client : clients) {
+                client.stop().get();
             }
         }
     }
