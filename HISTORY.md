@@ -5,6 +5,7 @@ Git master
 
 * Removed `WebSocketClient`. Please use [Java-WebSocket](http://java-websocket.org/) or []() instead.
 * Fix resource leakage in tests and upgrade to netty 3.6.5.Final ([#119](https://github.com/webbit/webbit/pull/119) Norman Maurer)
+* DateHelper.rfc1123Format emits GMT now, rather than system default time zone.
 
 0.4.15 (2013-04-26)
 ==================
