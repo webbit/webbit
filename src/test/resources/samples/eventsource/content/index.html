@@ -4,6 +4,7 @@
     <title>EventSource Demo</title>
     <script type="text/javascript">
         function logText(msg) {
+            console.log(msg);
             var textArea = document.getElementById('data');
             textArea.value = textArea.value + msg + '\n';
             textArea.scrollTop = textArea.scrollHeight; // scroll into view
