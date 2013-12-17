@@ -131,3 +131,7 @@ Open `reports/servers/index.html` to see the results.
 +   [@webbitserver](http://twitter.com/webbitserver) on Twitter
 +   A [web based chat room](https://github.com/webbit/webbit/tree/master/src/test/java/samples/chatroom) is available in the samples directory. To try it out: 'make chatroom'
 +   Jay Fields has written a [WebSockets with Clojure introduction](http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html) that uses Webbit
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/webbit/webbit/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
