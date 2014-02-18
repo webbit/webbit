@@ -18,9 +18,9 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 
 public class StaticFileHandler extends AbstractResourceHandler {
 
-    private final File dir;
+    protected final File dir;
 
-    private final long maxAge;
+    protected final long maxAge;
 
     public StaticFileHandler(File dir, Executor ioThread, TemplateEngine templateEngine) {
         super(ioThread, templateEngine);
@@ -160,7 +160,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
                 response.header("Last-Modified", toHeader(lastModified));
                 //is there an incoming If-Modified-Since?
                 if (request.header("If-Modified-Since") != null) {
-                    if (fromHeader(request.header("If-Modified-Since")).getTime() / 1000 != lastModified.getTime() / 1000) {
+                    if (fromHeader(request.header("If-Modified-Since")).getTime() >= lastModified.getTime() ) {
                         response.status(304);
                     }
                 }
