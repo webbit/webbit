@@ -147,11 +147,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
-    public long contentLength() {
-        return responseBuffer.array().length;
-    }
-
-    @Override
     public NettyHttpResponse write(String content) {
         if (response.isChunked()) {
             ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));
