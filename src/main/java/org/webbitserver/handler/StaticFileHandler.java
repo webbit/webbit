@@ -160,8 +160,8 @@ public class StaticFileHandler extends AbstractResourceHandler {
 							if(path.contains(".cache."))
 							{
 								if(request.header("If-Modified-Since") != null
-									&& fromHeader(request.header("If-Modified-Since")).getTime() / 1000 == lastModified.getTime() / 1000)
-										response.status(304);
+										&& fromHeader(request.header("If-Modified-Since")).getTime() / 1000 == lastModified.getTime() / 1000)
+									response.status(304);
 								else
 								{
 									response.header("Cache-control", "public, must-revalidate, max-age=" + 31536000 /* Seconds in a year. */);
