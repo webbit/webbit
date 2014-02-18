@@ -24,7 +24,7 @@ class LoggingWebSocketHandler implements WebSocketHandler {
     @Override
     public void onClose(WebSocketConnection connection) throws Throwable {
         logSink.webSocketConnectionClose(connection);
-        logSink.httpEnd(connection.httpRequest());
+        logSink.httpEnd(connection.httpRequest(), null);
         handler.onClose(loggingConnection);
     }
 

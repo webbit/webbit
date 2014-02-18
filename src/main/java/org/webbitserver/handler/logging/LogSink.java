@@ -2,13 +2,14 @@ package org.webbitserver.handler.logging;
 
 import org.webbitserver.EventSourceConnection;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpResponse;
 import org.webbitserver.WebSocketConnection;
 
 public interface LogSink {
 
     void httpStart(HttpRequest request);
 
-    void httpEnd(HttpRequest request);
+    void httpEnd(HttpRequest request, HttpResponse response);
 
     void webSocketConnectionOpen(WebSocketConnection connection);
 
@@ -32,7 +33,7 @@ public interface LogSink {
 
     void error(HttpRequest request, Throwable error);
 
-    void custom(HttpRequest request, String action, String data);
+    void custom(HttpRequest request, HttpResponse response, String action, String data);
 
     void eventSourceConnectionOpen(EventSourceConnection connection);
 
