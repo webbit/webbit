@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 public class NettyWebServer implements WebServer {
-    private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
+    private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 42000;
 
     private final SocketAddress socketAddress;
     private final URI publicUri;
