@@ -163,16 +163,18 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         } else {
             response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
-        String message = getStackTrace(error);
+        //String message = getStackTrace(error);
         header("Content-Type", "text/plain");
-        content(message);
-        try{
-            flushResponse();
-        }catch (IllegalStateException e){
-            return null;
-        }catch (WebbitException e){
-            return null;
-        }
+        //content(message);
+        content("Internal server error. We are notified about it and will fix it. Sorry for any inconvenience.");
+			try{
+				flushResponse();
+			}catch (IllegalStateException e){
+				return null;
+			}catch (WebbitException e){
+				return null;
+			}
+
         exceptionHandler.uncaughtException(Thread.currentThread(),
                 WebbitException.fromException(error, ctx.getChannel()));
 
