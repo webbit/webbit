@@ -23,7 +23,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     private static final Object IGNORE_REQUEST = new Object();
 
     private final Executor executor;
-    private final List<HttpHandler> httpHandlers;
+    public List<HttpHandler> httpHandlers;
     private final Object id;
     private final long timestamp;
     private final Thread.UncaughtExceptionHandler exceptionHandler;

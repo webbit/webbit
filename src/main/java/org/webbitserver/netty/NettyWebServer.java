@@ -52,11 +52,11 @@ public class NettyWebServer implements WebServer {
 
     private final SocketAddress socketAddress;
     private final URI publicUri;
-    private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
+    protected List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final List<ExecutorService> executorServices = new ArrayList<ExecutorService>();
     private final Executor executor;
 
-    private ServerBootstrap bootstrap;
+    protected ServerBootstrap bootstrap;
     private Channel channel;
     private SSLContext sslContext;
 
@@ -98,10 +98,10 @@ public class NettyWebServer implements WebServer {
         // when reading/writing to the client. The Internet is flaky - it happens.
         connectionExceptionHandler(new SilentExceptionHandler());
 
-        setupDefaultHandlers();
+        //setupDefaultHandlers();
     }
 
-    protected void setupDefaultHandlers() {
+    public void setupDefaultHandlers() {
         add(new ServerHeaderHandler("Webbit"));
         add(new DateHeaderHandler());
     }
