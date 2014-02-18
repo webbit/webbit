@@ -8,11 +8,11 @@ import org.webbitserver.helpers.ClassloaderResourceHelper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.concurrent.Executor;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.Executor;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
@@ -153,23 +153,47 @@ public class StaticFileHandler extends AbstractResourceHandler {
             byte[] raw = file.isFile() ? read(file) : null;
             //add cache control headers if needed
             if (raw != null) {
-                Date lastModified = new Date(file.lastModified());
-                String hashtext = MD5(Long.toString(lastModified.getTime()));
-                if (hashtext != null) response.header("ETag", "\"" + hashtext + "\"");
+							Date lastModified = new Date(file.lastModified());
+//							String hashtext = MD5(Long.toString(lastModified.getTime()));
+//							if (hashtext != null) response.header("ETag", "\"" + hashtext + "\"");
 
-                response.header("Last-Modified", toHeader(lastModified));
-                //is there an incoming If-Modified-Since?
-                if (request.header("If-Modified-Since") != null) {
-                    if (fromHeader(request.header("If-Modified-Since")).getTime() >= lastModified.getTime() ) {
-                        response.status(304);
-                    }
-                }
-                //is setting cache control necessary?
-                if (maxAge != 0) {
-                    response.header("Expires", toHeader( new Date(new Date().getTime() + maxAge * 1000)));
-                    response.header("Cache-Control", "max-age=" + maxAge+", public");
-                }
+							if(path.contains(".cache."))
+							{
+								if(request.header("If-Modified-Since") != null
+									&& fromHeader(request.header("If-Modified-Since")).getTime() / 1000 == lastModified.getTime() / 1000)
+										response.status(304);
+								else
+								{
+									response.header("Cache-control", "public, must-revalidate, max-age=" + 31536000 /* Seconds in a year. */);
+									response.header("Last-Modified", toHeader(lastModified));
+									response.header("Expires", new Date(System.currentTimeMillis() + 31536000000L /* Millis in a year. */));
+								}
+							}
+							else if(
+								   path.contains(".nocache.")
+								|| path.endsWith(".htm")
+								|| path.endsWith(".html"))
+							{
+								response.header("Cache-control", "no-cache, no-store, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0");
+								response.header("Last-Modified", new Date());
+								response.header("Expires", new Date(0));
+								response.header("Pragma", "no-cache");
+							}
+							else
+							{
+								response.header("Last-Modified", toHeader(lastModified));
+								//is there an incoming If-Modified-Since?
+								if(request.header("If-Modified-Since") != null
+									&& fromHeader(request.header("If-Modified-Since")).getTime() / 1000 == lastModified.getTime() / 1000)
+										response.status(304);
+								//is setting cache control necessary?
+								if (maxAge != 0) {
+										response.header("Expires", toHeader( new Date(new Date().getTime() + maxAge * 1000)));
+										response.header("Cache-Control", "max-age=" + maxAge+", public");
+								}
+							}
             }
+
             return raw;
         }
 
