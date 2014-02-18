@@ -166,8 +166,13 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         String message = getStackTrace(error);
         header("Content-Type", "text/plain");
         content(message);
-        flushResponse();
-
+        try{
+            flushResponse();
+        }catch (IllegalStateException e){
+            return null;
+        }catch (WebbitException e){
+            return null;
+        }
         exceptionHandler.uncaughtException(Thread.currentThread(),
                 WebbitException.fromException(error, ctx.getChannel()));
 
