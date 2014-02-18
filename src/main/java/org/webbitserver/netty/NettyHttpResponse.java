@@ -149,10 +149,10 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse write(String content) {
         if (response.isChunked()) {
-            ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));  
+            ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));
         } else {
             write(copiedBuffer(content, CharsetUtil.UTF_8));
-        }    
+        }
         return this;
     }
 
@@ -193,6 +193,8 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", (String) null);
             header("Content-Length", responseBuffer.readableBytes());
+						// mymod. WebbitException: cannot send more responses than requests
+						if (!ctx.getChannel().isWritable()) return;
             ChannelFuture  future = response.isChunked() ? ctx.getChannel().write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER)) : write(responseBuffer);
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
