@@ -104,6 +104,11 @@ public class StubHttpResponse implements HttpResponse {
     }
 
     @Override
+    public long contentLength() {
+        return contents.size();
+    }
+
+    @Override
     public StubHttpResponse write(String content) {
         return content(content);
     }

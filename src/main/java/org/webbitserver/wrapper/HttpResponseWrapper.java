@@ -86,6 +86,11 @@ public class HttpResponseWrapper implements HttpResponse {
     }
 
     @Override
+    public long contentLength() {
+        return response.contentLength();
+    }
+
+    @Override
     public HttpResponseWrapper write(String content) {
         response.write(content);
         return this;
