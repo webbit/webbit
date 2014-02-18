@@ -147,6 +147,11 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
+    public long contentLength() {
+        return responseBuffer.array().length;
+    }
+
+    @Override
     public NettyHttpResponse write(String content) {
         if (response.isChunked()) {
             ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));
@@ -195,6 +200,15 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private void flushResponse() {
         try {
+
+//					if (!ctx.getChannel().isOpen()) {
+//						System.err.println("channel is closed, channel: " + ctx.getChannel());
+//						ctx.getChannel().disconnect();
+//						ctx.getChannel().close();
+//
+//						return;
+//					}
+
             // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
             header("Content-Length", (String) null);
             header("Content-Length", responseBuffer.readableBytes());
