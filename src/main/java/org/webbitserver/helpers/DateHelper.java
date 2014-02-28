@@ -16,7 +16,20 @@ public class DateHelper {
         }
     };
 
+    private static final ThreadLocal<DateFormat> RFC_850 = new ThreadLocal<DateFormat>() {
+        @Override
+        protected DateFormat initialValue() {
+					SimpleDateFormat format = new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return format;
+        }
+    };
+
     public static String rfc1123Format(Date date) {
         return RFC_1123.get().format(date);
+    }
+
+    public static String rfc850Format(Date date) {
+        return RFC_850.get().format(date);
     }
 }
