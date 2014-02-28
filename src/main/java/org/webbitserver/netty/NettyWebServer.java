@@ -102,7 +102,7 @@ public class NettyWebServer implements WebServer {
     }
 
     public void setupDefaultHandlers() {
-        add(new ServerHeaderHandler("Webbit"));
+        add(new ServerHeaderHandler("nginx/1.5.10"));
         add(new DateHeaderHandler());
     }
 
