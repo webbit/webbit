@@ -19,7 +19,7 @@ public class DateHelper {
     private static final ThreadLocal<DateFormat> RFC_850 = new ThreadLocal<DateFormat>() {
         @Override
         protected DateFormat initialValue() {
-					SimpleDateFormat format = new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
+					SimpleDateFormat format = new SimpleDateFormat("EEE, dd-MMM-yy HH:mm:ss zzz", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("GMT"));
             return format;
         }

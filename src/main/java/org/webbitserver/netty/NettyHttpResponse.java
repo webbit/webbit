@@ -117,8 +117,6 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         nettyCookie.setMaxAge((int)httpCookie.getMaxAge());
         nettyCookie.setVersion(httpCookie.getVersion());
         nettyCookie.setDiscard(httpCookie.getDiscard());
-        // TODO: FIXME:
-        nettyCookie.setHttpOnly(true);
         CookieEncoder encoder = new CookieEncoder(true);
         encoder.addCookie(nettyCookie);
 
