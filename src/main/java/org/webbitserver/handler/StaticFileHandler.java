@@ -85,13 +85,13 @@ public class StaticFileHandler extends AbstractResourceHandler {
 
     protected class FileWorker extends IOWorker {
 
-        private File file;
+        protected File file;
 
-        private final HttpResponse response;
+        public final HttpResponse response;
 
-        private final HttpRequest request;
+        public final HttpRequest request;
 
-        private final long maxAge;
+        public final long maxAge;
 
         private String mimeType(String uri) {
             String ext = uri.lastIndexOf(".") != -1 ? uri.substring(uri.lastIndexOf(".")) : null;
