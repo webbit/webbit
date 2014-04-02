@@ -85,7 +85,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         connectionHelper.fireConnectionException(e);
-        final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
+        final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), false, exceptionHandler);
         executor.execute(new Runnable() {
             @Override
             public void run() {

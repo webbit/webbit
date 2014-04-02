@@ -206,19 +206,20 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     private void flushResponse() {
         try {
 
-//					if (!ctx.getChannel().isOpen()) {
-//						System.err.println("channel is closed, channel: " + ctx.getChannel());
-//						ctx.getChannel().disconnect();
-//						ctx.getChannel().close();
-//
-//						return;
-//					}
+					if (!ctx.getChannel().isOpen()) {
+						System.err.println("channel is closed, channel: " + ctx.getChannel());
+						ctx.getChannel().disconnect();
+						ctx.getChannel().close();
 
-            // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
-            header("Content-Length", (String) null);
-            header("Content-Length", responseBuffer.readableBytes());
-						// mymod. WebbitException: cannot send more responses than requests
-						if (!ctx.getChannel().isWritable()) return;
+						return;
+					}
+
+					// mymod. WebbitException: cannot send more responses than requests
+					if (!ctx.getChannel().isWritable()) return;
+
+					// TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
+					header("Content-Length", (String) null);
+					header("Content-Length", responseBuffer.readableBytes());
             ChannelFuture  future = response.isChunked() ? ctx.getChannel().write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER)) : write(responseBuffer);
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);
