@@ -176,7 +176,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 //        String message = getStackTrace(error);
         header("Content-Type", "text/plain");
 //        content(message);
-				content("Internal server error. We are notified about it and will fix it. Sorry for any inconvenience.");
+				content("Internal server error. We are notified about the problem and will fix it. Sorry for any inconvenience.");
         try{
             flushResponse();
         }catch (IllegalStateException e){
