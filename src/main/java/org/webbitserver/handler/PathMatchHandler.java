@@ -25,12 +25,30 @@ public class PathMatchHandler implements HttpHandler {
 
     @Override
     public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-        String path = URI.create(request.uri()).getPath();
-        Matcher matcher = pathPattern.matcher(path);
-        if (matcher.matches()) {
-            httpHandler.handleHttpRequest(request, response, control);
-        } else {
-            control.nextHandler();
-        }
+			Matcher matcher;
+
+			try
+			{
+				String path = URI.create(request.uri()).getPath();
+				matcher = pathPattern.matcher(path);
+			}
+			catch(Exception e)
+			{
+				response.status(400);
+				response.header("Content-Type", "text/plain");
+				response.content("Internal server error. We are notified about the problem and will fix it. Sorry for any inconvenience.");
+				response.end();
+
+				return;
+			}
+
+				if(matcher.matches())
+				{
+					httpHandler.handleHttpRequest(request, response, control);
+				}
+				else
+				{
+					control.nextHandler();
+				}
     }
 }
