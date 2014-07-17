@@ -1,5 +1,6 @@
 target/
 out
+test-out
 build
 dist
 *.iws
@@ -27,3 +28,4 @@ reports
 bin
 include
 lib/python2.6/
+

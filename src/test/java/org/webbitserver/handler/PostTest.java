@@ -1,22 +1,32 @@
 package org.webbitserver.handler;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.junit.After;
 import org.junit.Test;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.helpers.NamingThreadFactory;
 import org.webbitserver.netty.NettyWebServer;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
+import java.io.InputStream;
+import java.net.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.webbitserver.testutil.HttpClient.contents;
 import static org.webbitserver.testutil.HttpClient.httpPost;
 
@@ -126,5 +136,69 @@ public class PostTest {
         HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
         assertEquals(200, httpURLConnection.getResponseCode());
         assertEquals("length:65537", result);
+    }
+
+    @Test
+    public void close_connection_midway_through_response_does_not_error_infinitely() throws Exception {
+
+        final List<Throwable> connectionExceptions = new CopyOnWriteArrayList<Throwable>();
+        final List<Throwable> uncaughtExceptions = new CopyOnWriteArrayList<Throwable>();
+
+        webServer.connectionExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.out.println("connectionException:" + e);
+                System.out.println("caused by:" + e.getCause());
+                connectionExceptions.add(e);
+            }
+        });
+        webServer.uncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                System.out.println("uncaughtException:" + e);
+                uncaughtExceptions.add(e);
+            }
+        });
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch2 = new CountDownLatch(1);
+        final CountDownLatch latch3 = new CountDownLatch(1);
+
+        webServer.add(new HttpHandler() {
+            @Override
+            public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+                response.content("length:" + request.bodyAsBytes().length);
+                latch2.countDown();
+                latch.await();
+                response.end();
+                latch3.countDown();
+            }
+        }).start().get();
+
+        final StringBuilder body = new StringBuilder();
+        for (int i = 0; i < 200; i++) {
+            body.append(".");
+        }
+
+        CloseableHttpAsyncClient httpclient = HttpAsyncClients.createDefault();
+        try {
+            httpclient.start();
+            URI url = new URI(webServer.getUri() + "/");
+            HttpPost request = new HttpPost(url);
+            httpclient.execute(request, null);
+            latch2.await();
+
+        } finally {
+            httpclient.close();
+        }
+        latch.countDown();
+        latch3.await();
+
+        URLConnection urlConnection = httpPost(webServer, "/", body.toString());
+        HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+        assertEquals(200, httpURLConnection.getResponseCode());
+
+        assertThat(connectionExceptions.isEmpty(), is(true));
+        assertThat(uncaughtExceptions.isEmpty(), is(true));
     }
 }
