@@ -10,6 +10,8 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebbitException;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.List;
@@ -86,8 +88,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         connectionHelper.fireConnectionException(e);
-
-        if (!(e.getCause() instanceof ClosedChannelException)) {
+        if (!(e.getCause() instanceof IOException)) {
             final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
             executor.execute(new Runnable() {
                 @Override
