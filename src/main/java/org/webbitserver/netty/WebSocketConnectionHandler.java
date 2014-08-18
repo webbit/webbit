@@ -5,7 +5,7 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
+import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.webbitserver.WebSocketHandler;
 
 import java.util.concurrent.Executor;
@@ -54,12 +54,12 @@ public class WebSocketConnectionHandler extends SimpleChannelUpstreamHandler {
             frame.dispatchMessage(webSocketHandler, webSocketConnection, executor, exceptionHandlerWithContext);
         } else {
             // Hixie 75/76
-            final WebSocketFrame frame = (WebSocketFrame) message;
+            final TextWebSocketFrame frame = (TextWebSocketFrame) message;
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        webSocketHandler.onMessage(webSocketConnection, frame.getTextData());
+                        webSocketHandler.onMessage(webSocketConnection, frame.getText());
                     } catch (Throwable t) {
                         exceptionHandlerWithContext.uncaughtException(Thread.currentThread(), t);
                     }

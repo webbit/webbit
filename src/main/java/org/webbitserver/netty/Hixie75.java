@@ -5,8 +5,8 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocket00FrameDecoder;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
@@ -49,12 +49,12 @@ public class Hixie75 implements WebSocketVersion {
 
     @Override
     public ChannelHandler createDecoder() {
-        return new WebSocketFrameDecoder();
+        return new WebSocket00FrameDecoder();
     }
 
     @Override
     public ChannelHandler createEncoder() {
-        return new WebSocketFrameEncoder();
+        return new WebSocket00FrameEncoder();
     }
 
     private String getWebSocketLocation(HttpRequest req) {
