@@ -52,11 +52,11 @@ public class Hybi implements WebSocketVersion {
 
         if (getHybiVersion() < MIN_HYBI_VERSION) {
             res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
-            res.setHeader(SEC_WEBSOCKET_VERSION, String.valueOf(MIN_HYBI_VERSION));
+            res.headers().set(SEC_WEBSOCKET_VERSION, String.valueOf(MIN_HYBI_VERSION));
             return;
         }
 
-        String key = req.getHeader(SEC_WEBSOCKET_KEY);
+        String key = req.headers().get(SEC_WEBSOCKET_KEY);
         if (key == null) {
             res.setStatus(HttpResponseStatus.BAD_REQUEST);
             return;
@@ -65,13 +65,13 @@ public class Hybi implements WebSocketVersion {
         String accept = Base64.encode(sha1(key + ACCEPT_GUID));
 
         res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
-        res.addHeader(UPGRADE, WEBSOCKET.toLowerCase());
-        res.addHeader(CONNECTION, UPGRADE);
-        res.addHeader(SEC_WEBSOCKET_ACCEPT, accept);
+        res.headers().add(UPGRADE, WEBSOCKET.toLowerCase());
+        res.headers().add(CONNECTION, UPGRADE);
+        res.headers().add(SEC_WEBSOCKET_ACCEPT, accept);
 
-        String webSocketProtocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
+        String webSocketProtocol = req.headers().get(SEC_WEBSOCKET_PROTOCOL);
         if (webSocketProtocol != null) {
-            res.addHeader(SEC_WEBSOCKET_PROTOCOL, webSocketProtocol);
+            res.headers().add(SEC_WEBSOCKET_PROTOCOL, webSocketProtocol);
         }
     }
 
@@ -86,7 +86,7 @@ public class Hybi implements WebSocketVersion {
     }
 
     private Integer getHybiVersion() {
-        return req.containsHeader(SEC_WEBSOCKET_VERSION) ? Integer.parseInt(req.getHeader(SEC_WEBSOCKET_VERSION).trim()) : null;
+        return req.headers().contains(SEC_WEBSOCKET_VERSION) ? Integer.parseInt(req.headers().get(SEC_WEBSOCKET_VERSION).trim()) : null;
     }
 
     private byte[] sha1(String s) {

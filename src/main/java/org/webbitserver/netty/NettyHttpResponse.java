@@ -70,7 +70,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse chunked() {
-        response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
+        response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
         response.setChunked(true);
         ctx.getChannel().write(response);
         return this;
@@ -84,28 +84,28 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse header(String name, String value) {
         if (value == null) {
-            response.removeHeader(name);
+            response.headers().remove(name);
         } else {
-            response.addHeader(name, value);
+            response.headers().add(name, value);
         }
         return this;
     }
 
     @Override
     public NettyHttpResponse header(String name, long value) {
-        response.addHeader(name, value);
+        response.headers().add(name, value);
         return this;
     }
 
     @Override
     public NettyHttpResponse header(String name, Date value) {
-        response.addHeader(name, DateHelper.rfc1123Format(value));
+        response.headers().add(name, DateHelper.rfc1123Format(value));
         return this;
     }
 
     @Override
     public boolean containsHeader(String name) {
-        return response.containsHeader(name);
+        return response.headers().contains(name);
     }
 
     @Override

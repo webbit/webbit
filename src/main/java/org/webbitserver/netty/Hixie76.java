@@ -45,7 +45,7 @@ public class Hixie76 implements WebSocketVersion {
 
     @Override
     public boolean matches() {
-        return req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
+        return req.headers().contains(SEC_WEBSOCKET_KEY1) && req.headers().contains(SEC_WEBSOCKET_KEY2);
     }
 
     @Override
@@ -53,18 +53,18 @@ public class Hixie76 implements WebSocketVersion {
         webSocketConnection.setVersion("HIXIE-76");
 
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
-        res.addHeader(UPGRADE, WEBSOCKET);
-        res.addHeader(CONNECTION, UPGRADE);
-        res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
-        res.addHeader(SEC_WEBSOCKET_LOCATION, getWebSocketLocation(req));
-        String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
+        res.headers().add(UPGRADE, WEBSOCKET);
+        res.headers().add(CONNECTION, UPGRADE);
+        res.headers().add(SEC_WEBSOCKET_ORIGIN, req.headers().get(ORIGIN));
+        res.headers().add(SEC_WEBSOCKET_LOCATION, getWebSocketLocation(req));
+        String protocol = req.headers().get(SEC_WEBSOCKET_PROTOCOL);
         if (protocol != null) {
-            res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
+            res.headers().add(SEC_WEBSOCKET_PROTOCOL, protocol);
         }
 
         // Calculate the answer of the challenge.
-        String key1 = req.getHeader(SEC_WEBSOCKET_KEY1);
-        String key2 = req.getHeader(SEC_WEBSOCKET_KEY2);
+        String key1 = req.headers().get(SEC_WEBSOCKET_KEY1);
+        String key2 = req.headers().get(SEC_WEBSOCKET_KEY2);
         int a = (int) (Long.parseLong(key1.replaceAll("[^0-9]", "")) / key1.replaceAll("[^ ]", "").length());
         int b = (int) (Long.parseLong(key2.replaceAll("[^0-9]", "")) / key2.replaceAll("[^ ]", "").length());
         long c = req.getContent().readLong();
@@ -87,10 +87,10 @@ public class Hixie76 implements WebSocketVersion {
     }
 
     private String getWebSocketLocation(HttpRequest req) {
-      return  getWebSocketProtocol(req) + req.getHeader(HttpHeaders.Names.HOST) + req.getUri();
+      return  getWebSocketProtocol(req) + req.headers().get(HttpHeaders.Names.HOST) + req.getUri();
     }
   
 	  private String getWebSocketProtocol(HttpRequest req) {
-		  if(req.getHeader(HttpHeaders.Names.ORIGIN).matches("(?s)https://.*")) { return "wss://"; } else { return "ws://"; }
+		  if(req.headers().get(HttpHeaders.Names.ORIGIN).matches("(?s)https://.*")) { return "wss://"; } else { return "ws://"; }
 	  }
 }
