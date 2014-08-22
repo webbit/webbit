@@ -23,11 +23,21 @@ public class PathMatchHandler implements HttpHandler {
         this(Pattern.compile(path), httpHandler);
     }
 
+    public Boolean pathIsAMatch(HttpRequest request){
+        try {
+            String path = URI.create(request.uri()).getPath();
+            Matcher matcher = pathPattern.matcher(path);
+            if (matcher.matches()) {
+                return true;
+            }
+        } catch (IllegalArgumentException e) {
+        }
+        return false;
+    }
+
     @Override
     public void handleHttpRequest(HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
-        String path = URI.create(request.uri()).getPath();
-        Matcher matcher = pathPattern.matcher(path);
-        if (matcher.matches()) {
+        if (pathIsAMatch(request)) {
             httpHandler.handleHttpRequest(request, response, control);
         } else {
             control.nextHandler();
