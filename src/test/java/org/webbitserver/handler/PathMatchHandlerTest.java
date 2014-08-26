@@ -54,6 +54,21 @@ public class PathMatchHandlerTest {
     }
 
     @Test
+    public void handsOffWhenIllegalURIPath() throws Exception {
+        HttpHandler handler = mock(HttpHandler.class);
+        PathMatchHandler pmh = new PathMatchHandler("/hello", handler);
+
+        HttpRequest req = new StubHttpRequest("//");
+        HttpResponse res = new StubHttpResponse();
+        HttpControl ctl = mock(HttpControl.class);
+
+        pmh.handleHttpRequest(req, res, ctl);
+
+        verifyZeroInteractions(handler);
+        verify(ctl).nextHandler();
+    }
+
+    @Test
     public void handsOffWhenNoMatch() throws Exception {
         HttpHandler handler = mock(HttpHandler.class);
         PathMatchHandler pmh = new PathMatchHandler("/hello", handler);
