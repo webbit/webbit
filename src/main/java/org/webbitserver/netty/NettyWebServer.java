@@ -72,17 +72,30 @@ public class NettyWebServer implements WebServer {
     private int maxContentLength = 65536;
 
     public NettyWebServer(int port) {
-        this(Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory("WEBBIT-HANDLER-THREAD")), port);
+        this(defaultExecutor(),  port);
     }
 
-    private NettyWebServer(ExecutorService executorService, int port) {
-        this((Executor) executorService, port);
+		public NettyWebServer(String host, int port) {
+			this(defaultExecutor(), host,  port);
+		}
+
+	public NettyWebServer(InetSocketAddress inetSocketAddress)
+		{
+			this(defaultExecutor(), inetSocketAddress, localUri(inetSocketAddress.getHostName(), inetSocketAddress.getPort()));
+		}
+
+    private NettyWebServer(ExecutorService executorService, String host, int port) {
+        this((Executor) executorService, host, port);
         // If we created the executor, we have to be responsible for tearing it down.
         executorServices.add(executorService);
     }
 
-    public NettyWebServer(final Executor executor, int port) {
-        this(executor, new InetSocketAddress(port), localUri(port));
+		public NettyWebServer(final Executor executor, int port) {
+			this(executor, new InetSocketAddress(port), localUri(port));
+		}
+
+    public NettyWebServer(final Executor executor, String host, int port) {
+        this(executor, new InetSocketAddress(host, port), localUri(host, port));
     }
 
     public NettyWebServer(final Executor executor, SocketAddress socketAddress, URI publicUri) {
@@ -333,14 +346,28 @@ public class NettyWebServer implements WebServer {
         return this;
     }
 
+		private static URI localUri(String host, int port)
+		{
+			try {
+				InetAddress ia;
+				if(host == null)
+				 	ia= InetAddress.getLocalHost();
+				else
+					ia = InetAddress.getByName(host);
+				return URI.create("http://" + ia
+						.getHostAddress() + (port == 80 ? "" : (":" + port)) + "/");
+			} catch (UnknownHostException e) {
+				throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
+			}
+		}
+
     private static URI localUri(int port) {
-        try {
-            return URI.create("http://" + InetAddress.getLocalHost()
-                    .getHostName() + (port == 80 ? "" : (":" + port)) + "/");
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
-        }
+			return localUri(null, port);
     }
+
+		private static ExecutorService defaultExecutor()	{
+			return Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory("WEBBIT-HANDLER-THREAD"));
+		}
 
     protected long timestamp() {
         return System.currentTimeMillis();

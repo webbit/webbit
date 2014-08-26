@@ -9,7 +9,9 @@ import org.webbitserver.HttpResponse;
 
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class NettyWebServerTest {
@@ -78,6 +81,17 @@ public class NettyWebServerTest {
             startAndStop();
         }
     }
+
+		@Test
+		public void testCustomHostAddress() throws Exception	{
+				InetSocketAddress ia = new InetSocketAddress("127.0.0.1", 9080);
+				server = new NettyWebServer("127.0.0.1", 9080);
+				URI should_be = URI.create("http://127.0.0.1:9080/");
+				server.start().get();
+				URI uri = server.getUri();
+				assertEquals(0, uri.compareTo(should_be));
+				server.stop().get();
+		}
 
     private void startAndStop() throws InterruptedException, ExecutionException {
         List<String> beforeStart = getCurrentThreadNames();
