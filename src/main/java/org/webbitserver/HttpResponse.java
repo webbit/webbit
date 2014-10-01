@@ -84,6 +84,8 @@ public interface HttpResponse {
      */
     HttpResponse content(String content);
 
+    long contentLength();
+
     /**
      * Writes immediately to the client without closing the connection.
      * (The {@link #content(String)} method caches content until {@link #end()} is called()

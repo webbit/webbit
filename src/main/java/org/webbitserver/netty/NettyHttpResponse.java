@@ -70,7 +70,7 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     @Override
     public NettyHttpResponse chunked() {
-        response.setHeader(Names.TRANSFER_ENCODING, Values.CHUNKED);
+        response.headers().set(Names.TRANSFER_ENCODING, Values.CHUNKED);
         response.setChunked(true);
         ctx.getChannel().write(response);
         return this;
@@ -84,28 +84,28 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     @Override
     public NettyHttpResponse header(String name, String value) {
         if (value == null) {
-            response.removeHeader(name);
+            response.headers().remove(name);
         } else {
-            response.addHeader(name, value);
+            response.headers().add(name, value);
         }
         return this;
     }
 
     @Override
     public NettyHttpResponse header(String name, long value) {
-        response.addHeader(name, value);
+        response.headers().add(name, value);
         return this;
     }
 
     @Override
     public NettyHttpResponse header(String name, Date value) {
-        response.addHeader(name, DateHelper.rfc1123Format(value));
+        response.headers().add(name, DateHelper.rfc1123Format(value));
         return this;
     }
 
     @Override
     public boolean containsHeader(String name) {
-        return response.containsHeader(name);
+        return response.headers().contains(name);
     }
 
     @Override
@@ -117,10 +117,15 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         nettyCookie.setMaxAge((int)httpCookie.getMaxAge());
         nettyCookie.setVersion(httpCookie.getVersion());
         nettyCookie.setDiscard(httpCookie.getDiscard());
-        nettyCookie.setHttpOnly(true);
         CookieEncoder encoder = new CookieEncoder(true);
         encoder.addCookie(nettyCookie);
-        return header(HttpHeaders.Names.SET_COOKIE, encoder.encode());
+
+        // IE compat.
+        String c = encoder.encode();
+        c = c + "; Expires="
+          + DateHelper.rfc850Format(new Date(System.currentTimeMillis() + httpCookie.getMaxAge() * 1000));
+
+        return header(HttpHeaders.Names.SET_COOKIE, c);
     }
 
     @Override
@@ -147,12 +152,17 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
     }
 
     @Override
+    public long contentLength() {
+        return responseBuffer.array().length;
+    }
+
+    @Override
     public NettyHttpResponse write(String content) {
         if (response.isChunked()) {
-            ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));  
+            ctx.getChannel().write(new DefaultHttpChunk(wrappedBuffer(content.getBytes(CharsetUtil.UTF_8))));
         } else {
             write(copiedBuffer(content, CharsetUtil.UTF_8));
-        }    
+        }
         return this;
     }
 
@@ -163,10 +173,17 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
         } else {
             response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
-        String message = getStackTrace(error);
+//        String message = getStackTrace(error);
         header("Content-Type", "text/plain");
-        content(message);
-        flushResponse();
+//        content(message);
+				content("Internal server error. We are notified about the problem and will fix it. Sorry for any inconvenience.");
+        try{
+            flushResponse();
+        }catch (IllegalStateException e){
+            return null;
+        }catch (WebbitException e){
+            return null;
+        }
         exceptionHandler.uncaughtException(Thread.currentThread(),
                 WebbitException.fromException(error, ctx.getChannel()));
 
@@ -189,9 +206,21 @@ public class NettyHttpResponse implements org.webbitserver.HttpResponse {
 
     private void flushResponse() {
         try {
-            // TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
-            header("Content-Length", (String) null);
-            header("Content-Length", responseBuffer.readableBytes());
+
+					if (!ctx.getChannel().isOpen()) {
+						System.err.println("channel is closed, channel: " + ctx.getChannel());
+						ctx.getChannel().disconnect();
+						ctx.getChannel().close();
+
+						return;
+					}
+
+					// mymod. WebbitException: cannot send more responses than requests
+					if (!ctx.getChannel().isWritable()) return;
+
+					// TODO: Shouldn't have to do this, but without it we sometimes seem to get two Content-Length headers in the response.
+					header("Content-Length", (String) null);
+					header("Content-Length", responseBuffer.readableBytes());
             ChannelFuture  future = response.isChunked() ? ctx.getChannel().write(new DefaultHttpChunk(ChannelBuffers.EMPTY_BUFFER)) : write(responseBuffer);
             if (!isKeepAlive) {
                 future.addListener(ChannelFutureListener.CLOSE);

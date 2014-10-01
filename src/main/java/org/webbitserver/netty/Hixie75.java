@@ -5,8 +5,8 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocket00FrameDecoder;
+import org.jboss.netty.handler.codec.http.websocketx.WebSocket00FrameEncoder;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
@@ -34,34 +34,34 @@ public class Hixie75 implements WebSocketVersion {
     public void prepareHandshakeResponse(NettyWebSocketConnection webSocketConnection) {
         webSocketConnection.setVersion("HIXIE-75");
         res.setStatus(new HttpResponseStatus(101, "Web Socket Protocol Handshake"));
-        res.addHeader(UPGRADE, WEBSOCKET);
-        res.addHeader(CONNECTION, HttpHeaders.Values.UPGRADE);
-        String origin = req.getHeader(ORIGIN);
+        res.headers().add(UPGRADE, WEBSOCKET);
+        res.headers().add(CONNECTION, HttpHeaders.Values.UPGRADE);
+        String origin = req.headers().get(ORIGIN);
         if (origin != null) {
-            res.addHeader(WEBSOCKET_ORIGIN, origin);
+            res.headers().add(WEBSOCKET_ORIGIN, origin);
         }
-        res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
-        String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
+        res.headers().add(WEBSOCKET_LOCATION, getWebSocketLocation(req));
+        String protocol = req.headers().get(WEBSOCKET_PROTOCOL);
         if (protocol != null) {
-            res.addHeader(WEBSOCKET_PROTOCOL, protocol);
+            res.headers().add(WEBSOCKET_PROTOCOL, protocol);
         }
     }
 
     @Override
     public ChannelHandler createDecoder() {
-        return new WebSocketFrameDecoder();
+        return new WebSocket00FrameDecoder();
     }
 
     @Override
     public ChannelHandler createEncoder() {
-        return new WebSocketFrameEncoder();
+        return new WebSocket00FrameEncoder();
     }
 
     private String getWebSocketLocation(HttpRequest req) {
-        return  getWebSocketProtocol(req) + req.getHeader(HttpHeaders.Names.HOST) + req.getUri();
+        return  getWebSocketProtocol(req) + req.headers().get(HttpHeaders.Names.HOST) + req.getUri();
     }
     
     private String getWebSocketProtocol(HttpRequest req) {
-  	  if(req.getHeader(HttpHeaders.Names.ORIGIN).matches("(?s)https://.*")) { return "wss://"; } else { return "ws://"; }
+  	  if(req.headers().get(HttpHeaders.Names.ORIGIN).matches("(?s)https://.*")) { return "wss://"; } else { return "ws://"; }
     }
 }

@@ -10,9 +10,7 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebbitException;
 
-import java.io.IOError;
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -26,7 +24,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     private static final Object IGNORE_REQUEST = new Object();
 
     private final Executor executor;
-    private final List<HttpHandler> httpHandlers;
+    public List<HttpHandler> httpHandlers;
     private final Object id;
     private final long timestamp;
     private final Thread.UncaughtExceptionHandler exceptionHandler;
@@ -89,7 +87,7 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         connectionHelper.fireConnectionException(e);
         if (!(e.getCause() instanceof IOException)) {
-            final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
+            final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), false, exceptionHandler);
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -103,5 +101,4 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
             });
         }
     }
-
 }

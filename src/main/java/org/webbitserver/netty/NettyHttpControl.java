@@ -140,10 +140,10 @@ public class NettyHttpControl implements HttpControl {
 
     private void performEventSourceHandshake(ChannelHandler eventSourceConnectionHandler) {
         nettyHttpResponse.setStatus(HttpResponseStatus.OK);
-        nettyHttpResponse.addHeader("Content-Type", "text/event-stream");
-        nettyHttpResponse.addHeader("Transfer-Encoding", "identity");
-        nettyHttpResponse.addHeader("Connection", "keep-alive");
-        nettyHttpResponse.addHeader("Cache-Control", "no-cache");
+        nettyHttpResponse.headers().add("Content-Type", "text/event-stream");
+        nettyHttpResponse.headers().add("Transfer-Encoding", "identity");
+        nettyHttpResponse.headers().add("Connection", "keep-alive");
+        nettyHttpResponse.headers().add("Cache-Control", "no-cache");
         nettyHttpResponse.setChunked(false);
         ctx.getChannel().write(nettyHttpResponse);
         getReadyToSendEventSourceMessages(eventSourceConnectionHandler);

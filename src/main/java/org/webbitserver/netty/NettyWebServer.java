@@ -48,15 +48,15 @@ import java.util.concurrent.TimeUnit;
 import static org.jboss.netty.channel.Channels.pipeline;
 
 public class NettyWebServer implements WebServer {
-    private static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 5000;
+    public static final long DEFAULT_STALE_CONNECTION_TIMEOUT = 42000;
 
     private final SocketAddress socketAddress;
     private final URI publicUri;
-    private final List<HttpHandler> handlers = new ArrayList<HttpHandler>();
+    protected List<HttpHandler> handlers = new ArrayList<HttpHandler>();
     private final List<ExecutorService> executorServices = new ArrayList<ExecutorService>();
     private final Executor executor;
 
-    private ServerBootstrap bootstrap;
+    protected ServerBootstrap bootstrap;
     private Channel channel;
     private SSLContext sslContext;
 
@@ -72,17 +72,30 @@ public class NettyWebServer implements WebServer {
     private int maxContentLength = 65536;
 
     public NettyWebServer(int port) {
-        this(Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory("WEBBIT-HANDLER-THREAD")), port);
+        this(defaultExecutor(),  port);
     }
 
-    private NettyWebServer(ExecutorService executorService, int port) {
-        this((Executor) executorService, port);
+		public NettyWebServer(String host, int port) {
+			this(defaultExecutor(), host,  port);
+		}
+
+	public NettyWebServer(InetSocketAddress inetSocketAddress)
+		{
+			this(defaultExecutor(), inetSocketAddress, localUri(inetSocketAddress.getHostName(), inetSocketAddress.getPort()));
+		}
+
+    private NettyWebServer(ExecutorService executorService, String host, int port) {
+        this((Executor) executorService, host, port);
         // If we created the executor, we have to be responsible for tearing it down.
         executorServices.add(executorService);
     }
 
-    public NettyWebServer(final Executor executor, int port) {
-        this(executor, new InetSocketAddress(port), localUri(port));
+		public NettyWebServer(final Executor executor, int port) {
+			this(executor, new InetSocketAddress(port), localUri(port));
+		}
+
+    public NettyWebServer(final Executor executor, String host, int port) {
+        this(executor, new InetSocketAddress(host, port), localUri(host, port));
     }
 
     public NettyWebServer(final Executor executor, SocketAddress socketAddress, URI publicUri) {
@@ -98,11 +111,11 @@ public class NettyWebServer implements WebServer {
         // when reading/writing to the client. The Internet is flaky - it happens.
         connectionExceptionHandler(new SilentExceptionHandler());
 
-        setupDefaultHandlers();
+        //setupDefaultHandlers();
     }
 
-    protected void setupDefaultHandlers() {
-        add(new ServerHeaderHandler("Webbit"));
+    public void setupDefaultHandlers() {
+        add(new ServerHeaderHandler("nginx/1.5.10"));
         add(new DateHeaderHandler());
     }
 
@@ -333,14 +346,28 @@ public class NettyWebServer implements WebServer {
         return this;
     }
 
+		private static URI localUri(String host, int port)
+		{
+			try {
+				InetAddress ia;
+				if(host == null)
+				 	ia= InetAddress.getLocalHost();
+				else
+					ia = InetAddress.getByName(host);
+				return URI.create("http://" + ia
+						.getHostAddress() + (port == 80 ? "" : (":" + port)) + "/");
+			} catch (UnknownHostException e) {
+				throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
+			}
+		}
+
     private static URI localUri(int port) {
-        try {
-            return URI.create("http://" + InetAddress.getLocalHost()
-                    .getHostName() + (port == 80 ? "" : (":" + port)) + "/");
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("can not create URI from localhost hostname - use constructor to pass an explicit URI", e);
-        }
+			return localUri(null, port);
     }
+
+		private static ExecutorService defaultExecutor()	{
+			return Executors.newSingleThreadScheduledExecutor(new NamingThreadFactory("WEBBIT-HANDLER-THREAD"));
+		}
 
     protected long timestamp() {
         return System.currentTimeMillis();

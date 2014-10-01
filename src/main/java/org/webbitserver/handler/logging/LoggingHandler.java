@@ -24,19 +24,19 @@ public class LoggingHandler implements HttpHandler {
     }
 
     @Override
-    public void handleHttpRequest(final HttpRequest request, HttpResponse response, HttpControl control) throws Exception {
+    public void handleHttpRequest(final HttpRequest request, final HttpResponse response, HttpControl control) throws Exception {
         logSink.httpStart(request);
 
         HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response) {
             @Override
             public HttpResponseWrapper end() {
-                logSink.httpEnd(request);
+                logSink.httpEnd(request, response);
                 return super.end();
             }
 
             @Override
             public HttpResponseWrapper error(Throwable error) {
-                logSink.httpEnd(request);
+                logSink.httpEnd(request, response);
                 logSink.error(request, error);
                 return super.error(error);
             }

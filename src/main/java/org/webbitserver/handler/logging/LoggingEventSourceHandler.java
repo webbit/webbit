@@ -24,7 +24,7 @@ class LoggingEventSourceHandler implements EventSourceHandler {
     @Override
     public void onClose(EventSourceConnection connection) throws Exception {
         logSink.eventSourceConnectionClose(connection);
-        logSink.httpEnd(connection.httpRequest());
+        logSink.httpEnd(connection.httpRequest(), null);
         handler.onClose(loggingConnection);
     }
 }

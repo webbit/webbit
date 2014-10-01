@@ -4,7 +4,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
+import org.jboss.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 import org.webbitserver.WebSocketConnection;
 
@@ -26,7 +26,7 @@ public class NettyWebSocketConnection extends AbstractHttpConnection implements 
         if (hybi) {
             writeMessage(new EncodingHybiFrame(Opcodes.OPCODE_TEXT, true, 0, outboundMaskingKey, ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8)));
         } else {
-            writeMessage(new DefaultWebSocketFrame(message));
+            writeMessage(new TextWebSocketFrame(message));
         }
         return this;
     }

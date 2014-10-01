@@ -43,17 +43,17 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public String header(String name) {
-        return httpRequest.getHeader(name);
+        return httpRequest.headers().get(name);
     }
 
     @Override
     public List<String> headers(String name) {
-        return httpRequest.getHeaders(name);
+        return httpRequest.headers().getAll(name);
     }
 
     @Override
     public boolean hasHeader(String name) {
-        return httpRequest.containsHeader(name);
+        return httpRequest.headers().contains(name);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class NettyHttpRequest implements org.webbitserver.HttpRequest {
 
     @Override
     public List<Map.Entry<String, String>> allHeaders() {
-        return httpRequest.getHeaders();
+        return httpRequest.headers().entries();
     }
 
     @Override
