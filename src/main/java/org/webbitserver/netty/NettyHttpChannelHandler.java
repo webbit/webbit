@@ -1,5 +1,6 @@
 package org.webbitserver.netty;
 
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
@@ -88,19 +89,28 @@ public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) {
         connectionHelper.fireConnectionException(e);
-        if (!(e.getCause() instanceof IOException)) {
-            final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ctx.setAttachment(IGNORE_REQUEST);
-                        nettyHttpResponse.error(e.getCause());
-                    } catch (Exception exception) {
-                        exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(exception, ctx.getChannel()));
+        final Channel channel = ctx.getChannel();
+        final Throwable cause = e.getCause();
+        if ( ! (cause instanceof IOException) ) {
+            if ( channel.isOpen() ) {
+                final NettyHttpResponse nettyHttpResponse = new NettyHttpResponse(ctx, new DefaultHttpResponse(HTTP_1_1, INTERNAL_SERVER_ERROR), true, exceptionHandler);
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ctx.setAttachment(IGNORE_REQUEST);
+                            nettyHttpResponse.error(e.getCause());
+                        } catch (Exception exception) {
+                            exceptionHandler.uncaughtException(Thread.currentThread(), WebbitException.fromException(exception, channel));
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                exceptionHandler.uncaughtException(
+                    Thread.currentThread(),
+                    WebbitException.fromException(cause, channel)
+                );
+            }
         }
     }
 
