@@ -162,6 +162,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
                 if (request.header("If-Modified-Since") != null) {
                     if (fromHeader(request.header("If-Modified-Since")).getTime() >= lastModified.getTime() ) {
                         response.status(304);
+                        return new byte[]{};
                     }
                 }
                 //is setting cache control necessary?
