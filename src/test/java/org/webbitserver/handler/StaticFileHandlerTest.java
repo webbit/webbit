@@ -217,6 +217,7 @@ public class StaticFileHandlerTest {
         assertEquals(true, handle(request("/index_cache.html")).header("Expires") != null);
         assertEquals(true, handleWithHeader(request("/index_cache.html"), "If-Modified-Since", toDateHeader(new Date(aYearAgo))).status() == 200);
         assertEquals(true, handleWithHeader(request("/index_cache.html"), "If-Modified-Since", toDateHeader(new Date(aYearFromNow))).status() == 304);
+        assertEquals(0, handleWithHeader(request("/index_cache.html"), "If-Modified-Since", toDateHeader(new Date(aYearFromNow))).contents().length);
     }
 
     @Test
