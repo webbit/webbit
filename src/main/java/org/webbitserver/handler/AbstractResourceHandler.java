@@ -246,7 +246,7 @@ public abstract class AbstractResourceHandler implements HttpHandler {
                     }
                     // TODO: Do something other than 404 if directory listing is disabled
                 } else if ((content = fileBytes()) != null) {
-                    serve(guessMimeType(path), content, control, response, request, path);
+                    serve(guessMimeType(path), response.status() == 304 ? new byte[0] : content, control, response, request, path);
                     return;
                 } else if ((content = welcomeBytes()) != null) {
                     serve(guessMimeType(welcomeFileName), content, control, response, request, path);
