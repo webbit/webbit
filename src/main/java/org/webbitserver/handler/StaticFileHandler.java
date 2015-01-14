@@ -160,7 +160,7 @@ public class StaticFileHandler extends AbstractResourceHandler {
                 response.header("Last-Modified", toHeader(lastModified));
                 //is there an incoming If-Modified-Since?
                 if (request.header("If-Modified-Since") != null) {
-                    if (fromHeader(request.header("If-Modified-Since")).getTime() >= lastModified.getTime() ) {
+                    if (fromHeader(request.header("If-Modified-Since")).getTime() / 1000 != lastModified.getTime() / 1000) {
                         response.status(304);
                         return new byte[]{};
                     }
