@@ -4,6 +4,8 @@ import org.webbitserver.EventSourceConnection;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpRequest;
+import org.webbitserver.HttpHandler;
+import org.webbitserver.HttpListener;
 import org.webbitserver.HttpResponse;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
@@ -74,6 +76,12 @@ public class HttpControlWrapper implements HttpControl {
     @Override
     public Executor handlerExecutor() {
         return control.handlerExecutor();
+    }
+
+
+    @Override
+    public void listener(HttpListener listener) {
+         control.listener(listener);
     }
 
     @Override

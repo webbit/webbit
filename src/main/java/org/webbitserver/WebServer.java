@@ -65,6 +65,12 @@ public interface WebServer extends Endpoint<WebServer> {
     WebServer add(String path, HttpHandler handler);
 
     /**
+     * same as HttpHandler except the handler also gets to listen for onClose/onOpen events.
+     *
+     */
+    public WebServer add(String path, HttpListener handler);
+
+    /**
      * Add a WebSocketHandler for dealing with WebSockets.
      * <p/>
      * This is shortcut for {@code add(new PathMatchHandler(path, newHttpToWebSocketHandler(handler)))}.

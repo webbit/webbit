@@ -10,6 +10,7 @@ import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
+import org.webbitserver.HttpListener;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
@@ -83,6 +84,19 @@ public class NettyHttpControl implements HttpControl {
             response.status(404).end();
         }
     }
+    
+    @Override 
+    public void listener(HttpListener listener) {
+        ListenerConnectionHandler listenerConnectionHandler = new ListenerConnectionHandler(executor, exceptionHandler, ioExceptionHandler, listener, ctx.getChannel().getId());
+           
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        p.replace("handler", "listener", listenerConnectionHandler);
+        try {
+            listener.onOpen(ctx.getChannel().getId(), webbitHttpRequest);
+        } catch (Exception e) {
+            exceptionHandler.uncaughtException(Thread.currentThread(), new WebbitException(e));
+        }
+    }
 
     @Override
     public WebSocketConnection upgradeToWebSocketConnection(WebSocketHandler webSocketHandler) {
@@ -137,6 +151,8 @@ public class NettyHttpControl implements HttpControl {
     public void execute(Runnable command) {
         handlerExecutor().execute(command);
     }
+
+
 
     private void performEventSourceHandshake(ChannelHandler eventSourceConnectionHandler) {
         nettyHttpResponse.setStatus(HttpResponseStatus.OK);
