@@ -18,3 +18,7 @@ notifications:
   irc:
     - "irc.freenode.org#webbit"
 
+
+cache:
+  directories:
+  - $HOME/.m2
