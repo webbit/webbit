@@ -11,7 +11,7 @@ import org.webbitserver.stub.StubHttpResponse;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class PathMatchHandlerTest {
     @Test
@@ -64,7 +64,7 @@ public class PathMatchHandlerTest {
 
         pmh.handleHttpRequest(req, res, ctl);
 
-        verifyZeroInteractions(handler);
+        verifyNoInteractions(handler);
         verify(ctl).nextHandler();
     }
 
@@ -79,7 +79,7 @@ public class PathMatchHandlerTest {
 
         pmh.handleHttpRequest(req, res, ctl);
 
-        verifyZeroInteractions(handler);
+        verifyNoInteractions(handler);
         verify(ctl).nextHandler();
     }
 
