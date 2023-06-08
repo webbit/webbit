@@ -18,5 +18,7 @@ public interface HttpControl extends Executor {
 
     EventSourceConnection eventSourceConnection();
 
+    void listener(HttpListener listener);
+
     Executor handlerExecutor();
 }

@@ -29,6 +29,11 @@ echo: test dist/$(LIBRARY)-all-in-one.jar
 	java -Xmx256m -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.echo.Main
 .PHONY: echo
 
+# Run Hello server 
+hello: test dist/$(LIBRARY)-all-in-one.jar
+	java -Xmx256m -cp $(CLASSPATH):dist/$(LIBRARY)-all-in-one.jar:build/$(LIBRARY)-tests.jar samples.hello.Main
+.PHONY: hello
+
 # Function to find files in directory with suffix. $(call find,dir,ext)
 find = $(shell find $(1) -name '*.$(2)')
 

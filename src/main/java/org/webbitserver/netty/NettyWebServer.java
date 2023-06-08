@@ -14,11 +14,13 @@ import org.jboss.netty.handler.ssl.SslHandler;
 import org.webbitserver.EventSourceHandler;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebServer;
+import org.webbitserver.HttpListener;
 import org.webbitserver.WebSocketHandler;
 import org.webbitserver.WebbitException;
 import org.webbitserver.handler.DateHeaderHandler;
 import org.webbitserver.handler.HttpToEventSourceHandler;
 import org.webbitserver.handler.HttpToWebSocketHandler;
+import org.webbitserver.handler.HttpHandlerToListener;
 import org.webbitserver.handler.PathMatchHandler;
 import org.webbitserver.handler.ServerHeaderHandler;
 import org.webbitserver.handler.exceptions.PrintStackTraceExceptionHandler;
@@ -160,6 +162,11 @@ public class NettyWebServer implements WebServer {
     @Override
     public NettyWebServer add(String path, EventSourceHandler handler) {
         return add(path, new HttpToEventSourceHandler(handler));
+    }
+
+    @Override
+    public NettyWebServer add(String path, HttpListener handler) {
+        return add(path, new HttpHandlerToListener(handler));
     }
 
     @Override
